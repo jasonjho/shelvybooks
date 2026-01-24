@@ -26,20 +26,23 @@ export function BookSpine({ book, onMove, onRemove }: BookSpineProps) {
       <ContextMenuTrigger>
         <div className="book-spine group relative">
           <div
-            className="relative w-[80px] h-[120px] rounded-sm overflow-hidden shadow-book"
+            className="book-cover w-[70px] h-[105px]"
             style={{
               backgroundImage: `url(${book.coverUrl})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
           >
-            {/* Book spine edge effect */}
-            <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-r from-black/30 to-transparent" />
+            {/* 3D book edge effect */}
+            <div className="book-edge" />
+            
+            {/* Top edge highlight */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-b from-white/20 to-transparent" />
             
             {/* Fallback if no cover */}
             {book.coverUrl === '/placeholder.svg' && (
-              <div className="absolute inset-0 flex items-center justify-center p-2 bg-secondary">
-                <span className="text-[10px] text-center font-display text-secondary-foreground leading-tight line-clamp-4">
+              <div className="absolute inset-0 flex items-center justify-center p-2 bg-gradient-to-br from-secondary to-muted">
+                <span className="text-[9px] text-center font-display text-secondary-foreground leading-tight line-clamp-4">
                   {book.title}
                 </span>
               </div>
@@ -47,12 +50,12 @@ export function BookSpine({ book, onMove, onRemove }: BookSpineProps) {
           </div>
           
           {/* Hover tooltip */}
-          <div className="absolute -top-16 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-            <div className="bg-foreground text-background px-3 py-2 rounded-md text-xs max-w-[160px] shadow-lg">
+          <div className="absolute -top-20 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+            <div className="bg-foreground/95 text-background px-3 py-2 rounded-lg text-xs max-w-[180px] shadow-xl backdrop-blur-sm">
               <p className="font-medium line-clamp-2">{book.title}</p>
-              <p className="text-background/70 mt-0.5 line-clamp-1">{book.author}</p>
+              <p className="text-background/70 mt-1 line-clamp-1">{book.author}</p>
             </div>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-foreground" />
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-foreground/95" />
           </div>
         </div>
       </ContextMenuTrigger>
