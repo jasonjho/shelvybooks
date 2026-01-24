@@ -1,0 +1,84 @@
+import { Book, BookStatus } from '@/types/book';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
+import { BookOpen, BookMarked, CheckCircle, Trash2 } from 'lucide-react';
+
+interface BookSpineProps {
+  book: Book;
+  onMove: (id: string, status: BookStatus) => void;
+  onRemove: (id: string) => void;
+}
+
+const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
+  { status: 'reading', label: 'Currently Reading', icon: <BookOpen className="w-4 h-4" /> },
+  { status: 'want-to-read', label: 'Want to Read', icon: <BookMarked className="w-4 h-4" /> },
+  { status: 'read', label: 'Read', icon: <CheckCircle className="w-4 h-4" /> },
+];
+
+export function BookSpine({ book, onMove, onRemove }: BookSpineProps) {
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <div className="book-spine group relative">
+          <div
+            className="relative w-[80px] h-[120px] rounded-sm overflow-hidden shadow-book"
+            style={{
+              backgroundImage: `url(${book.coverUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            {/* Book spine edge effect */}
+            <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-r from-black/30 to-transparent" />
+            
+            {/* Fallback if no cover */}
+            {book.coverUrl === '/placeholder.svg' && (
+              <div className="absolute inset-0 flex items-center justify-center p-2 bg-secondary">
+                <span className="text-[10px] text-center font-display text-secondary-foreground leading-tight line-clamp-4">
+                  {book.title}
+                </span>
+              </div>
+            )}
+          </div>
+          
+          {/* Hover tooltip */}
+          <div className="absolute -top-16 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+            <div className="bg-foreground text-background px-3 py-2 rounded-md text-xs max-w-[160px] shadow-lg">
+              <p className="font-medium line-clamp-2">{book.title}</p>
+              <p className="text-background/70 mt-0.5 line-clamp-1">{book.author}</p>
+            </div>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-foreground" />
+          </div>
+        </div>
+      </ContextMenuTrigger>
+      
+      <ContextMenuContent className="w-48">
+        {statusOptions
+          .filter((opt) => opt.status !== book.status)
+          .map((opt) => (
+            <ContextMenuItem
+              key={opt.status}
+              onClick={() => onMove(book.id, opt.status)}
+              className="gap-2"
+            >
+              {opt.icon}
+              Move to {opt.label}
+            </ContextMenuItem>
+          ))}
+        <ContextMenuSeparator />
+        <ContextMenuItem
+          onClick={() => onRemove(book.id)}
+          className="gap-2 text-destructive focus:text-destructive"
+        >
+          <Trash2 className="w-4 h-4" />
+          Remove
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
