@@ -47,7 +47,7 @@ export default function Index() {
               <Library className="w-6 h-6 text-primary-foreground" />
             </div>
             <h1 className="font-display text-2xl font-semibold text-white drop-shadow-lg">
-              My Bookshelf
+              Book Shelfie
             </h1>
           </div>
           <div className="flex items-center gap-3">
