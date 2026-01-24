@@ -335,6 +335,20 @@
     background: linear-gradient(180deg, hsl(var(--shelf-dark-dark)) 0%, hsl(220 25% 5%) 100%);
   }
 
+  /* No grain variant - solid colors */
+  .shelf-oak.no-grain .shelf-surface {
+    background: linear-gradient(180deg, hsl(var(--shelf-oak)) 0%, hsl(var(--shelf-oak-dark)) 100%);
+  }
+  .shelf-walnut.no-grain .shelf-surface {
+    background: linear-gradient(180deg, hsl(var(--shelf-walnut)) 0%, hsl(var(--shelf-walnut-dark)) 100%);
+  }
+  .shelf-white.no-grain .shelf-surface {
+    background: linear-gradient(180deg, hsl(var(--shelf-white)) 0%, hsl(var(--shelf-white-dark)) 100%);
+  }
+  .shelf-dark.no-grain .shelf-surface {
+    background: linear-gradient(180deg, hsl(var(--shelf-dark)) 0%, hsl(var(--shelf-dark-dark)) 100%);
+  }
+
   /* Decorative elements */
   .bookend {
     @apply flex-shrink-0 relative;

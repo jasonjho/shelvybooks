@@ -2,6 +2,13 @@ export type BookStatus = 'reading' | 'want-to-read' | 'read';
 
 export type ShelfSkin = 'oak' | 'walnut' | 'white' | 'dark';
 
+export interface ShelfSettings {
+  showPlant: boolean;
+  showBookends: boolean;
+  showAmbientLight: boolean;
+  showWoodGrain: boolean;
+}
+
 export interface Book {
   id: string;
   title: string;

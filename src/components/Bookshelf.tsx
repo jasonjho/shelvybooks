@@ -1,10 +1,11 @@
-import { Book, BookStatus, ShelfSkin } from '@/types/book';
+import { Book, BookStatus, ShelfSkin, ShelfSettings } from '@/types/book';
 import { BookSpine } from './BookSpine';
 import { cn } from '@/lib/utils';
 
 interface BookshelfProps {
   books: Book[];
   skin: ShelfSkin;
+  settings: ShelfSettings;
   onMoveBook: (id: string, status: BookStatus) => void;
   onRemoveBook: (id: string) => void;
 }
@@ -22,20 +23,32 @@ function PlantDecor() {
   );
 }
 
-export function Bookshelf({ books, skin, onMoveBook, onRemoveBook }: BookshelfProps) {
+export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: BookshelfProps) {
   const booksPerRow = 8;
   const rows: (Book | 'bookend-left' | 'bookend-right' | 'plant')[][] = [];
   
   for (let i = 0; i < books.length; i += booksPerRow) {
     const rowBooks = books.slice(i, i + booksPerRow);
-    // Add decorative elements
-    if (i === 0 && rowBooks.length > 0) {
-      rows.push(['bookend-left', ...rowBooks, 'plant']);
-    } else if (rowBooks.length > 0) {
-      rows.push(['bookend-left', ...rowBooks, 'bookend-right']);
-    } else {
-      rows.push(rowBooks);
+    const rowItems: (Book | 'bookend-left' | 'bookend-right' | 'plant')[] = [];
+    
+    // Add left bookend if enabled
+    if (settings.showBookends && rowBooks.length > 0) {
+      rowItems.push('bookend-left');
     }
+    
+    // Add books
+    rowItems.push(...rowBooks);
+    
+    // Add right decoration (plant or bookend)
+    if (rowBooks.length > 0) {
+      if (i === 0 && settings.showPlant) {
+        rowItems.push('plant');
+      } else if (settings.showBookends) {
+        rowItems.push('bookend-right');
+      }
+    }
+    
+    rows.push(rowItems);
   }
 
   // Ensure at least one empty row
@@ -44,13 +57,14 @@ export function Bookshelf({ books, skin, onMoveBook, onRemoveBook }: BookshelfPr
   }
 
   const skinClass = `skin-${skin}`;
+  const grainClass = settings.showWoodGrain ? '' : 'no-grain';
 
   return (
-    <div className={cn('bookcase p-4', skinClass)}>
+    <div className={cn('bookcase p-4', skinClass, grainClass)}>
       {rows.map((row, rowIndex) => (
         <div
           key={rowIndex}
-          className={cn('shelf-row', `shelf-${skin}`)}
+          className={cn('shelf-row', `shelf-${skin}`, grainClass)}
         >
           {/* Shelf shadow */}
           <div className="shelf-shadow" />
