@@ -18,13 +18,23 @@ export default function Index() {
   const { shelfSkin, setShelfSkin, addBook, removeBook, moveBook, getBooksByStatus } = useBooks();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen office-wall">
+      {/* Ambient top light */}
+      <div 
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at center top, hsla(45, 70%, 75%, 0.25) 0%, transparent 70%)',
+        }}
+      />
+      
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="relative border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-20">
         <div className="container py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Library className="w-7 h-7 text-primary" />
-            <h1 className="font-display text-2xl font-semibold text-foreground">
+            <div className="p-2 rounded-lg bg-primary/20 backdrop-blur-sm">
+              <Library className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <h1 className="font-display text-2xl font-semibold text-white drop-shadow-lg">
               My Bookshelf
             </h1>
           </div>
@@ -33,15 +43,15 @@ export default function Index() {
       </header>
 
       {/* Main Content */}
-      <main className="container py-8">
+      <main className="container py-8 relative z-10">
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BookStatus)}>
           <div className="flex items-center justify-between mb-6">
-            <TabsList className="bg-secondary/50">
+            <TabsList className="bg-black/30 backdrop-blur-sm border border-white/10">
               {tabs.map((tab) => (
                 <TabsTrigger
                   key={tab.id}
                   value={tab.id}
-                  className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="gap-1.5 text-white/70 data-[state=active]:bg-white/20 data-[state=active]:text-white"
                 >
                   {tab.icon}
                   <span className="hidden sm:inline">{tab.label}</span>
@@ -68,10 +78,10 @@ export default function Index() {
         </Tabs>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t mt-auto py-6">
-        <div className="container text-center text-sm text-muted-foreground">
-          <p>Right-click a book to move it between shelves or remove it</p>
+      {/* Footer hint */}
+      <footer className="relative z-10 py-6">
+        <div className="container text-center text-sm text-white/50">
+          <p>Right-click a book to move it or remove it from your shelf</p>
         </div>
       </footer>
     </div>

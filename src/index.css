@@ -45,19 +45,30 @@
 
     --radius: 0.5rem;
 
-    /* Shelf colors */
-    --shelf-oak: 28 45% 45%;
-    --shelf-oak-dark: 28 50% 32%;
-    --shelf-walnut: 20 40% 28%;
-    --shelf-walnut-dark: 20 45% 18%;
-    --shelf-white: 30 15% 92%;
-    --shelf-white-dark: 30 10% 78%;
-    --shelf-dark: 220 15% 18%;
-    --shelf-dark-dark: 220 18% 10%;
+    /* Office wall colors */
+    --wall: 35 25% 35%;
+    --wall-light: 35 20% 45%;
+
+    /* Shelf colors - richer wood tones */
+    --shelf-oak: 28 55% 42%;
+    --shelf-oak-dark: 28 60% 28%;
+    --shelf-oak-grain: 28 45% 35%;
+    --shelf-walnut: 18 50% 25%;
+    --shelf-walnut-dark: 18 55% 15%;
+    --shelf-walnut-grain: 18 40% 20%;
+    --shelf-white: 30 15% 88%;
+    --shelf-white-dark: 30 10% 75%;
+    --shelf-white-grain: 30 8% 82%;
+    --shelf-dark: 220 20% 15%;
+    --shelf-dark-dark: 220 25% 8%;
+    --shelf-dark-grain: 220 15% 12%;
 
     /* Book shadow */
-    --book-shadow: 0 4px 12px -2px hsl(24 10% 15% / 0.25);
-    --book-shadow-hover: 0 8px 20px -4px hsl(24 10% 15% / 0.35);
+    --book-shadow: 0 4px 12px -2px hsl(24 30% 10% / 0.4);
+    --book-shadow-hover: 0 12px 24px -4px hsl(24 30% 10% / 0.5);
+
+    /* Ambient lighting */
+    --ambient-glow: radial-gradient(ellipse 80% 50% at 50% 0%, hsl(45 60% 70% / 0.15), transparent);
 
     /* Sidebar defaults */
     --sidebar-background: 0 0% 98%;
@@ -125,57 +136,255 @@
 }
 
 @layer components {
+  /* Office environment */
+  .office-wall {
+    background: 
+      linear-gradient(180deg, hsl(var(--wall-light)) 0%, hsl(var(--wall)) 100%);
+    position: relative;
+  }
+
+  .office-wall::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        transparent 100px,
+        hsl(var(--wall-light) / 0.1) 100px,
+        hsl(var(--wall-light) / 0.1) 101px
+      ),
+      var(--ambient-glow);
+    pointer-events: none;
+  }
+
+  /* Bookcase frame */
+  .bookcase {
+    @apply relative;
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-oak-dark)) 0%, 
+      hsl(var(--shelf-oak)) 2%, 
+      hsl(var(--shelf-oak)) 98%, 
+      hsl(var(--shelf-oak-dark)) 100%
+    );
+    border: 12px solid hsl(var(--shelf-oak-dark));
+    border-radius: 4px;
+    box-shadow: 
+      inset 0 0 30px hsl(24 30% 10% / 0.3),
+      0 10px 40px -10px hsl(24 30% 10% / 0.6),
+      0 0 0 1px hsl(var(--shelf-oak-grain));
+  }
+
+  .bookcase.skin-walnut {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-walnut-dark)) 0%, 
+      hsl(var(--shelf-walnut)) 2%, 
+      hsl(var(--shelf-walnut)) 98%, 
+      hsl(var(--shelf-walnut-dark)) 100%
+    );
+    border-color: hsl(var(--shelf-walnut-dark));
+    box-shadow: 
+      inset 0 0 30px hsl(24 30% 5% / 0.4),
+      0 10px 40px -10px hsl(24 30% 5% / 0.7),
+      0 0 0 1px hsl(var(--shelf-walnut-grain));
+  }
+
+  .bookcase.skin-white {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-white-dark)) 0%, 
+      hsl(var(--shelf-white)) 2%, 
+      hsl(var(--shelf-white)) 98%, 
+      hsl(var(--shelf-white-dark)) 100%
+    );
+    border-color: hsl(var(--shelf-white-dark));
+    box-shadow: 
+      inset 0 0 30px hsl(24 10% 50% / 0.15),
+      0 10px 40px -10px hsl(24 10% 30% / 0.3),
+      0 0 0 1px hsl(var(--shelf-white-grain));
+  }
+
+  .bookcase.skin-dark {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-dark-dark)) 0%, 
+      hsl(var(--shelf-dark)) 2%, 
+      hsl(var(--shelf-dark)) 98%, 
+      hsl(var(--shelf-dark-dark)) 100%
+    );
+    border-color: hsl(var(--shelf-dark-dark));
+    box-shadow: 
+      inset 0 0 30px hsl(220 30% 5% / 0.5),
+      0 10px 40px -10px hsl(220 30% 5% / 0.8),
+      0 0 0 1px hsl(var(--shelf-dark-grain));
+  }
+
   .book-spine {
     @apply relative transition-all duration-300 ease-out cursor-pointer;
     transform-style: preserve-3d;
   }
 
   .book-spine:hover {
-    transform: translateY(-8px) rotateY(-5deg);
+    transform: translateY(-12px) rotateY(-8deg) rotateX(2deg);
+    z-index: 10;
+  }
+
+  .book-cover {
+    @apply relative overflow-hidden;
+    border-radius: 2px 4px 4px 2px;
+    box-shadow: 
+      var(--book-shadow),
+      inset -2px 0 4px hsl(24 30% 10% / 0.2);
+  }
+
+  .book-spine:hover .book-cover {
     box-shadow: var(--book-shadow-hover);
   }
 
-  .shelf-row {
-    @apply relative flex items-end gap-1 px-4 pb-1;
-    min-height: 180px;
+  /* Book spine edge - 3D effect */
+  .book-edge {
+    @apply absolute inset-y-0 left-0 w-2;
+    background: linear-gradient(90deg, 
+      hsl(24 20% 20% / 0.5) 0%, 
+      hsl(24 20% 40% / 0.2) 50%,
+      transparent 100%
+    );
   }
 
+  /* Shelf row */
+  .shelf-row {
+    @apply relative flex items-end gap-2 px-6 pb-4;
+    min-height: 160px;
+  }
+
+  /* Wood grain shelf surface */
   .shelf-surface {
-    @apply absolute bottom-0 left-0 right-0 h-4 rounded-sm;
-    box-shadow: 0 4px 8px -2px hsl(24 10% 15% / 0.3);
+    @apply absolute bottom-0 left-0 right-0 h-5;
+    border-radius: 0 0 2px 2px;
   }
 
   .shelf-front {
-    @apply absolute -bottom-3 left-0 right-0 h-3;
+    @apply absolute -bottom-3 left-0 right-0 h-4;
+    border-radius: 0 0 3px 3px;
   }
 
-  /* Shelf skin variants */
+  /* Shelf shadow under books */
+  .shelf-shadow {
+    @apply absolute bottom-4 left-6 right-6 h-2;
+    background: linear-gradient(180deg, hsl(24 30% 10% / 0.2) 0%, transparent 100%);
+    filter: blur(2px);
+  }
+
+  /* Shelf skin variants with wood grain */
   .shelf-oak .shelf-surface {
-    background: linear-gradient(180deg, hsl(var(--shelf-oak)) 0%, hsl(var(--shelf-oak-dark)) 100%);
+    background: 
+      repeating-linear-gradient(
+        90deg,
+        hsl(var(--shelf-oak)) 0px,
+        hsl(var(--shelf-oak-grain)) 2px,
+        hsl(var(--shelf-oak)) 4px
+      ),
+      linear-gradient(180deg, hsl(var(--shelf-oak)) 0%, hsl(var(--shelf-oak-dark)) 100%);
+    box-shadow: 0 2px 8px hsl(24 30% 10% / 0.3);
   }
   .shelf-oak .shelf-front {
-    background: hsl(var(--shelf-oak-dark));
+    background: linear-gradient(180deg, hsl(var(--shelf-oak-dark)) 0%, hsl(28 60% 22%) 100%);
   }
 
   .shelf-walnut .shelf-surface {
-    background: linear-gradient(180deg, hsl(var(--shelf-walnut)) 0%, hsl(var(--shelf-walnut-dark)) 100%);
+    background: 
+      repeating-linear-gradient(
+        90deg,
+        hsl(var(--shelf-walnut)) 0px,
+        hsl(var(--shelf-walnut-grain)) 2px,
+        hsl(var(--shelf-walnut)) 4px
+      ),
+      linear-gradient(180deg, hsl(var(--shelf-walnut)) 0%, hsl(var(--shelf-walnut-dark)) 100%);
+    box-shadow: 0 2px 8px hsl(24 30% 5% / 0.4);
   }
   .shelf-walnut .shelf-front {
-    background: hsl(var(--shelf-walnut-dark));
+    background: linear-gradient(180deg, hsl(var(--shelf-walnut-dark)) 0%, hsl(18 55% 10%) 100%);
   }
 
   .shelf-white .shelf-surface {
-    background: linear-gradient(180deg, hsl(var(--shelf-white)) 0%, hsl(var(--shelf-white-dark)) 100%);
+    background: 
+      repeating-linear-gradient(
+        90deg,
+        hsl(var(--shelf-white)) 0px,
+        hsl(var(--shelf-white-grain)) 3px,
+        hsl(var(--shelf-white)) 6px
+      ),
+      linear-gradient(180deg, hsl(var(--shelf-white)) 0%, hsl(var(--shelf-white-dark)) 100%);
+    box-shadow: 0 2px 8px hsl(24 10% 30% / 0.2);
   }
   .shelf-white .shelf-front {
-    background: hsl(var(--shelf-white-dark));
+    background: linear-gradient(180deg, hsl(var(--shelf-white-dark)) 0%, hsl(30 8% 68%) 100%);
   }
 
   .shelf-dark .shelf-surface {
-    background: linear-gradient(180deg, hsl(var(--shelf-dark)) 0%, hsl(var(--shelf-dark-dark)) 100%);
+    background: 
+      repeating-linear-gradient(
+        90deg,
+        hsl(var(--shelf-dark)) 0px,
+        hsl(var(--shelf-dark-grain)) 2px,
+        hsl(var(--shelf-dark)) 4px
+      ),
+      linear-gradient(180deg, hsl(var(--shelf-dark)) 0%, hsl(var(--shelf-dark-dark)) 100%);
+    box-shadow: 0 2px 8px hsl(220 30% 5% / 0.5);
   }
   .shelf-dark .shelf-front {
-    background: hsl(var(--shelf-dark-dark));
+    background: linear-gradient(180deg, hsl(var(--shelf-dark-dark)) 0%, hsl(220 25% 5%) 100%);
+  }
+
+  /* Decorative elements */
+  .bookend {
+    @apply flex-shrink-0 relative;
+    width: 20px;
+    height: 80px;
+    background: linear-gradient(135deg, hsl(35 30% 45%) 0%, hsl(35 35% 30%) 100%);
+    border-radius: 2px;
+    box-shadow: 2px 2px 6px hsl(24 30% 10% / 0.3);
+  }
+
+  .plant-pot {
+    @apply flex-shrink-0 relative flex flex-col items-center;
+  }
+
+  .plant-leaves {
+    width: 40px;
+    height: 35px;
+    background: radial-gradient(ellipse at bottom, hsl(140 45% 35%) 0%, hsl(140 50% 25%) 100%);
+    border-radius: 50% 50% 45% 45%;
+    position: relative;
+  }
+
+  .plant-leaves::before,
+  .plant-leaves::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 25px;
+    background: hsl(140 40% 30%);
+    border-radius: 50%;
+  }
+
+  .plant-leaves::before {
+    left: -6px;
+    top: 8px;
+    transform: rotate(-20deg);
+  }
+
+  .plant-leaves::after {
+    right: -6px;
+    top: 8px;
+    transform: rotate(20deg);
+  }
+
+  .pot {
+    width: 30px;
+    height: 25px;
+    background: linear-gradient(180deg, hsl(20 60% 45%) 0%, hsl(20 65% 35%) 100%);
+    border-radius: 3px 3px 6px 6px;
+    margin-top: -5px;
   }
 }
 
