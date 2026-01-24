@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Bookshelf } from '@/components/Bookshelf';
 import { SkinPicker } from '@/components/SkinPicker';
+import { SettingsPanel } from '@/components/SettingsPanel';
 import { AddBookDialog } from '@/components/AddBookDialog';
 import { useBooks } from '@/hooks/useBooks';
 import { BookStatus } from '@/types/book';
@@ -15,17 +16,28 @@ const tabs: { id: BookStatus; label: string; icon: React.ReactNode }[] = [
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<BookStatus>('reading');
-  const { shelfSkin, setShelfSkin, addBook, removeBook, moveBook, getBooksByStatus } = useBooks();
+  const { 
+    shelfSkin, 
+    setShelfSkin, 
+    settings,
+    updateSettings,
+    addBook, 
+    removeBook, 
+    moveBook, 
+    getBooksByStatus 
+  } = useBooks();
 
   return (
     <div className="min-h-screen office-wall">
       {/* Ambient top light */}
-      <div 
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse at center top, hsla(45, 70%, 75%, 0.25) 0%, transparent 70%)',
-        }}
-      />
+      {settings.showAmbientLight && (
+        <div 
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] pointer-events-none transition-opacity duration-500"
+          style={{
+            background: 'radial-gradient(ellipse at center top, hsla(45, 70%, 75%, 0.3) 0%, hsla(35, 60%, 60%, 0.1) 40%, transparent 70%)',
+          }}
+        />
+      )}
       
       {/* Header */}
       <header className="relative border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-20">
@@ -38,7 +50,10 @@ export default function Index() {
               My Bookshelf
             </h1>
           </div>
-          <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
+          <div className="flex items-center gap-3">
+            <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
+            <SettingsPanel settings={settings} onSettingsChange={updateSettings} />
+          </div>
         </div>
       </header>
 
@@ -70,6 +85,7 @@ export default function Index() {
               <Bookshelf
                 books={getBooksByStatus(tab.id)}
                 skin={shelfSkin}
+                settings={settings}
                 onMoveBook={moveBook}
                 onRemoveBook={removeBook}
               />

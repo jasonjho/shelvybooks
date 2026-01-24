@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Book, BookStatus, ShelfSkin } from '@/types/book';
+import { Book, BookStatus, ShelfSkin, ShelfSettings } from '@/types/book';
 
 const STORAGE_KEY = 'bookshelf-books';
 const SKIN_KEY = 'bookshelf-skin';
+const SETTINGS_KEY = 'bookshelf-settings';
+
+const defaultSettings: ShelfSettings = {
+  showPlant: true,
+  showBookends: true,
+  showAmbientLight: true,
+  showWoodGrain: true,
+};
 
 export function useBooks() {
   const [books, setBooks] = useState<Book[]>(() => {
@@ -15,6 +23,11 @@ export function useBooks() {
     return (stored as ShelfSkin) || 'oak';
   });
 
+  const [settings, setSettings] = useState<ShelfSettings>(() => {
+    const stored = localStorage.getItem(SETTINGS_KEY);
+    return stored ? { ...defaultSettings, ...JSON.parse(stored) } : defaultSettings;
+  });
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
   }, [books]);
@@ -22,6 +35,10 @@ export function useBooks() {
   useEffect(() => {
     localStorage.setItem(SKIN_KEY, shelfSkin);
   }, [shelfSkin]);
+
+  useEffect(() => {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  }, [settings]);
 
   const addBook = (book: Omit<Book, 'id'>) => {
     const newBook: Book = {
@@ -45,10 +62,16 @@ export function useBooks() {
     return books.filter((book) => book.status === status);
   };
 
+  const updateSettings = (newSettings: Partial<ShelfSettings>) => {
+    setSettings((prev) => ({ ...prev, ...newSettings }));
+  };
+
   return {
     books,
     shelfSkin,
     setShelfSkin,
+    settings,
+    updateSettings,
     addBook,
     removeBook,
     moveBook,
