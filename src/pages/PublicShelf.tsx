@@ -8,7 +8,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { Book, ShelfSettings as ShelfSettingsType, BookStatus } from '@/types/book';
-import { Library, Loader2, ArrowLeft, Lock } from 'lucide-react';
+import { Library, Loader2, ArrowLeft, Lock, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ShelfOwner {
@@ -162,12 +162,19 @@ export default function PublicShelf() {
             {books.length} book{books.length !== 1 ? 's' : ''} on the shelf
           </p>
           {!user && (
-            <p className="text-sm text-muted-foreground mt-4 max-w-md mx-auto">
-              <span className="text-amber-600 dark:text-amber-500 font-medium">Track</span> your reading journey, {' '}
-              <span className="text-amber-600 dark:text-amber-500 font-medium">organize</span> by status, and {' '}
-              <span className="text-amber-600 dark:text-amber-500 font-medium">discover</span> new favorites.{' '}
-              <Link to="/" className="text-primary hover:underline font-medium">Sign in</Link> to build your own shelf.
-            </p>
+            <div className="mt-6 max-w-md mx-auto">
+              <p className="text-sm text-muted-foreground mb-4">
+                <span className="text-amber-600 dark:text-amber-500 font-medium">Track</span> your reading journey, {' '}
+                <span className="text-amber-600 dark:text-amber-500 font-medium">organize</span> by status, and {' '}
+                <span className="text-amber-600 dark:text-amber-500 font-medium">discover</span> new favorites.
+              </p>
+              <Link to="/">
+                <Button className="gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md">
+                  <BookOpen className="w-4 h-4" />
+                  Start Your Shelf
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
 
