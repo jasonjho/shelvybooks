@@ -199,6 +199,7 @@
   /* Bookcase frame */
   .bookcase {
     @apply relative;
+    overflow: visible;
     background: linear-gradient(180deg, 
       hsl(var(--shelf-oak-dark)) 0%, 
       hsl(var(--shelf-oak)) 2%, 
