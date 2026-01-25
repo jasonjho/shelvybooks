@@ -440,6 +440,16 @@
     border-radius: 3px 3px 6px 6px;
     margin-top: -5px;
   }
+
+  /* Shelf decoration items */
+  .shelf-decoration {
+    @apply w-full min-w-[70px] max-w-[120px] mx-auto h-full;
+    min-height: 80px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 4px;
+  }
 }
 
 @layer utilities {
