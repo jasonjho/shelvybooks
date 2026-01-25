@@ -78,7 +78,7 @@ export function CollectionCard({
           <div className="flex items-center gap-3">
             <span className="text-2xl">{collection.icon}</span>
             <div>
-              <CardTitle className="text-lg font-display">{collection.name}</CardTitle>
+              <CardTitle className="text-lg font-sans">{collection.name}</CardTitle>
               <CardDescription className="text-sm font-sans">{collection.description}</CardDescription>
             </div>
           </div>
