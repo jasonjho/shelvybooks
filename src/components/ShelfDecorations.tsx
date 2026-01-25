@@ -498,8 +498,8 @@ const OTHER_DECORATION_TYPES: DecorationType[] = [
   'lantern',
 ];
 
-// DEBUG: Show only plants for preview - change back to full list when done
-export const DECORATION_TYPES: DecorationType[] = PLANT_TYPES;
+// Full decoration mix: plants + objects
+export const DECORATION_TYPES: DecorationType[] = [...PLANT_TYPES, ...OTHER_DECORATION_TYPES];
 
 export function ShelfDecoration({ type, seed }: { type: DecorationType; seed: number }) {
   return (
