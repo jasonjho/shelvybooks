@@ -54,6 +54,7 @@ function generateDecorPositions(
   };
 
   // Calculate spacing between decorations based on book count and decoration count
+  // Positions are insertion points BETWEEN books: 1..bookCount+1 (never 0 to avoid "before first book")
   const avgSpacing = Math.max(config.minSpacing, Math.floor(bookCount / (decorationCount + 1)));
   
   // Generate positions with organic spacing
@@ -61,13 +62,13 @@ function generateDecorPositions(
     // Base position: evenly distributed with jitter
     const basePos = Math.floor((i + 1) * avgSpacing);
     const jitter = Math.floor((seededRandom(i * 3 + rowIndex) - 0.5) * 3);
-    let pos = Math.max(1, Math.min(bookCount, basePos + jitter));
+    let pos = Math.max(1, Math.min(bookCount + 1, basePos + jitter));
     
     // Find nearest available position that respects minimum spacing
     let found = false;
     for (let d = 0; d <= bookCount && !found; d++) {
       for (const candidate of [pos + d, pos - d]) {
-        if (candidate < 1 || candidate > bookCount) continue;
+        if (candidate < 1 || candidate > bookCount + 1) continue;
         if (usedPositions.has(candidate)) continue;
         
         // Check minimum spacing from other decorations
@@ -130,7 +131,8 @@ function ShelfRow({
   let decorIndex = 0;
   books.forEach((book, bookIndex) => {
     // Insert decorations before this book if positioned here
-    while (decorIndex < decorPositions.length && decorPositions[decorIndex].position === bookIndex) {
+    // decorPositions use 1-based insertion points (1 == before 2nd book)
+    while (decorIndex < decorPositions.length && decorPositions[decorIndex].position === bookIndex + 1) {
       const dec = decorPositions[decorIndex];
       items.push({ 
         type: 'decoration', 
@@ -200,7 +202,7 @@ function ShelfRow({
       
       {/* Empty shelf message */}
       {!hasBooks && (
-        <div className="flex items-center justify-center w-full h-24 text-amber-100/80 text-sm italic drop-shadow-md">
+        <div className="flex items-center justify-center w-full h-24 text-background/80 text-sm italic drop-shadow-md">
           Add some books to your shelf...
         </div>
       )}
