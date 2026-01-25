@@ -53,7 +53,7 @@ export function ShelfControls({
   const totalBooks = bookCounts.reading + bookCounts['want-to-read'] + bookCounts.read;
 
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-4">
+    <div className="flex flex-wrap items-center gap-3">
       {/* Status Filters */}
       <div className="flex items-center gap-2">
         <Button
@@ -86,8 +86,6 @@ export function ShelfControls({
           );
         })}
       </div>
-
-      <div className="flex-1" />
 
       {/* Sort Dropdown */}
       <DropdownMenu>
