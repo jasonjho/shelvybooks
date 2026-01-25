@@ -12,6 +12,7 @@ const defaultSettings: ShelfSettings = {
   showBookends: true,
   showAmbientLight: true,
   showWoodGrain: true,
+  decorDensity: 'balanced',
 };
 
 export function useBooks() {

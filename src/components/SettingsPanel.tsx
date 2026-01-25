@@ -1,4 +1,4 @@
-import { ShelfSettings } from '@/types/book';
+import { ShelfSettings, DecorDensity } from '@/types/book';
 import {
   Popover,
   PopoverContent,
@@ -8,13 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Settings, Lamp, Trees, BookmarkMinus, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface SettingsPanelProps {
   settings: ShelfSettings;
   onSettingsChange: (settings: Partial<ShelfSettings>) => void;
 }
 
-const settingsConfig = [
+const toggleSettings = [
   {
     key: 'showAmbientLight' as const,
     label: 'Ambient Lighting',
@@ -41,6 +42,12 @@ const settingsConfig = [
   },
 ];
 
+const densityOptions: { value: DecorDensity; label: string; description: string }[] = [
+  { value: 'minimal', label: 'Minimal', description: 'Sparse, clean look' },
+  { value: 'balanced', label: 'Balanced', description: 'Natural arrangement' },
+  { value: 'cozy', label: 'Cozy', description: 'Lush, lived-in feel' },
+];
+
 export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps) {
   return (
     <Popover>
@@ -53,7 +60,7 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
           <Settings className="w-4 h-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72" align="end">
+      <PopoverContent className="w-80" align="end">
         <div className="space-y-4">
           <div className="space-y-1">
             <h4 className="font-display font-medium text-sm">Shelf Customization</h4>
@@ -63,7 +70,7 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
           </div>
           
           <div className="space-y-3">
-            {settingsConfig.map((setting) => (
+            {toggleSettings.map((setting) => (
               <div
                 key={setting.key}
                 className="flex items-center justify-between gap-3"
@@ -94,6 +101,32 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
               </div>
             ))}
           </div>
+
+          {/* Decor Density */}
+          {settings.showPlant && (
+            <div className="space-y-2 pt-2 border-t border-border">
+              <div className="flex items-center gap-2">
+                <Trees className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Decor Density</span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {densityOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => onSettingsChange({ decorDensity: option.value })}
+                    className={cn(
+                      "flex flex-col items-center gap-1 p-2 rounded-md text-xs transition-colors",
+                      settings.decorDensity === option.value
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary/50 hover:bg-secondary text-secondary-foreground"
+                    )}
+                  >
+                    <span className="font-medium">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </PopoverContent>
     </Popover>
