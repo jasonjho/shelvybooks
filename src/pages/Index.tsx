@@ -7,6 +7,7 @@ import { AddBookDialog } from '@/components/AddBookDialog';
 import { ShareShelfDialog } from '@/components/ShareShelfDialog';
 import { AuthButton } from '@/components/AuthButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { useBooks } from '@/hooks/useBooks';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookStatus, SortOption, Book } from '@/types/book';
@@ -159,36 +160,51 @@ export default function Index() {
         {/* Shelf Controls & Bookshelf */}
         {!authLoading && !booksLoading && (
           <>
-            <div className="flex items-center justify-between mb-6">
-              <ShelfControls
-                activeFilters={activeFilters}
-                onFilterChange={setActiveFilters}
-                sortOption={sortOption}
-                onSortChange={setSortOption}
-                onShuffle={handleShuffle}
-                bookCounts={bookCounts}
+            {/* Empty shelf - show collection suggestions prominently */}
+            {user && allBooks.length === 0 ? (
+              <DiscoverCollections 
+                onAddBook={addBook} 
+                isEmptyShelf={true} 
               />
-              
-              {user && (
-                <div className="flex items-center gap-2">
-                  <ShareShelfDialog />
-                  <AddBookDialog onAddBook={addBook} defaultStatus="reading" />
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-6">
+                  <ShelfControls
+                    activeFilters={activeFilters}
+                    onFilterChange={setActiveFilters}
+                    sortOption={sortOption}
+                    onSortChange={setSortOption}
+                    onShuffle={handleShuffle}
+                    bookCounts={bookCounts}
+                  />
+                  
+                  {user && (
+                    <div className="flex items-center gap-2">
+                      <ShareShelfDialog />
+                      <AddBookDialog onAddBook={addBook} defaultStatus="reading" />
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div className="flex items-center justify-end mb-6">
-              <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
-            </div>
+                {/* Discover collections (collapsible) - only for logged in users with books */}
+                {user && allBooks.length > 0 && (
+                  <DiscoverCollections onAddBook={addBook} />
+                )}
 
-            <Bookshelf
-              books={sortedBooks}
-              skin={shelfSkin}
-              settings={settings}
-              activeFilters={activeFilters}
-              onMoveBook={user ? moveBook : undefined}
-              onRemoveBook={user ? removeBook : undefined}
-            />
+                <div className="flex items-center justify-end mb-6">
+                  <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
+                </div>
+
+                <Bookshelf
+                  books={sortedBooks}
+                  skin={shelfSkin}
+                  settings={settings}
+                  activeFilters={activeFilters}
+                  onMoveBook={user ? moveBook : undefined}
+                  onRemoveBook={user ? removeBook : undefined}
+                />
+              </>
+            )}
           </>
         )}
       </main>
