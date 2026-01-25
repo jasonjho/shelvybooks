@@ -16,7 +16,7 @@ interface BookDetailDialogProps {
 }
 
 export function BookDetailDialog({ book, open, onOpenChange }: BookDetailDialogProps) {
-  const { user, signInWithGoogle } = useAuth();
+  const { user } = useAuth();
   
   if (!book) return null;
 
@@ -64,12 +64,9 @@ export function BookDetailDialog({ book, open, onOpenChange }: BookDetailDialogP
         {/* Interactions - only for real books */}
         {isDemoBook ? (
           <div className="text-center py-4 border-t border-border">
-            <p className="text-muted-foreground text-sm mb-3">
+            <p className="text-muted-foreground text-sm">
               Sign in to like books and leave comments
             </p>
-            <Button onClick={signInWithGoogle} size="sm">
-              Sign in with Google
-            </Button>
           </div>
         ) : (
           <BookInteractions bookId={book.id} bookTitle={book.title} />

@@ -20,7 +20,7 @@ const tabs: { id: BookStatus; label: string; icon: React.ReactNode }[] = [
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<BookStatus>('reading');
-  const { user, loading: authLoading, signInWithGoogle } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { 
     loading: booksLoading,
     shelfSkin, 
@@ -110,14 +110,7 @@ export default function Index() {
             <div className="text-center py-4 mb-4">
               <p className="text-foreground text-lg mb-1">Welcome to Shelfie!</p>
               <p className="text-muted-foreground text-sm">
-                Here's a preview —{' '}
-                <button
-                  onClick={signInWithGoogle}
-                  className="text-primary hover:underline"
-                >
-                  sign in
-                </button>
-                {' '}to build your own shelf.
+                Here's a preview — use the <span className="text-primary font-medium">Sign in</span> button above to build your own shelf.
               </p>
             </div>
           )}
