@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, forwardRef, type ReactNode } from 'react';
 
 export type DecorationType = 
   | 'trailing-plant' 
@@ -360,12 +360,13 @@ function VaseDecor({ seed }: { seed: number }) {
   );
 }
 
-function ClockDecor({ seed }: { seed: number }) {
+const ClockDecor = forwardRef<HTMLDivElement, { seed: number }>(
+  ({ seed }, ref) => {
   const frameColors = ['hsl(35,40%,30%)', 'hsl(220,10%,25%)', 'hsl(45,60%,45%)'];
   const frame = frameColors[seed % frameColors.length];
   
   return (
-    <div className="flex flex-col items-center">
+    <div ref={ref} className="flex flex-col items-center">
       <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-md"
         style={{ background: frame }}>
         <div className="w-6 h-6 rounded-full bg-[hsl(45,30%,95%)] relative">
@@ -380,7 +381,9 @@ function ClockDecor({ seed }: { seed: number }) {
       <div className="w-3 h-2 bg-gradient-to-b from-[hsl(35,35%,35%)] to-[hsl(35,40%,25%)] rounded-b-sm" />
     </div>
   );
-}
+});
+
+ClockDecor.displayName = 'ClockDecor';
 
 function BooksStackDecor({ seed }: { seed: number }) {
   const bookColors = [
@@ -429,7 +432,9 @@ function LanternDecor({ seed }: { seed: number }) {
   );
 }
 
-function Decoration({ type, seed }: DecorationProps) {
+const Decoration = forwardRef<HTMLDivElement, DecorationProps>(
+  ({ type, seed }, ref) => {
+  const content = (() => {
   switch (type) {
     case 'trailing-plant':
       return <TrailingPlantDecor seed={seed} />;
@@ -466,7 +471,12 @@ function Decoration({ type, seed }: DecorationProps) {
     default:
       return null;
   }
-}
+  })();
+  
+  return <div ref={ref}>{content}</div>;
+});
+
+Decoration.displayName = 'Decoration';
 
 export interface ShelfDecorationItem {
   type: DecorationType;
