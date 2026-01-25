@@ -154,6 +154,9 @@ export default function Index() {
         {!authLoading && !user && (
           <div className="text-center py-4 mb-4">
             <p className="text-foreground text-lg mb-1">Welcome to ShelvyBooks!</p>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto mb-2">
+              Track your reading journey, organize books by status, and discover new favorites from curated collections.
+            </p>
             <p className="text-muted-foreground text-sm">
               Here's a preview — use the <span className="text-primary font-medium">Sign in</span> button above to build your own shelf.
             </p>
