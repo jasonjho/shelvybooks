@@ -803,6 +803,90 @@
     opacity: 0.6;
     filter: grayscale(0.4);
   }
+
+  /* Mobile bookshelf styles */
+  .mobile-bookcase {
+    @apply p-4;
+  }
+
+  .mobile-shelf-list {
+    @apply flex flex-col gap-4;
+  }
+
+  .mini-shelf {
+    @apply relative;
+    height: 140px;
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-oak-dark) / 0.3) 0%, 
+      transparent 30%
+    );
+    border-radius: 4px;
+  }
+
+  .mini-shelf-back {
+    @apply absolute inset-0;
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-oak-dark) / 0.2) 0%, 
+      hsl(var(--shelf-oak) / 0.1) 50%,
+      transparent 100%
+    );
+    border-radius: 4px 4px 0 0;
+  }
+
+  .mini-shelf-content {
+    @apply absolute bottom-6 left-1/2 -translate-x-1/2;
+    z-index: 2;
+  }
+
+  .mini-shelf-surface {
+    @apply absolute bottom-4 left-0 right-0;
+    height: 8px;
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-oak)) 0%, 
+      hsl(var(--shelf-oak-dark)) 100%
+    );
+    box-shadow: 
+      0 2px 4px hsl(var(--shelf-oak-dark) / 0.3),
+      inset 0 1px 0 hsl(var(--shelf-oak-light) / 0.3);
+  }
+
+  .mini-shelf-front {
+    @apply absolute bottom-0 left-0 right-0;
+    height: 16px;
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-oak)) 0%, 
+      hsl(var(--shelf-oak-dark)) 100%
+    );
+    border-radius: 0 0 4px 4px;
+    box-shadow: 
+      0 4px 8px hsl(var(--shelf-oak-dark) / 0.4),
+      inset 0 1px 0 hsl(var(--shelf-oak-light) / 0.2);
+  }
+
+  /* Skin variants for mini-shelf */
+  .skin-walnut .mini-shelf-surface,
+  .skin-walnut .mini-shelf-front {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-walnut)) 0%, 
+      hsl(var(--shelf-walnut-dark)) 100%
+    );
+  }
+
+  .skin-ebony .mini-shelf-surface,
+  .skin-ebony .mini-shelf-front {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-ebony)) 0%, 
+      hsl(var(--shelf-ebony-dark)) 100%
+    );
+  }
+
+  .skin-white .mini-shelf-surface,
+  .skin-white .mini-shelf-front {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-white)) 0%, 
+      hsl(var(--shelf-white-dark)) 100%
+    );
+  }
 }
 
 @layer utilities {
