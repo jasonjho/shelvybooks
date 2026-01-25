@@ -205,7 +205,7 @@ function ShelfRow({
       
       {/* Empty shelf message */}
       {!hasBooks && (
-        <div className="flex items-center justify-center w-full h-24 text-muted-foreground/60 text-sm italic">
+        <div className="flex items-center justify-center w-full h-24 text-amber-100/80 text-sm italic drop-shadow-md">
           Add some books to your shelf...
         </div>
       )}
