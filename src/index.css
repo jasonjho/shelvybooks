@@ -200,6 +200,7 @@
   .bookcase {
     @apply relative;
     overflow: visible;
+    max-width: 100%;
     background: linear-gradient(180deg, 
       hsl(var(--shelf-oak-dark)) 0%, 
       hsl(var(--shelf-oak)) 2%, 
@@ -573,18 +574,20 @@
     @apply relative flex items-end gap-2 px-4 pb-4 pt-12;
     min-height: 160px;
     overflow: visible;
+    max-width: 100%;
   }
 
-  /* Responsive books grid - consistent sizing, clip overflow */
+  /* Responsive books grid - wraps on smaller screens as fallback */
   .books-grid {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 0.5rem;
     align-items: flex-end;
     justify-content: flex-start;
     overflow: visible;
     position: relative;
     z-index: 1;
+    max-width: 100%;
   }
 
   .books-grid > div {
