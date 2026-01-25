@@ -394,42 +394,26 @@
     background: linear-gradient(180deg, hsl(var(--shelf-dark)) 0%, hsl(var(--shelf-dark-dark)) 100%);
   }
 
-  /* Decorative elements - bookends match shelf skin with 3D bevel */
+  /* Decorative elements - bookends use contrasting dark iron/metal */
   .bookend {
     @apply flex-shrink-0 relative;
     width: 20px;
     height: 80px;
     border-radius: 2px;
+    background: linear-gradient(180deg, hsl(220 10% 25%) 0%, hsl(220 12% 18%) 100%);
+    box-shadow: 
+      inset 2px 2px 4px hsl(220 8% 35%),
+      inset -1px -1px 3px hsl(220 15% 12%),
+      2px 2px 8px hsl(0 0% 0% / 0.35);
   }
 
-  /* Bookend skin variants with 3D bevel effect */
-  .skin-oak .bookend {
-    background: hsl(var(--shelf-oak));
-    box-shadow: 
-      inset 2px 2px 3px hsl(var(--shelf-oak-grain)),
-      inset -1px -1px 2px hsl(var(--shelf-oak-dark)),
-      2px 2px 6px hsl(24 30% 10% / 0.3);
-  }
-  .skin-walnut .bookend {
-    background: hsl(var(--shelf-walnut));
-    box-shadow: 
-      inset 2px 2px 3px hsl(25 45% 28%),
-      inset -1px -1px 2px hsl(var(--shelf-walnut-dark)),
-      2px 2px 6px hsl(24 30% 10% / 0.3);
-  }
+  /* Bookend hover effect */
   .skin-white .bookend {
-    background: hsl(var(--shelf-white));
+    background: linear-gradient(180deg, hsl(220 8% 35%) 0%, hsl(220 10% 28%) 100%);
     box-shadow: 
-      inset 2px 2px 3px hsl(220 15% 98%),
-      inset -1px -1px 2px hsl(220 10% 80%),
-      2px 2px 6px hsl(220 10% 50% / 0.2);
-  }
-  .skin-dark .bookend {
-    background: hsl(var(--shelf-dark));
-    box-shadow: 
-      inset 2px 2px 3px hsl(220 15% 18%),
-      inset -1px -1px 2px hsl(var(--shelf-dark-dark)),
-      2px 2px 6px hsl(0 0% 0% / 0.4);
+      inset 2px 2px 4px hsl(220 6% 45%),
+      inset -1px -1px 3px hsl(220 12% 22%),
+      2px 2px 8px hsl(0 0% 0% / 0.25);
   }
 
   .plant-pot {
