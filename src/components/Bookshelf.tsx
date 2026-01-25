@@ -42,18 +42,45 @@ function generateDecorPositions(
     return x - Math.floor(x);
   };
   
-  for (let i = 0; i < decorationCount; i++) {
-    // Distribute decorations with some randomness
-    const basePosition = Math.floor((bookCount / (decorationCount + 1)) * (i + 1));
-    const jitter = Math.floor(seededRandom(i) * 3) - 1; // -1, 0, or 1
-    let position = Math.max(1, Math.min(bookCount, basePosition + jitter));
-    
-    // Avoid placing next to each other
-    while (usedPositions.has(position) || usedPositions.has(position - 1) || usedPositions.has(position + 1)) {
-      position = (position + 1) % (bookCount + 1);
-      if (position === 0) position = 1;
+  // Positions are gaps between books: 0 = before the 1st book, bookCount = after the last book
+  const allPositions = Array.from({ length: bookCount + 1 }, (_, idx) => idx);
+
+  const isAllowed = (pos: number, strictSpacing: boolean) => {
+    if (usedPositions.has(pos)) return false;
+    if (!strictSpacing) return true;
+    // Try to keep at least one gap between decorations when possible
+    return !usedPositions.has(pos - 1) && !usedPositions.has(pos + 1);
+  };
+
+  const pickPositionNear = (preferred: number) => {
+    // Search positions in increasing distance from preferred (bounded, no while loop)
+    const order: number[] = [0];
+    for (let d = 1; d <= bookCount; d++) order.push(d, -d);
+
+    // Pass 1: strict spacing (avoid adjacency)
+    for (const delta of order) {
+      const candidate = preferred + delta;
+      if (candidate < 0 || candidate > bookCount) continue;
+      if (isAllowed(candidate, true)) return candidate;
     }
-    
+    // Pass 2: relaxed (only uniqueness)
+    for (const delta of order) {
+      const candidate = preferred + delta;
+      if (candidate < 0 || candidate > bookCount) continue;
+      if (isAllowed(candidate, false)) return candidate;
+    }
+    return null;
+  };
+
+  for (let i = 0; i < decorationCount; i++) {
+    // Prefer positions distributed across the shelf, with gentle jitter
+    const base = ((bookCount + 1) / (decorationCount + 1)) * (i + 1);
+    const jitter = (seededRandom(i) - 0.5) * 2; // -1..1
+    const preferred = Math.max(0, Math.min(bookCount, Math.round(base + jitter)));
+
+    const position = pickPositionNear(preferred);
+    if (position == null) continue;
+
     usedPositions.add(position);
     decorations.push({
       position,
