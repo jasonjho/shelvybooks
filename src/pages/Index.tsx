@@ -4,9 +4,11 @@ import { Bookshelf } from '@/components/Bookshelf';
 import { SkinPicker } from '@/components/SkinPicker';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { AddBookDialog } from '@/components/AddBookDialog';
+import { AuthButton } from '@/components/AuthButton';
 import { useBooks } from '@/hooks/useBooks';
+import { useAuth } from '@/contexts/AuthContext';
 import { BookStatus } from '@/types/book';
-import { BookOpen, BookMarked, CheckCircle, Library } from 'lucide-react';
+import { BookOpen, BookMarked, CheckCircle, Library, Loader2 } from 'lucide-react';
 
 const tabs: { id: BookStatus; label: string; icon: React.ReactNode }[] = [
   { id: 'reading', label: 'Reading', icon: <BookOpen className="w-4 h-4" /> },
@@ -16,7 +18,9 @@ const tabs: { id: BookStatus; label: string; icon: React.ReactNode }[] = [
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<BookStatus>('reading');
+  const { user, loading: authLoading } = useAuth();
   const { 
+    loading: booksLoading,
     shelfSkin, 
     setShelfSkin, 
     settings,
@@ -53,6 +57,7 @@ export default function Index() {
           <div className="flex items-center gap-3">
             <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
             <SettingsPanel settings={settings} onSettingsChange={updateSettings} />
+            <AuthButton />
           </div>
         </div>
       </header>
@@ -77,10 +82,25 @@ export default function Index() {
               ))}
             </TabsList>
             
-            <AddBookDialog onAddBook={addBook} defaultStatus={activeTab} />
+            {user && <AddBookDialog onAddBook={addBook} defaultStatus={activeTab} />}
           </div>
 
-          {tabs.map((tab) => (
+          {/* Loading state */}
+          {(authLoading || booksLoading) && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-white/50" />
+            </div>
+          )}
+
+          {/* Not signed in message */}
+          {!authLoading && !user && (
+            <div className="text-center py-12">
+              <p className="text-white/70 text-lg mb-2">Welcome to Book Shelfie!</p>
+              <p className="text-white/50">Sign in with Google to save your reading list.</p>
+            </div>
+          )}
+
+          {!authLoading && user && !booksLoading && tabs.map((tab) => (
             <TabsContent key={tab.id} value={tab.id} className="mt-0">
               <Bookshelf
                 books={getBooksByStatus(tab.id)}
