@@ -252,7 +252,13 @@ export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: B
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
 
   return (
-    <div ref={containerRef} className={cn('bookcase p-4 flex flex-col gap-0', skinClass, grainClass)}>
+    <div ref={containerRef} className={cn('bookcase p-4 pt-6 pb-8 flex flex-col gap-0', skinClass, grainClass)}>
+      {/* Decorative trim elements */}
+      <div className="bookcase-crown" />
+      <div className="bookcase-base" />
+      <div className="bookcase-corbel left" />
+      <div className="bookcase-corbel right" />
+      <div className="bookcase-inner-trim" />
       {bookRows.map((rowBooks, rowIndex) => (
         <ShelfRow
           key={rowIndex}
