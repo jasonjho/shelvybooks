@@ -45,9 +45,9 @@
 
     --radius: 0.5rem;
 
-    /* Office wall colors */
-    --wall: 35 25% 35%;
-    --wall-light: 35 20% 45%;
+    /* Office wall colors - soft neutral gray with subtle warmth */
+    --wall: 220 15% 45%;
+    --wall-light: 220 12% 58%;
 
     /* Shelf colors - richer wood tones */
     --shelf-oak: 28 55% 42%;
