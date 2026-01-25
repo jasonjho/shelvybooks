@@ -12,6 +12,7 @@ interface BookSpineProps {
   book: Book;
   onMove?: (id: string, status: BookStatus) => void;
   onRemove?: (id: string) => void;
+  onSelect?: () => void;
   isInteractive?: boolean;
 }
 
@@ -21,7 +22,7 @@ const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode 
   { status: 'read', label: 'Read', icon: <CheckCircle className="w-4 h-4" /> },
 ];
 
-function BookCover({ book }: { book: Book }) {
+function BookCover({ book, onSelect }: { book: Book; onSelect?: () => void }) {
   // Generate Open Library search URL based on title and author
   const openLibraryUrl = book.openLibraryKey 
     ? `https://openlibrary.org${book.openLibraryKey}`
@@ -31,6 +32,7 @@ function BookCover({ book }: { book: Book }) {
     <div className="book-spine group/book relative">
       <div
         className="book-cover w-[70px] h-[105px] cursor-pointer"
+        onClick={onSelect}
         style={{
           backgroundImage: `url(${book.coverUrl})`,
           backgroundSize: 'cover',
@@ -74,16 +76,16 @@ function BookCover({ book }: { book: Book }) {
   );
 }
 
-export function BookSpine({ book, onMove, onRemove, isInteractive = true }: BookSpineProps) {
+export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true }: BookSpineProps) {
   // If not interactive, just render the book without context menu
   if (!isInteractive || !onMove || !onRemove) {
-    return <BookCover book={book} />;
+    return <BookCover book={book} onSelect={onSelect} />;
   }
 
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <BookCover book={book} />
+        <BookCover book={book} onSelect={onSelect} />
       </ContextMenuTrigger>
       
       <ContextMenuContent className="w-48">
