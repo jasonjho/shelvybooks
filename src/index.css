@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Merriweather:wght@400;700;900&family=Pacifico&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@600;700;800&family=Source+Sans+3:wght@300;400;500;600&display=swap');
+/* Fonts loaded via index.html for better performance */
 
 @layer base {
   :root {
