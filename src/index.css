@@ -213,6 +213,146 @@
       0 0 0 1px hsl(var(--shelf-oak-grain));
   }
 
+  /* Crown molding - decorative top trim */
+  .bookcase-crown {
+    @apply absolute -top-3 left-0 right-0 h-4;
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-oak)) 0%,
+      hsl(var(--shelf-oak-dark)) 40%,
+      hsl(var(--shelf-oak)) 60%,
+      hsl(var(--shelf-oak-dark)) 100%
+    );
+    border-radius: 4px 4px 0 0;
+    box-shadow: 
+      0 -2px 4px hsl(24 30% 10% / 0.2),
+      inset 0 2px 2px hsl(45 40% 60% / 0.15);
+  }
+  .bookcase-crown::before {
+    content: '';
+    @apply absolute -top-1 left-2 right-2 h-1.5;
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-oak)) 0%,
+      hsl(var(--shelf-oak-dark)) 100%
+    );
+    border-radius: 3px 3px 0 0;
+  }
+
+  /* Base molding - decorative bottom trim */
+  .bookcase-base {
+    @apply absolute -bottom-4 left-0 right-0 h-5;
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-oak-dark)) 0%,
+      hsl(var(--shelf-oak)) 50%,
+      hsl(var(--shelf-oak-dark)) 100%
+    );
+    border-radius: 0 0 6px 6px;
+    box-shadow: 
+      0 4px 8px hsl(24 30% 10% / 0.4),
+      inset 0 1px 2px hsl(45 40% 60% / 0.1);
+  }
+  .bookcase-base::before {
+    content: '';
+    @apply absolute -bottom-1.5 left-1 right-1 h-2;
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-oak-dark)) 0%,
+      hsl(28 60% 20%) 100%
+    );
+    border-radius: 0 0 8px 8px;
+  }
+
+  /* Decorative corner corbels */
+  .bookcase-corbel {
+    @apply absolute w-4 h-8;
+    background: linear-gradient(90deg, 
+      hsl(var(--shelf-oak-dark)) 0%,
+      hsl(var(--shelf-oak)) 50%,
+      hsl(var(--shelf-oak-dark)) 100%
+    );
+    clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
+    box-shadow: inset 0 0 4px hsl(45 40% 60% / 0.15);
+  }
+  .bookcase-corbel.left {
+    left: 0;
+    top: -12px;
+  }
+  .bookcase-corbel.right {
+    right: 0;
+    top: -12px;
+  }
+
+  /* Inner trim - subtle routed edge effect */
+  .bookcase-inner-trim {
+    @apply absolute pointer-events-none;
+    inset: 4px;
+    border: 2px solid hsl(var(--shelf-oak-grain) / 0.4);
+    border-radius: 2px;
+    box-shadow: inset 0 0 8px hsl(24 30% 10% / 0.1);
+  }
+
+  /* Skin variants for trim elements */
+  .bookcase.skin-walnut .bookcase-crown,
+  .bookcase.skin-walnut .bookcase-base,
+  .bookcase.skin-walnut .bookcase-corbel {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-walnut)) 0%,
+      hsl(var(--shelf-walnut-dark)) 40%,
+      hsl(var(--shelf-walnut)) 60%,
+      hsl(var(--shelf-walnut-dark)) 100%
+    );
+  }
+  .bookcase.skin-walnut .bookcase-crown::before,
+  .bookcase.skin-walnut .bookcase-base::before {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-walnut-dark)) 0%,
+      hsl(18 55% 12%) 100%
+    );
+  }
+  .bookcase.skin-walnut .bookcase-inner-trim {
+    border-color: hsl(var(--shelf-walnut-grain) / 0.4);
+  }
+
+  .bookcase.skin-white .bookcase-crown,
+  .bookcase.skin-white .bookcase-base,
+  .bookcase.skin-white .bookcase-corbel {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-white)) 0%,
+      hsl(var(--shelf-white-dark)) 40%,
+      hsl(var(--shelf-white)) 60%,
+      hsl(var(--shelf-white-dark)) 100%
+    );
+  }
+  .bookcase.skin-white .bookcase-crown::before,
+  .bookcase.skin-white .bookcase-base::before {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-white-dark)) 0%,
+      hsl(30 8% 65%) 100%
+    );
+  }
+  .bookcase.skin-white .bookcase-inner-trim {
+    border-color: hsl(var(--shelf-white-grain) / 0.5);
+  }
+
+  .bookcase.skin-dark .bookcase-crown,
+  .bookcase.skin-dark .bookcase-base,
+  .bookcase.skin-dark .bookcase-corbel {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-dark)) 0%,
+      hsl(var(--shelf-dark-dark)) 40%,
+      hsl(var(--shelf-dark)) 60%,
+      hsl(var(--shelf-dark-dark)) 100%
+    );
+  }
+  .bookcase.skin-dark .bookcase-crown::before,
+  .bookcase.skin-dark .bookcase-base::before {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-dark-dark)) 0%,
+      hsl(220 25% 5%) 100%
+    );
+  }
+  .bookcase.skin-dark .bookcase-inner-trim {
+    border-color: hsl(var(--shelf-dark-grain) / 0.4);
+  }
+
   .bookcase.skin-walnut {
     background: linear-gradient(180deg, 
       hsl(var(--shelf-walnut-dark)) 0%, 
