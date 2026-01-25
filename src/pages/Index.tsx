@@ -5,6 +5,7 @@ import { SkinPicker } from '@/components/SkinPicker';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { AddBookDialog } from '@/components/AddBookDialog';
 import { AuthButton } from '@/components/AuthButton';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useBooks } from '@/hooks/useBooks';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookStatus } from '@/types/book';
@@ -66,7 +67,8 @@ export default function Index() {
               Book Shelfie
             </h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
             <SettingsPanel settings={settings} onSettingsChange={updateSettings} />
             <AuthButton />

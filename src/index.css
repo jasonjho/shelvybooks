@@ -110,6 +110,10 @@
     --input: 24 15% 25%;
     --ring: 152 40% 45%;
 
+    /* Dark mode wall colors */
+    --wall: 24 15% 12%;
+    --wall-light: 24 12% 16%;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -162,6 +166,24 @@
       linear-gradient(135deg, hsl(0 0% 98%) 25%, hsl(0 0% 96%) 50%, hsl(0 0% 98%) 75%);
     background-size: 20px 20px, auto, auto;
     pointer-events: none;
+  }
+
+  /* Dark mode texture */
+  .dark .office-wall::before {
+    background: 
+      /* Subtle dot pattern - darker */
+      radial-gradient(circle at 1px 1px, hsl(0 0% 25% / 0.3) 1px, transparent 1px),
+      /* Soft vertical lines - darker */
+      repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        transparent 80px,
+        hsl(0 0% 20% / 0.2) 80px,
+        hsl(0 0% 20% / 0.2) 81px
+      ),
+      /* Subtle gradient for depth */
+      linear-gradient(135deg, hsl(24 15% 14%) 25%, hsl(24 15% 11%) 50%, hsl(24 15% 14%) 75%);
+    background-size: 20px 20px, auto, auto;
   }
 
   /* Bookcase frame */
