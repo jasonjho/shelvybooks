@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Book, BookStatus, ShelfSkin, ShelfSettings } from '@/types/book';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
-const STORAGE_KEY = 'bookshelf-books';
 const SKIN_KEY = 'bookshelf-skin';
 const SETTINGS_KEY = 'bookshelf-settings';
 
@@ -13,10 +15,10 @@ const defaultSettings: ShelfSettings = {
 };
 
 export function useBooks() {
-  const [books, setBooks] = useState<Book[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  });
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [shelfSkin, setShelfSkin] = useState<ShelfSkin>(() => {
     const stored = localStorage.getItem(SKIN_KEY);
@@ -28,10 +30,48 @@ export function useBooks() {
     return stored ? { ...defaultSettings, ...JSON.parse(stored) } : defaultSettings;
   });
 
+  // Fetch books from database when user changes
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
-  }, [books]);
+    if (!user) {
+      setBooks([]);
+      setLoading(false);
+      return;
+    }
 
+    const fetchBooks = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching books:', error);
+        toast({
+          title: 'Error loading books',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        setBooks(
+          data.map((row) => ({
+            id: row.id,
+            title: row.title,
+            author: row.author,
+            coverUrl: row.cover_url || '',
+            status: row.status as BookStatus,
+            openLibraryKey: undefined,
+          }))
+        );
+      }
+      setLoading(false);
+    };
+
+    fetchBooks();
+  }, [user, toast]);
+
+  // Persist settings to localStorage
   useEffect(() => {
     localStorage.setItem(SKIN_KEY, shelfSkin);
   }, [shelfSkin]);
@@ -40,34 +80,127 @@ export function useBooks() {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   }, [settings]);
 
-  const addBook = (book: Omit<Book, 'id'>) => {
-    const newBook: Book = {
-      ...book,
-      id: crypto.randomUUID(),
-    };
-    setBooks((prev) => [...prev, newBook]);
-  };
+  const addBook = useCallback(
+    async (book: Omit<Book, 'id'>) => {
+      if (!user) {
+        toast({
+          title: 'Sign in required',
+          description: 'Please sign in to save books to your shelf.',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-  const removeBook = (id: string) => {
-    setBooks((prev) => prev.filter((book) => book.id !== id));
-  };
+      const { data, error } = await supabase
+        .from('books')
+        .insert({
+          user_id: user.id,
+          title: book.title,
+          author: book.author,
+          cover_url: book.coverUrl,
+          status: book.status,
+        })
+        .select()
+        .single();
 
-  const moveBook = (id: string, status: BookStatus) => {
-    setBooks((prev) =>
-      prev.map((book) => (book.id === id ? { ...book, status } : book))
-    );
-  };
+      if (error) {
+        console.error('Error adding book:', error);
+        toast({
+          title: 'Error adding book',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
 
-  const getBooksByStatus = (status: BookStatus) => {
-    return books.filter((book) => book.status === status);
-  };
+      setBooks((prev) => [
+        ...prev,
+        {
+          id: data.id,
+          title: data.title,
+          author: data.author,
+          coverUrl: data.cover_url || '',
+          status: data.status as BookStatus,
+        },
+      ]);
 
-  const updateSettings = (newSettings: Partial<ShelfSettings>) => {
+      toast({
+        title: 'Book added',
+        description: `"${book.title}" has been added to your shelf.`,
+      });
+    },
+    [user, toast]
+  );
+
+  const removeBook = useCallback(
+    async (id: string) => {
+      if (!user) return;
+
+      const bookToRemove = books.find((b) => b.id === id);
+      const { error } = await supabase.from('books').delete().eq('id', id);
+
+      if (error) {
+        console.error('Error removing book:', error);
+        toast({
+          title: 'Error removing book',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      setBooks((prev) => prev.filter((book) => book.id !== id));
+
+      if (bookToRemove) {
+        toast({
+          title: 'Book removed',
+          description: `"${bookToRemove.title}" has been removed from your shelf.`,
+        });
+      }
+    },
+    [user, books, toast]
+  );
+
+  const moveBook = useCallback(
+    async (id: string, status: BookStatus) => {
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('books')
+        .update({ status })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error moving book:', error);
+        toast({
+          title: 'Error moving book',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      setBooks((prev) =>
+        prev.map((book) => (book.id === id ? { ...book, status } : book))
+      );
+    },
+    [user, toast]
+  );
+
+  const getBooksByStatus = useCallback(
+    (status: BookStatus) => {
+      return books.filter((book) => book.status === status);
+    },
+    [books]
+  );
+
+  const updateSettings = useCallback((newSettings: Partial<ShelfSettings>) => {
     setSettings((prev) => ({ ...prev, ...newSettings }));
-  };
+  }, []);
 
   return {
     books,
+    loading,
     shelfSkin,
     setShelfSkin,
     settings,
