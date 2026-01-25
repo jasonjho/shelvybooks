@@ -219,6 +219,14 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
   const containerRef = useRef<HTMLDivElement>(null);
   const [booksPerRow, setBooksPerRow] = useState(8);
 
+  // Calculate decoration slots needed per row based on density
+  const decorSlotsPerRow = useMemo(() => {
+    if (!settings.showPlant) return 0;
+    const config = DENSITY_CONFIG[settings.decorDensity];
+    // Estimate ~1 decor slot per (1/ratio) books, with a minimum of 1 if decorations are enabled
+    return Math.max(1, Math.ceil(8 * config.ratio)); // Based on ~8 books per row
+  }, [settings.showPlant, settings.decorDensity]);
+
   // Calculate how many books fit per row based on container width
   useEffect(() => {
     const updateBooksPerRow = () => {
@@ -229,8 +237,10 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
         const bookendWidth = settings.showBookends ? 56 : 0;
         const availableWidth = containerWidth - bookendWidth;
         // Each item is 70px wide with 8px gap = 78px per slot
-        const perRow = Math.floor(availableWidth / 78);
-        setBooksPerRow(Math.max(perRow, 3));
+        const totalSlots = Math.floor(availableWidth / 78);
+        // Reserve slots for decorations
+        const bookSlots = Math.max(totalSlots - decorSlotsPerRow, 3);
+        setBooksPerRow(bookSlots);
       }
     };
 
@@ -241,7 +251,7 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
     }
 
     return () => resizeObserver.disconnect();
-  }, [settings.showBookends]);
+  }, [settings.showBookends, decorSlotsPerRow]);
 
   // Split books into rows
   const bookRows = useMemo(() => {
