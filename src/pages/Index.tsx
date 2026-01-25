@@ -94,16 +94,17 @@ export default function Index() {
 
           {/* Not signed in message */}
           {!authLoading && !user && (
-            <div className="text-center py-12">
-              <p className="text-white/70 text-lg mb-2">Welcome to Book Shelfie!</p>
-              <p className="text-white/50">Sign in with Google to save your reading list.</p>
+            <div className="text-center py-4 mb-4">
+              <p className="text-white/70 text-lg mb-1">Welcome to Book Shelfie!</p>
+              <p className="text-white/50 text-sm">Sign in with Google to save your reading list.</p>
             </div>
           )}
 
-          {!authLoading && user && !booksLoading && tabs.map((tab) => (
+          {/* Show bookshelf for everyone - empty preview for guests */}
+          {!authLoading && !booksLoading && tabs.map((tab) => (
             <TabsContent key={tab.id} value={tab.id} className="mt-0">
               <Bookshelf
-                books={getBooksByStatus(tab.id)}
+                books={user ? getBooksByStatus(tab.id) : []}
                 skin={shelfSkin}
                 settings={settings}
                 onMoveBook={moveBook}
