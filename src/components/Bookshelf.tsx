@@ -96,11 +96,15 @@ function ShelfRow({
       {/* Shelf shadow */}
       <div className="shelf-shadow" />
       
-      {/* Left bookend */}
-      {settings.showBookends && hasBooks && <Bookend />}
-      
       {/* Books and decorations */}
       <div className="books-grid flex-1">
+        {/* Left bookend - only if no decorations */}
+        {settings.showBookends && hasBooks && decorations.length === 0 && (
+          <div className="flex items-end justify-center">
+            <Bookend />
+          </div>
+        )}
+        
         {items.map((item, index) => (
           <div
             key={item.type === 'book' ? item.book.id : `decor-${rowIndex}-${index}`}
@@ -123,10 +127,14 @@ function ShelfRow({
             )}
           </div>
         ))}
+        
+        {/* Right bookend - only if no decorations */}
+        {settings.showBookends && hasBooks && decorations.length === 0 && (
+          <div className="flex items-end justify-center">
+            <Bookend />
+          </div>
+        )}
       </div>
-      
-      {/* Right bookend */}
-      {settings.showBookends && hasBooks && <Bookend />}
       
       {/* Empty shelf message */}
       {!hasBooks && (
