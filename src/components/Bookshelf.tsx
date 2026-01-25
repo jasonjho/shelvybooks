@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Book, BookStatus, ShelfSkin, ShelfSettings } from '@/types/book';
+import { Book, BookStatus, ShelfSkin, ShelfSettings, DecorDensity } from '@/types/book';
 import { BookSpine } from './BookSpine';
 import { BookDetailDialog } from './BookDetailDialog';
-import { ShelfDecoration } from './ShelfDecorations';
+import { ShelfDecoration, DECORATION_TYPES, DecorationType } from './ShelfDecorations';
 import { cn } from '@/lib/utils';
 
 interface BookshelfProps {
@@ -17,23 +17,27 @@ function Bookend() {
   return <div className="bookend" />;
 }
 
-type DecorationType = 'plant' | 'figurine' | 'globe' | 'hourglass' | 'candle' | 'photo' | 'vase';
-const DECORATION_TYPES: DecorationType[] = ['plant', 'figurine', 'globe', 'hourglass', 'candle', 'photo', 'vase'];
-
-// Generate decoration positions interspersed among books
 // Fibonacci sequence for organic spacing
 const FIB = [1, 2, 3, 5, 8, 13, 21];
+
+// Density multipliers for decoration count
+const DENSITY_CONFIG: Record<DecorDensity, { multiplier: number; max: number }> = {
+  minimal: { multiplier: 0.12, max: 1 },
+  balanced: { multiplier: 0.25, max: 3 },
+  cozy: { multiplier: 0.4, max: 5 },
+};
 
 function generateDecorPositions(
   bookCount: number,
   maxPerRow: number,
-  rowIndex: number
+  rowIndex: number,
+  density: DecorDensity = 'balanced'
 ): { position: number; type: DecorationType; seed: number }[] {
   const emptySlots = maxPerRow - bookCount;
   if (emptySlots <= 0 || bookCount === 0) return [];
   
-  // 1-3 decorations based on shelf size
-  const decorationCount = Math.min(Math.ceil(emptySlots * 0.25), 3);
+  const config = DENSITY_CONFIG[density];
+  const decorationCount = Math.min(Math.ceil(emptySlots * config.multiplier), config.max);
   if (decorationCount <= 0) return [];
   
   const decorations: { position: number; type: DecorationType; seed: number }[] = [];
@@ -119,7 +123,7 @@ function ShelfRow({
   
   // Generate decoration positions interspersed among books
   const decorPositions = settings.showPlant 
-    ? generateDecorPositions(books.length, availableSlots, rowIndex)
+    ? generateDecorPositions(books.length, availableSlots, rowIndex, settings.decorDensity)
     : [];
 
   // Build items array: interleave books and decorations

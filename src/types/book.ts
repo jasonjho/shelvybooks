@@ -2,11 +2,14 @@ export type BookStatus = 'reading' | 'want-to-read' | 'read';
 
 export type ShelfSkin = 'oak' | 'walnut' | 'white' | 'dark';
 
+export type DecorDensity = 'minimal' | 'balanced' | 'cozy';
+
 export interface ShelfSettings {
   showPlant: boolean;
   showBookends: boolean;
   showAmbientLight: boolean;
   showWoodGrain: boolean;
+  decorDensity: DecorDensity;
 }
 
 export interface Book {

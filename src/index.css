@@ -486,6 +486,16 @@
     position: relative;
     z-index: 5;
   }
+
+  /* Trailing plant container - allows leaves to spill to next shelf */
+  .trailing-plant-container {
+    z-index: 15;
+    overflow: visible;
+  }
+
+  .trailing-plant-container > div {
+    overflow: visible;
+  }
 }
 
 @layer utilities {
