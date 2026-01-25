@@ -109,7 +109,16 @@ export default function Index() {
           {!authLoading && !user && (
             <div className="text-center py-4 mb-4">
               <p className="text-foreground text-lg mb-1">Welcome to Shelfie!</p>
-              <p className="text-muted-foreground text-sm">Here's a preview — sign in with Google to build your own shelf.</p>
+              <p className="text-muted-foreground text-sm">
+                Here's a preview —{' '}
+                <button
+                  onClick={signInWithGoogle}
+                  className="text-primary hover:underline"
+                >
+                  sign in
+                </button>
+                {' '}to build your own shelf.
+              </p>
             </div>
           )}
 
