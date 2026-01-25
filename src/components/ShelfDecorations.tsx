@@ -20,6 +20,7 @@ interface DecorationProps {
 }
 
 // Trailing plant with leaves that spill over to next shelf
+// Dense bushy plant - compact and full
 function TrailingPlantDecor({ seed }: { seed: number }) {
   const leafColors = [
     { main: 'hsl(130,50%,38%)', dark: 'hsl(140,45%,28%)', light: 'hsl(125,55%,45%)' },
@@ -30,36 +31,39 @@ function TrailingPlantDecor({ seed }: { seed: number }) {
   
   return (
     <div className="flex flex-col items-center relative">
-      {/* Main plant body */}
+      {/* Dense bushy foliage */}
       <div className="relative z-10">
-        {/* Top leaves cluster */}
-        <div className="absolute w-6 h-5 rounded-[60%_40%_50%_50%] -top-4 left-1/2 -translate-x-1/2 rotate-[-3deg]"
-          style={{ background: `linear-gradient(135deg, ${colors.light}, ${colors.main})` }} />
-        <div className="absolute w-5 h-4 rounded-[50%_50%_40%_60%] -top-3 -left-3 rotate-[-20deg]"
-          style={{ background: `linear-gradient(135deg, ${colors.main}, ${colors.dark})` }} />
-        <div className="absolute w-5 h-4 rounded-[50%_50%_60%_40%] -top-3 -right-3 rotate-[20deg]"
-          style={{ background: `linear-gradient(135deg, ${colors.main}, ${colors.dark})` }} />
+        {/* Center dome */}
+        <div className="absolute w-8 h-6 rounded-full -top-5 left-1/2 -translate-x-1/2"
+          style={{ background: `radial-gradient(ellipse at 40% 30%, ${colors.light}, ${colors.main})` }} />
         
-        {/* TRAILING LEAVES - these spill down to next shelf */}
-        <div className="absolute w-3 h-6 rounded-[40%_40%_50%_50%] top-4 -left-5 rotate-[-35deg] z-30"
-          style={{ background: `linear-gradient(180deg, ${colors.main}, ${colors.dark})` }} />
-        <div className="absolute w-2.5 h-8 rounded-[40%_40%_50%_50%] top-8 -left-4 rotate-[-50deg] z-30"
-          style={{ background: `linear-gradient(180deg, ${colors.light}, ${colors.dark})` }} />
-        <div className="absolute w-2 h-10 rounded-[40%_40%_50%_50%] top-10 -left-2 rotate-[-60deg] z-30"
-          style={{ background: `linear-gradient(180deg, ${colors.main}, ${colors.dark})` }} />
-        
-        <div className="absolute w-3 h-7 rounded-[40%_40%_50%_50%] top-5 -right-4 rotate-[40deg] z-30"
-          style={{ background: `linear-gradient(180deg, ${colors.light}, ${colors.main})` }} />
-        <div className="absolute w-2.5 h-9 rounded-[40%_40%_50%_50%] top-9 -right-3 rotate-[55deg] z-30"
-          style={{ background: `linear-gradient(180deg, ${colors.main}, ${colors.dark})` }} />
-        <div className="absolute w-2 h-11 rounded-[40%_40%_50%_50%] top-12 -right-1 rotate-[65deg] z-30"
-          style={{ background: `linear-gradient(180deg, ${colors.light}, ${colors.dark})` }} />
-        
-        {/* Center trailing vine */}
-        <div className="absolute w-1.5 h-12 rounded-full top-6 left-1/2 -translate-x-1/2 z-30"
-          style={{ background: `linear-gradient(180deg, ${colors.dark}, ${colors.main})` }} />
-        <div className="absolute w-2 h-4 rounded-full top-14 left-1/2 -translate-x-1/2 rotate-[10deg] z-30"
+        {/* Top layer - small leaves */}
+        <div className="absolute w-4 h-3 rounded-full -top-6 left-1/2 -translate-x-1/2"
           style={{ background: colors.light }} />
+        <div className="absolute w-3 h-2.5 rounded-full -top-5 -left-1 rotate-[-15deg]"
+          style={{ background: colors.light }} />
+        <div className="absolute w-3 h-2.5 rounded-full -top-5 -right-1 rotate-[15deg]"
+          style={{ background: colors.light }} />
+        
+        {/* Middle layer - fuller leaves */}
+        <div className="absolute w-5 h-4 rounded-[60%_60%_50%_50%] -top-4 -left-3 rotate-[-25deg]"
+          style={{ background: `linear-gradient(135deg, ${colors.main}, ${colors.dark})` }} />
+        <div className="absolute w-5 h-4 rounded-[60%_60%_50%_50%] -top-4 -right-3 rotate-[25deg]"
+          style={{ background: `linear-gradient(135deg, ${colors.main}, ${colors.dark})` }} />
+        <div className="absolute w-4 h-3.5 rounded-full -top-3 -left-4 rotate-[-35deg]"
+          style={{ background: colors.main }} />
+        <div className="absolute w-4 h-3.5 rounded-full -top-3 -right-4 rotate-[35deg]"
+          style={{ background: colors.main }} />
+        
+        {/* Bottom layer - side tufts */}
+        <div className="absolute w-4 h-3 rounded-full -top-1 -left-5 rotate-[-20deg]"
+          style={{ background: colors.dark }} />
+        <div className="absolute w-4 h-3 rounded-full -top-1 -right-5 rotate-[20deg]"
+          style={{ background: colors.dark }} />
+        <div className="absolute w-3.5 h-2.5 rounded-full top-0 -left-4"
+          style={{ background: colors.main }} />
+        <div className="absolute w-3.5 h-2.5 rounded-full top-0 -right-4"
+          style={{ background: colors.main }} />
         
         <div className="w-7 h-7 rounded-full opacity-0" />
       </div>
@@ -72,28 +76,37 @@ function TrailingPlantDecor({ seed }: { seed: number }) {
 
 function PottedPlantDecor({ seed }: { seed: number }) {
   const variants = [
-    // Lush leafy plant
-    <div key="leafy" className="flex flex-col items-center relative">
+    // Dense bushy shrub
+    <div key="shrub" className="flex flex-col items-center relative">
       <div className="relative z-10">
-        <div className="absolute w-5 h-4 bg-gradient-to-br from-[hsl(130,50%,40%)] to-[hsl(140,45%,30%)] rounded-[60%_40%_50%_50%] -top-3 left-1/2 -translate-x-1/2 rotate-[-5deg]" />
-        <div className="absolute w-4 h-3.5 bg-gradient-to-br from-[hsl(135,55%,45%)] to-[hsl(140,50%,32%)] rounded-[50%_50%_40%_60%] -top-2 -left-2 rotate-[-25deg]" />
-        <div className="absolute w-4 h-3.5 bg-gradient-to-br from-[hsl(125,50%,42%)] to-[hsl(135,45%,30%)] rounded-[50%_50%_60%_40%] -top-2 -right-2 rotate-[25deg]" />
-        <div className="absolute w-3 h-4 bg-gradient-to-b from-[hsl(130,45%,38%)] to-[hsl(140,40%,28%)] rounded-[40%_40%_50%_50%] top-1 -left-3 rotate-[-35deg] z-20" />
-        <div className="absolute w-3 h-4 bg-gradient-to-b from-[hsl(128,48%,36%)] to-[hsl(138,42%,26%)] rounded-[40%_40%_50%_50%] top-1 -right-3 rotate-[35deg] z-20" />
-        <div className="w-6 h-6 bg-[hsl(140,35%,25%)] rounded-full opacity-0" />
+        {/* Main bush dome */}
+        <div className="absolute w-10 h-7 rounded-[50%_50%_45%_45%] -top-5 left-1/2 -translate-x-1/2"
+          style={{ background: 'radial-gradient(ellipse at 35% 35%, hsl(130,55%,45%), hsl(140,45%,30%))' }} />
+        {/* Top tufts */}
+        <div className="absolute w-4 h-3 rounded-full -top-6 left-1/2 -translate-x-1/2 bg-[hsl(125,55%,48%)]" />
+        <div className="absolute w-3 h-2.5 rounded-full -top-5 -left-2 bg-[hsl(130,50%,42%)]" />
+        <div className="absolute w-3 h-2.5 rounded-full -top-5 -right-2 bg-[hsl(130,50%,42%)]" />
+        {/* Side clusters */}
+        <div className="absolute w-4 h-3.5 rounded-full -top-3 -left-4 bg-[hsl(135,48%,38%)]" />
+        <div className="absolute w-4 h-3.5 rounded-full -top-3 -right-4 bg-[hsl(135,48%,38%)]" />
+        <div className="absolute w-3.5 h-3 rounded-full -top-1 -left-3 bg-[hsl(140,45%,32%)]" />
+        <div className="absolute w-3.5 h-3 rounded-full -top-1 -right-3 bg-[hsl(140,45%,32%)]" />
+        <div className="w-6 h-6 rounded-full opacity-0" />
       </div>
       <div className="w-6 h-5 bg-gradient-to-b from-[hsl(25,55%,50%)] to-[hsl(20,60%,38%)] rounded-b-lg relative z-0" />
     </div>,
-    // Fern
-    <div key="fern" className="flex flex-col items-center relative">
+    // Compact round bush
+    <div key="round" className="flex flex-col items-center relative">
       <div className="relative z-10">
-        <div className="absolute w-1.5 h-8 bg-[hsl(140,35%,32%)] -top-5 left-1/2 -translate-x-1/2 rounded-full" />
-        <div className="absolute w-3 h-2 bg-[hsl(135,50%,38%)] rounded-full -top-4 left-1 rotate-[-20deg]" />
-        <div className="absolute w-3 h-2 bg-[hsl(135,50%,38%)] rounded-full -top-4 right-1 rotate-[20deg]" />
-        <div className="absolute w-2.5 h-1.5 bg-[hsl(130,48%,36%)] rounded-full -top-2 left-0 rotate-[-35deg]" />
-        <div className="absolute w-2.5 h-1.5 bg-[hsl(130,48%,36%)] rounded-full -top-2 right-0 rotate-[35deg]" />
-        <div className="absolute w-4 h-2 bg-gradient-to-r from-[hsl(138,45%,35%)] to-[hsl(145,40%,28%)] rounded-full top-0 -left-3 rotate-[-45deg] z-20" />
-        <div className="absolute w-4 h-2 bg-gradient-to-l from-[hsl(140,45%,35%)] to-[hsl(148,40%,28%)] rounded-full top-0 -right-3 rotate-[45deg] z-20" />
+        {/* Layered round shape */}
+        <div className="absolute w-9 h-6 rounded-full -top-4 left-1/2 -translate-x-1/2"
+          style={{ background: 'radial-gradient(ellipse at 40% 40%, hsl(140,50%,42%), hsl(145,40%,28%))' }} />
+        <div className="absolute w-5 h-4 rounded-full -top-5 left-1/2 -translate-x-1/2 bg-[hsl(135,55%,48%)]" />
+        {/* Side bumps for texture */}
+        <div className="absolute w-3.5 h-3 rounded-full -top-2 -left-4 bg-[hsl(138,45%,35%)]" />
+        <div className="absolute w-3.5 h-3 rounded-full -top-2 -right-4 bg-[hsl(138,45%,35%)]" />
+        <div className="absolute w-3 h-2.5 rounded-full top-0 -left-3 bg-[hsl(142,42%,32%)]" />
+        <div className="absolute w-3 h-2.5 rounded-full top-0 -right-3 bg-[hsl(142,42%,32%)]" />
         <div className="w-5 h-5 opacity-0" />
       </div>
       <div className="w-5 h-4 bg-gradient-to-b from-[hsl(30,50%,50%)] to-[hsl(25,55%,38%)] rounded-b-md relative z-0" />
@@ -104,22 +117,28 @@ function PottedPlantDecor({ seed }: { seed: number }) {
 
 function SucculentDecor({ seed }: { seed: number }) {
   const colors = [
-    { base: 'hsl(150,40%,35%)', tip: 'hsl(145,50%,48%)' },
-    { base: 'hsl(160,35%,40%)', tip: 'hsl(155,45%,52%)' },
-    { base: 'hsl(140,45%,32%)', tip: 'hsl(135,55%,45%)' },
+    { base: 'hsl(150,40%,35%)', mid: 'hsl(148,45%,42%)', tip: 'hsl(145,50%,48%)' },
+    { base: 'hsl(160,35%,40%)', mid: 'hsl(158,40%,46%)', tip: 'hsl(155,45%,52%)' },
+    { base: 'hsl(140,45%,32%)', mid: 'hsl(138,50%,38%)', tip: 'hsl(135,55%,45%)' },
   ];
   const c = colors[seed % colors.length];
   
   return (
     <div className="flex flex-col items-center relative">
       <div className="relative z-10">
-        <div className="w-7 h-5 rounded-[50%_50%_40%_40%] relative"
-          style={{ background: `linear-gradient(0deg, ${c.base}, ${c.tip})` }}>
-          <div className="absolute w-3 h-4 rounded-full -top-2 left-1/2 -translate-x-1/2" style={{ background: c.tip }} />
-          <div className="absolute w-2.5 h-3 rounded-full -top-1 left-0 rotate-[-30deg]" style={{ background: c.tip }} />
-          <div className="absolute w-2.5 h-3 rounded-full -top-1 right-0 rotate-[30deg]" style={{ background: c.tip }} />
-          <div className="absolute w-2 h-3 rounded-full top-1 -left-2 rotate-[-45deg]" style={{ background: c.base }} />
-          <div className="absolute w-2 h-3 rounded-full top-1 -right-2 rotate-[45deg]" style={{ background: c.base }} />
+        {/* Dense rosette succulent */}
+        <div className="w-8 h-5 rounded-full relative"
+          style={{ background: `radial-gradient(ellipse at 50% 40%, ${c.tip}, ${c.base})` }}>
+          {/* Center rosette */}
+          <div className="absolute w-3 h-3 rounded-full top-0 left-1/2 -translate-x-1/2 -translate-y-1" style={{ background: c.tip }} />
+          {/* Inner ring of leaves */}
+          <div className="absolute w-2.5 h-2.5 rounded-full -top-0.5 left-1 rotate-[-20deg]" style={{ background: c.mid }} />
+          <div className="absolute w-2.5 h-2.5 rounded-full -top-0.5 right-1 rotate-[20deg]" style={{ background: c.mid }} />
+          {/* Outer leaves */}
+          <div className="absolute w-2.5 h-2 rounded-full top-1 -left-1.5 rotate-[-35deg]" style={{ background: c.base }} />
+          <div className="absolute w-2.5 h-2 rounded-full top-1 -right-1.5 rotate-[35deg]" style={{ background: c.base }} />
+          <div className="absolute w-2 h-2 rounded-full top-2 -left-2" style={{ background: c.base }} />
+          <div className="absolute w-2 h-2 rounded-full top-2 -right-2" style={{ background: c.base }} />
         </div>
       </div>
       <div className="w-5 h-4 bg-gradient-to-b from-[hsl(20,50%,55%)] to-[hsl(20,55%,40%)] rounded-b-md relative z-0 -mt-1" />
@@ -351,10 +370,8 @@ export const DECORATION_TYPES: DecorationType[] = [
 ];
 
 export function ShelfDecoration({ type, seed }: { type: DecorationType; seed: number }) {
-  const isTrailingPlant = type === 'trailing-plant';
-  
   return (
-    <div className={`shelf-decoration flex items-end justify-center animate-fade-in ${isTrailingPlant ? 'trailing-plant-container' : ''}`}>
+    <div className="shelf-decoration flex items-end justify-center animate-fade-in">
       <Decoration type={type} seed={seed} />
     </div>
   );
