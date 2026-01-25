@@ -69,7 +69,6 @@ export default function Index() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
             <SettingsPanel settings={settings} onSettingsChange={updateSettings} />
             <AuthButton />
           </div>
@@ -111,6 +110,13 @@ export default function Index() {
             <div className="text-center py-4 mb-4">
               <p className="text-foreground text-lg mb-1">Welcome to Book Shelfie!</p>
               <p className="text-muted-foreground text-sm">Here's a preview — sign in with Google to build your own shelf.</p>
+            </div>
+          )}
+
+          {/* Shelf customization controls */}
+          {!authLoading && !booksLoading && (
+            <div className="flex items-center justify-end mb-4">
+              <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
             </div>
           )}
 
