@@ -118,7 +118,11 @@ export default function Index() {
       {/* Footer hint */}
       <footer className="relative z-10 py-6">
         <div className="container text-center text-sm text-white/50">
-          <p>Right-click a book to move it or remove it from your shelf</p>
+          {user ? (
+            <p>Right-click a book to move it or remove it from your shelf</p>
+          ) : (
+            <p>Sign in to start building your personal bookshelf</p>
+          )}
         </div>
       </footer>
     </div>
