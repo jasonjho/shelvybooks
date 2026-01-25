@@ -139,9 +139,12 @@ export default function PublicShelf() {
               <div className="p-2 rounded-lg bg-gradient-to-br from-amber-700 to-amber-900 shadow-md">
                 <Library className="w-6 h-6 text-amber-100" />
               </div>
-              <h1 className="text-3xl font-normal tracking-wide bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
-                <span className="italic">Shelvy</span>Books
-              </h1>
+              <div>
+                <h1 className="text-3xl font-normal tracking-wide bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
+                  <span className="italic">Shelvy</span>Books
+                </h1>
+                <p className="text-sm text-muted-foreground">Your personal bookshelf, beautifully organized</p>
+              </div>
             </Link>
           </div>
           <div className="flex items-center gap-2">
@@ -159,8 +162,11 @@ export default function PublicShelf() {
             {books.length} book{books.length !== 1 ? 's' : ''} on the shelf
           </p>
           {!user && (
-            <p className="text-sm text-muted-foreground mt-2">
-              <Link to="/" className="text-primary hover:underline">Sign in</Link> to like books and leave comments!
+            <p className="text-sm text-muted-foreground mt-4 max-w-md mx-auto">
+              <span className="text-amber-600 dark:text-amber-500 font-medium">Track</span> your reading journey, {' '}
+              <span className="text-amber-600 dark:text-amber-500 font-medium">organize</span> by status, and {' '}
+              <span className="text-amber-600 dark:text-amber-500 font-medium">discover</span> new favorites.{' '}
+              <Link to="/" className="text-primary hover:underline font-medium">Sign in</Link> to build your own shelf.
             </p>
           )}
         </div>
