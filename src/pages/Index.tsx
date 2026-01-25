@@ -164,10 +164,16 @@ export default function Index() {
           <>
             {/* Empty shelf - show collection suggestions prominently */}
             {user && allBooks.length === 0 ? (
-              <DiscoverCollections 
-                onAddBook={addBook} 
-                isEmptyShelf={true} 
-              />
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <p className="text-muted-foreground">Your shelf is empty. Browse collections below or add a book manually.</p>
+                  <AddBookDialog onAddBook={addBook} defaultStatus="reading" />
+                </div>
+                <DiscoverCollections 
+                  onAddBook={addBook} 
+                  isEmptyShelf={true} 
+                />
+              </div>
             ) : (
               <>
                 <div className="flex items-center justify-between mb-6">
