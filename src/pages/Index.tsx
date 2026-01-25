@@ -63,7 +63,7 @@ export default function Index() {
             <div className="p-2 rounded-lg bg-gradient-to-br from-rose-700 to-rose-900 shadow-md">
               <Library className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-rose-700 to-rose-900 dark:from-rose-400 dark:to-rose-600 bg-clip-text text-transparent" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+            <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-rose-700 to-rose-900 dark:from-rose-400 dark:to-rose-600 bg-clip-text text-transparent" style={{ fontFamily: "'Merriweather', serif" }}>
               Shelfie
             </h1>
           </div>
