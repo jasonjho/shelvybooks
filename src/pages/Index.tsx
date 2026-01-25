@@ -64,7 +64,7 @@ export default function Index() {
               <Library className="w-6 h-6 text-primary-foreground" />
             </div>
             <h1 className="font-display text-2xl font-semibold text-foreground">
-              Book Shelfie
+              Shelfie
             </h1>
           </div>
           <div className="flex items-center gap-2">
@@ -108,7 +108,7 @@ export default function Index() {
           {/* Not signed in message */}
           {!authLoading && !user && (
             <div className="text-center py-4 mb-4">
-              <p className="text-foreground text-lg mb-1">Welcome to Book Shelfie!</p>
+              <p className="text-foreground text-lg mb-1">Welcome to Shelfie!</p>
               <p className="text-muted-foreground text-sm">Here's a preview — sign in with Google to build your own shelf.</p>
             </div>
           )}
