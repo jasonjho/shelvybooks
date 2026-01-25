@@ -157,8 +157,11 @@ export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: B
     const updateBooksPerRow = () => {
       if (containerRef.current) {
         const containerWidth = containerRef.current.offsetWidth - 32; // Account for padding (px-4 = 16px each side)
+        // Account for bookends (20px each + 8px gap each = 56px total when both shown)
+        const bookendWidth = settings.showBookends ? 56 : 0;
+        const availableWidth = containerWidth - bookendWidth;
         // Each item is 70px wide with 8px gap = 78px per slot
-        const perRow = Math.floor(containerWidth / 78);
+        const perRow = Math.floor(availableWidth / 78);
         setBooksPerRow(Math.max(perRow, 3));
       }
     };
@@ -170,7 +173,7 @@ export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: B
     }
 
     return () => resizeObserver.disconnect();
-  }, []);
+  }, [settings.showBookends]);
 
   // Split books into rows
   const bookRows = useMemo(() => {
