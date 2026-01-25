@@ -168,27 +168,30 @@ function ShelfRow({
             activeFilters.length > 0 && 
             !activeFilters.includes(item.book.status);
           
+          if (item.type === 'book') {
+            return (
+              <BookSpine
+                key={item.book.id}
+                book={item.book}
+                onMove={onMoveBook}
+                onRemove={onRemoveBook}
+                onSelect={() => onSelectBook(item.book)}
+                isInteractive={!!onMoveBook && !!onRemoveBook}
+                isGrayed={isGrayed}
+              />
+            );
+          }
+          
           return (
             <div
-              key={item.type === 'book' ? item.book.id : `decor-${rowIndex}-${index}`}
+              key={`decor-${rowIndex}-${index}`}
               className="animate-fade-in"
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              {item.type === 'book' ? (
-                <BookSpine
-                  book={item.book}
-                  onMove={onMoveBook}
-                  onRemove={onRemoveBook}
-                  onSelect={() => onSelectBook(item.book)}
-                  isInteractive={!!onMoveBook && !!onRemoveBook}
-                  isGrayed={isGrayed}
-                />
-              ) : (
-                <ShelfDecoration
-                  type={item.decorationType}
-                  seed={item.seed}
-                />
-              )}
+              <ShelfDecoration
+                type={item.decorationType}
+                seed={item.seed}
+              />
             </div>
           );
         })}
