@@ -814,14 +814,13 @@
   }
 
   .mini-shelf {
-    @apply relative;
+    @apply relative mx-2;
     height: 140px;
     background: linear-gradient(180deg, 
       hsl(var(--shelf-oak-dark) / 0.3) 0%, 
       transparent 30%
     );
     border-radius: 4px;
-    overflow: hidden;
   }
 
   .mini-shelf-back {
@@ -837,7 +836,13 @@
   .mini-shelf-content {
     @apply absolute bottom-6 left-0 right-0 flex items-end justify-center gap-1;
     z-index: 2;
-    padding: 0 1rem;
+    padding: 0 1.5rem;
+  }
+
+  /* Scale down books on mobile */
+  .mini-shelf .book-cover {
+    width: 55px;
+    height: 82px;
   }
 
   .mini-shelf-surface {
