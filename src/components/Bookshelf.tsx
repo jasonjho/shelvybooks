@@ -21,11 +21,11 @@ function Bookend() {
 // Fibonacci sequence for organic spacing
 const FIB = [1, 2, 3, 5, 8, 13, 21];
 
-// Density multipliers for decoration count
-const DENSITY_CONFIG: Record<DecorDensity, { multiplier: number; max: number }> = {
-  minimal: { multiplier: 0.12, max: 1 },
-  balanced: { multiplier: 0.25, max: 3 },
-  cozy: { multiplier: 0.4, max: 5 },
+// Density multipliers for decoration count - now based on book count, not empty slots
+const DENSITY_CONFIG: Record<DecorDensity, { ratio: number; minSpacing: number }> = {
+  minimal: { ratio: 0.08, minSpacing: 6 },   // ~1 decor per 12 books
+  balanced: { ratio: 0.15, minSpacing: 4 },  // ~1 decor per 6-7 books
+  cozy: { ratio: 0.25, minSpacing: 2 },      // ~1 decor per 4 books
 };
 
 function generateDecorPositions(
@@ -34,11 +34,14 @@ function generateDecorPositions(
   rowIndex: number,
   density: DecorDensity = 'balanced'
 ): { position: number; type: DecorationType; seed: number }[] {
-  const emptySlots = maxPerRow - bookCount;
-  if (emptySlots <= 0 || bookCount === 0) return [];
+  if (bookCount === 0) return [];
   
   const config = DENSITY_CONFIG[density];
-  const decorationCount = Math.min(Math.ceil(emptySlots * config.multiplier), config.max);
+  
+  // Calculate decoration count based on book count, ensuring at least some decorations
+  const baseCount = Math.ceil(bookCount * config.ratio);
+  const decorationCount = Math.max(density === 'minimal' ? 0 : 1, baseCount);
+  
   if (decorationCount <= 0) return [];
   
   const decorations: { position: number; type: DecorationType; seed: number }[] = [];
@@ -49,46 +52,38 @@ function generateDecorPositions(
     const x = Math.sin(rowIndex * 127.1 + i * 311.7) * 43758.5453;
     return x - Math.floor(x);
   };
-  
-  // Pick a Fibonacci number scaled to shelf, with randomness
-  const fibSpacing = (i: number) => {
-    const fibIdx = Math.floor(seededRandom(i + 5) * Math.min(FIB.length, 4));
-    return FIB[fibIdx];
-  };
 
-  // Generate candidate positions using Fibonacci-based offsets
-  // Start at position 1+ so decorations never appear before the first book
-  let cursor = 1 + Math.floor(seededRandom(rowIndex) * 2); // start offset 1-2
+  // Calculate spacing between decorations based on book count and decoration count
+  const avgSpacing = Math.max(config.minSpacing, Math.floor(bookCount / (decorationCount + 1)));
   
-  for (let i = 0; i < decorationCount && cursor <= bookCount; i++) {
-    // Add some jitter to break up patterns
-    const jitter = Math.floor((seededRandom(i * 3 + 1) - 0.4) * 2); // slight bias forward
-    let pos = Math.max(1, Math.min(bookCount, cursor + jitter)); // min 1, never position 0
+  // Generate positions with organic spacing
+  for (let i = 0; i < decorationCount; i++) {
+    // Base position: evenly distributed with jitter
+    const basePos = Math.floor((i + 1) * avgSpacing);
+    const jitter = Math.floor((seededRandom(i * 3 + rowIndex) - 0.5) * 3);
+    let pos = Math.max(1, Math.min(bookCount, basePos + jitter));
     
-    // Find nearest available position (bounded search)
+    // Find nearest available position that respects minimum spacing
     let found = false;
     for (let d = 0; d <= bookCount && !found; d++) {
       for (const candidate of [pos + d, pos - d]) {
-        // Skip position 0 - decorations should never be first
         if (candidate < 1 || candidate > bookCount) continue;
         if (usedPositions.has(candidate)) continue;
-        // Avoid clustering: at least 2 positions apart when possible
-        const tooClose = [...usedPositions].some(p => Math.abs(p - candidate) < 2);
-        if (tooClose && d < bookCount / 2) continue; // relax constraint if running out of space
+        
+        // Check minimum spacing from other decorations
+        const tooClose = [...usedPositions].some(p => Math.abs(p - candidate) < config.minSpacing);
+        if (tooClose) continue;
         
         usedPositions.add(candidate);
         decorations.push({
           position: candidate,
-          type: DECORATION_TYPES[Math.floor(seededRandom(i + 10) * DECORATION_TYPES.length)],
+          type: DECORATION_TYPES[Math.floor(seededRandom(i + 10 + rowIndex) * DECORATION_TYPES.length)],
           seed: rowIndex * 10 + i,
         });
         found = true;
         break;
       }
     }
-    
-    // Advance cursor by Fibonacci spacing
-    cursor += fibSpacing(i) + 1;
   }
   
   return decorations.sort((a, b) => a.position - b.position);
