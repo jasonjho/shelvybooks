@@ -78,8 +78,8 @@ export function CollectionCard({
           <div className="flex items-center gap-3">
             <span className="text-2xl">{collection.icon}</span>
             <div>
-              <CardTitle className="text-lg">{collection.name}</CardTitle>
-              <CardDescription className="text-sm">{collection.description}</CardDescription>
+              <CardTitle className="text-lg font-display">{collection.name}</CardTitle>
+              <CardDescription className="text-sm font-sans">{collection.description}</CardDescription>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -115,7 +115,7 @@ export function CollectionCard({
           variant="ghost"
           size="sm"
           onClick={handleExpand}
-          className="w-full justify-center text-muted-foreground hover:text-foreground"
+          className="w-full justify-center text-muted-foreground hover:text-foreground font-sans"
         >
           {isExpanded ? (
             <>
@@ -153,7 +153,7 @@ export function CollectionCard({
                     variant="ghost"
                     size="sm"
                     onClick={handleSelectAll}
-                    className="text-sm"
+                    className="text-sm font-sans"
                   >
                     {selectedBooks.size === books.length ? 'Deselect all' : 'Select all'}
                   </Button>
@@ -199,8 +199,8 @@ export function CollectionCard({
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{book.title}</p>
-                          <p className="text-xs text-muted-foreground truncate">{book.author}</p>
+                          <p className="text-sm font-medium truncate font-sans">{book.title}</p>
+                          <p className="text-xs text-muted-foreground truncate font-sans">{book.author}</p>
                         </div>
                       </label>
                     ))}
@@ -208,7 +208,7 @@ export function CollectionCard({
                 </ScrollArea>
               </>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
+              <p className="text-sm text-muted-foreground text-center py-4 font-sans">
                 No books found in this collection
               </p>
             )}
