@@ -9,33 +9,52 @@ interface DecorationProps {
 
 function PlantDecor({ seed }: { seed: number }) {
   const variants = [
-    // Succulent
-    <div key="succulent" className="flex flex-col items-center">
-      <div className="w-6 h-6 bg-gradient-to-t from-[hsl(140,40%,35%)] to-[hsl(140,50%,45%)] rounded-full relative">
-        <div className="absolute w-3 h-4 bg-[hsl(140,45%,40%)] rounded-full -top-2 left-1/2 -translate-x-1/2" />
-        <div className="absolute w-2.5 h-3 bg-[hsl(140,50%,38%)] rounded-full -top-1 left-0 rotate-[-30deg]" />
-        <div className="absolute w-2.5 h-3 bg-[hsl(140,50%,38%)] rounded-full -top-1 right-0 rotate-[30deg]" />
+    // Lush trailing pothos
+    <div key="pothos" className="flex flex-col items-center relative">
+      <div className="relative z-10">
+        {/* Main leaves cluster */}
+        <div className="absolute w-5 h-4 bg-gradient-to-br from-[hsl(130,50%,40%)] to-[hsl(140,45%,30%)] rounded-[60%_40%_50%_50%] -top-3 left-1/2 -translate-x-1/2 rotate-[-5deg]" />
+        <div className="absolute w-4 h-3.5 bg-gradient-to-br from-[hsl(135,55%,45%)] to-[hsl(140,50%,32%)] rounded-[50%_50%_40%_60%] -top-2 -left-2 rotate-[-25deg]" />
+        <div className="absolute w-4 h-3.5 bg-gradient-to-br from-[hsl(125,50%,42%)] to-[hsl(135,45%,30%)] rounded-[50%_50%_60%_40%] -top-2 -right-2 rotate-[25deg]" />
+        {/* Trailing leaves that spill over */}
+        <div className="absolute w-3 h-4 bg-gradient-to-b from-[hsl(130,45%,38%)] to-[hsl(140,40%,28%)] rounded-[40%_40%_50%_50%] top-2 -left-4 rotate-[-40deg] z-20" />
+        <div className="absolute w-2.5 h-3.5 bg-gradient-to-b from-[hsl(135,50%,40%)] to-[hsl(145,45%,30%)] rounded-[40%_40%_50%_50%] top-5 -left-3 rotate-[-55deg] z-20" />
+        <div className="absolute w-3 h-4 bg-gradient-to-b from-[hsl(128,48%,36%)] to-[hsl(138,42%,26%)] rounded-[40%_40%_50%_50%] top-3 -right-3 rotate-[45deg] z-20" />
+        <div className="absolute w-2 h-3 bg-gradient-to-b from-[hsl(132,52%,42%)] to-[hsl(142,48%,32%)] rounded-[40%_40%_50%_50%] top-6 -right-2 rotate-[60deg] z-20" />
+        <div className="w-6 h-6 bg-[hsl(140,35%,25%)] rounded-full opacity-0" />
       </div>
-      <div className="w-5 h-4 bg-gradient-to-b from-[hsl(20,50%,55%)] to-[hsl(20,55%,40%)] rounded-b-md -mt-1" />
+      <div className="w-6 h-5 bg-gradient-to-b from-[hsl(25,55%,50%)] to-[hsl(20,60%,38%)] rounded-b-lg relative z-0" />
     </div>,
-    // Tall plant
-    <div key="tall" className="flex flex-col items-center">
-      <div className="relative">
-        <div className="w-1 h-8 bg-[hsl(140,30%,35%)]" />
-        <div className="absolute w-4 h-3 bg-[hsl(140,45%,40%)] rounded-full -top-1 left-1/2 -translate-x-1/2" />
-        <div className="absolute w-3 h-2.5 bg-[hsl(140,50%,42%)] rounded-full top-1 -left-2 rotate-[-20deg]" />
-        <div className="absolute w-3 h-2.5 bg-[hsl(140,50%,42%)] rounded-full top-3 -right-2 rotate-[20deg]" />
+    // Fern with fronds
+    <div key="fern" className="flex flex-col items-center relative">
+      <div className="relative z-10">
+        {/* Central fronds */}
+        <div className="absolute w-1.5 h-8 bg-[hsl(140,35%,32%)] -top-5 left-1/2 -translate-x-1/2 rounded-full" />
+        <div className="absolute w-3 h-2 bg-[hsl(135,50%,38%)] rounded-full -top-4 left-1 rotate-[-20deg]" />
+        <div className="absolute w-3 h-2 bg-[hsl(135,50%,38%)] rounded-full -top-4 right-1 rotate-[20deg]" />
+        <div className="absolute w-2.5 h-1.5 bg-[hsl(130,48%,36%)] rounded-full -top-2 left-0 rotate-[-35deg]" />
+        <div className="absolute w-2.5 h-1.5 bg-[hsl(130,48%,36%)] rounded-full -top-2 right-0 rotate-[35deg]" />
+        {/* Spilling fronds */}
+        <div className="absolute w-4 h-2 bg-gradient-to-r from-[hsl(138,45%,35%)] to-[hsl(145,40%,28%)] rounded-full top-1 -left-4 rotate-[-50deg] z-20" />
+        <div className="absolute w-3.5 h-1.5 bg-gradient-to-r from-[hsl(135,48%,38%)] to-[hsl(142,42%,30%)] rounded-full top-4 -left-3 rotate-[-65deg] z-20" />
+        <div className="absolute w-4 h-2 bg-gradient-to-l from-[hsl(140,45%,35%)] to-[hsl(148,40%,28%)] rounded-full top-2 -right-4 rotate-[55deg] z-20" />
+        <div className="w-5 h-5 opacity-0" />
       </div>
-      <div className="w-6 h-5 bg-gradient-to-b from-[hsl(35,25%,50%)] to-[hsl(35,30%,35%)] rounded-b-lg -mt-1" />
+      <div className="w-5 h-4 bg-gradient-to-b from-[hsl(30,50%,50%)] to-[hsl(25,55%,38%)] rounded-b-md relative z-0" />
     </div>,
-    // Cactus
-    <div key="cactus" className="flex flex-col items-center">
-      <div className="relative">
-        <div className="w-4 h-10 bg-gradient-to-r from-[hsl(140,35%,30%)] via-[hsl(140,40%,40%)] to-[hsl(140,35%,30%)] rounded-full" />
-        <div className="absolute w-2 h-4 bg-gradient-to-r from-[hsl(140,35%,32%)] via-[hsl(140,40%,38%)] to-[hsl(140,35%,32%)] rounded-full top-2 -left-2 rotate-[-30deg]" />
-        <div className="absolute w-2 h-5 bg-gradient-to-r from-[hsl(140,35%,32%)] via-[hsl(140,40%,38%)] to-[hsl(140,35%,32%)] rounded-full top-4 -right-1.5 rotate-[25deg]" />
+    // Bushy succulent
+    <div key="succulent" className="flex flex-col items-center relative">
+      <div className="relative z-10">
+        <div className="w-7 h-5 bg-gradient-to-t from-[hsl(150,40%,35%)] to-[hsl(145,50%,48%)] rounded-[50%_50%_40%_40%] relative">
+          <div className="absolute w-3 h-4 bg-[hsl(148,48%,42%)] rounded-full -top-2 left-1/2 -translate-x-1/2" />
+          <div className="absolute w-2.5 h-3 bg-[hsl(152,52%,40%)] rounded-full -top-1 left-0 rotate-[-30deg]" />
+          <div className="absolute w-2.5 h-3 bg-[hsl(152,52%,40%)] rounded-full -top-1 right-0 rotate-[30deg]" />
+          {/* Side leaves that extend out */}
+          <div className="absolute w-2 h-3 bg-[hsl(145,45%,38%)] rounded-full top-1 -left-2 rotate-[-45deg]" />
+          <div className="absolute w-2 h-3 bg-[hsl(145,45%,38%)] rounded-full top-1 -right-2 rotate-[45deg]" />
+        </div>
       </div>
-      <div className="w-5 h-4 bg-gradient-to-b from-[hsl(25,60%,50%)] to-[hsl(25,65%,38%)] rounded-b-md -mt-1" />
+      <div className="w-5 h-4 bg-gradient-to-b from-[hsl(20,50%,55%)] to-[hsl(20,55%,40%)] rounded-b-md relative z-0 -mt-1" />
     </div>,
   ];
   return variants[seed % variants.length];

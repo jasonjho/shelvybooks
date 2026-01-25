@@ -20,30 +20,49 @@ function Bookend() {
 type DecorationType = 'plant' | 'figurine' | 'globe' | 'hourglass' | 'candle' | 'photo' | 'vase';
 const DECORATION_TYPES: DecorationType[] = ['plant', 'figurine', 'globe', 'hourglass', 'candle', 'photo', 'vase'];
 
-// Generate decorations to fill empty slots in a row (limit to reasonable amount)
-function generateRowDecorations(
+// Generate decoration positions interspersed among books
+function generateDecorPositions(
   bookCount: number,
   maxPerRow: number,
   rowIndex: number
-): { type: DecorationType; seed: number }[] {
+): { position: number; type: DecorationType; seed: number }[] {
   const emptySlots = maxPerRow - bookCount;
-  if (emptySlots <= 0) return [];
+  if (emptySlots <= 0 || bookCount === 0) return [];
   
-  // Only fill up to 50% of empty space with decorations to avoid clutter
-  // Also cap at 5 decorations max per row
-  const decorationCount = Math.min(Math.floor(emptySlots * 0.5), 5);
+  // Add 1-3 decorations max, spread out organically
+  const decorationCount = Math.min(Math.ceil(emptySlots * 0.3), 3);
   if (decorationCount <= 0) return [];
   
-  const decorations: { type: DecorationType; seed: number }[] = [];
+  const decorations: { position: number; type: DecorationType; seed: number }[] = [];
+  const usedPositions = new Set<number>();
+  
+  // Use seeded randomness based on row index for consistent but varied placement
+  const seededRandom = (i: number) => {
+    const x = Math.sin(rowIndex * 100 + i * 50) * 10000;
+    return x - Math.floor(x);
+  };
   
   for (let i = 0; i < decorationCount; i++) {
+    // Distribute decorations with some randomness
+    const basePosition = Math.floor((bookCount / (decorationCount + 1)) * (i + 1));
+    const jitter = Math.floor(seededRandom(i) * 3) - 1; // -1, 0, or 1
+    let position = Math.max(1, Math.min(bookCount, basePosition + jitter));
+    
+    // Avoid placing next to each other
+    while (usedPositions.has(position) || usedPositions.has(position - 1) || usedPositions.has(position + 1)) {
+      position = (position + 1) % (bookCount + 1);
+      if (position === 0) position = 1;
+    }
+    
+    usedPositions.add(position);
     decorations.push({
-      type: DECORATION_TYPES[(rowIndex + i) % DECORATION_TYPES.length],
+      position,
+      type: DECORATION_TYPES[Math.floor(seededRandom(i + 10) * DECORATION_TYPES.length)],
       seed: rowIndex * 10 + i,
     });
   }
   
-  return decorations;
+  return decorations.sort((a, b) => a.position - b.position);
 }
 
 interface ShelfRowProps {
@@ -74,27 +93,39 @@ function ShelfRow({
   const bookendSlots = settings.showBookends && hasBooks ? 2 : 0;
   const availableSlots = maxPerRow - bookendSlots;
   
-  // Generate decorations for empty space in this row
-  const decorations = settings.showPlant 
-    ? generateRowDecorations(books.length, availableSlots, rowIndex)
+  // Generate decoration positions interspersed among books
+  const decorPositions = settings.showPlant 
+    ? generateDecorPositions(books.length, availableSlots, rowIndex)
     : [];
 
-  // Build items array: books then decorations
+  // Build items array: interleave books and decorations
   const items: Array<{ type: 'book'; book: Book } | { type: 'decoration'; decorationType: DecorationType; seed: number }> = [];
   
-  // Add all books
-  books.forEach(book => {
+  let decorIndex = 0;
+  books.forEach((book, bookIndex) => {
+    // Insert decorations before this book if positioned here
+    while (decorIndex < decorPositions.length && decorPositions[decorIndex].position === bookIndex) {
+      const dec = decorPositions[decorIndex];
+      items.push({ 
+        type: 'decoration', 
+        decorationType: dec.type, 
+        seed: dec.seed 
+      });
+      decorIndex++;
+    }
     items.push({ type: 'book', book });
   });
   
-  // Add decorations to fill the remaining slots
-  decorations.forEach((dec, i) => {
+  // Add any remaining decorations at the end
+  while (decorIndex < decorPositions.length) {
+    const dec = decorPositions[decorIndex];
     items.push({ 
       type: 'decoration', 
       decorationType: dec.type, 
       seed: dec.seed 
     });
-  });
+    decorIndex++;
+  }
 
   return (
     <div className={cn('shelf-row', `shelf-${skin}`, grainClass)}>

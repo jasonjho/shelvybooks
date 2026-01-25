@@ -474,7 +474,7 @@
     margin-top: -5px;
   }
 
-  /* Shelf decoration items */
+  /* Shelf decoration items - allow overflow for leafy plants */
   .shelf-decoration {
     @apply w-full min-w-[70px] max-w-[120px] mx-auto h-full;
     min-height: 80px;
@@ -482,6 +482,9 @@
     align-items: flex-end;
     justify-content: center;
     padding-bottom: 4px;
+    overflow: visible;
+    position: relative;
+    z-index: 5;
   }
 }
 
