@@ -70,13 +70,13 @@ export function DiscoverCollections({
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
             <Sparkles className="w-4 h-4" />
-            <span className="text-sm font-medium">Get Started</span>
+            <span className="text-sm font-medium font-sans">Get Started</span>
           </div>
-          <h2 className="text-2xl font-display font-semibold mb-2">
+          <h2 className="text-2xl font-display mb-2">
             Your shelf is empty!
           </h2>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            Browse curated collections below to quickly populate your bookshelf, 
+          <p className="text-muted-foreground max-w-md mx-auto font-sans">
+            Browse curated collections below to quickly populate your bookshelf,
             or search for specific books using the "Add Book" button.
           </p>
         </div>
