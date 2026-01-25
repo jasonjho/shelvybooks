@@ -16,8 +16,10 @@ export function useBookSearch() {
     setError(null);
 
     try {
+      // Use intitle: prefix for better title matching
+      const searchQuery = `intitle:${query}`;
       const response = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=12&printType=books`
+        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}&maxResults=12&printType=books`
       );
 
       if (!response.ok) {
