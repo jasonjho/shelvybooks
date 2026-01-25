@@ -99,7 +99,7 @@ export function ShelfControls({
             </span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="bg-popover">
           {sortOptions.map((option) => (
             <DropdownMenuItem
               key={option.value}
@@ -112,17 +112,6 @@ export function ShelfControls({
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-
-      {/* Quick Shuffle Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onShuffle}
-        className="gap-1.5"
-        title="Shuffle books"
-      >
-        <Shuffle className="w-4 h-4" />
-      </Button>
     </div>
   );
 }
