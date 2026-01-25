@@ -135,21 +135,14 @@ export default function Index() {
         </Tabs>
       </main>
 
-      {/* Footer hint */}
-      <footer className="relative z-10 py-6">
-        <div className="container text-center text-sm text-muted-foreground">
-          {user ? (
+      {/* Footer hint - only show for logged in users */}
+      {user && (
+        <footer className="relative z-10 py-6">
+          <div className="container text-center text-sm text-muted-foreground">
             <p>Right-click a book to move it or remove it from your shelf</p>
-          ) : (
-            <button 
-              onClick={signInWithGoogle}
-              className="hover:text-foreground underline underline-offset-2 transition-colors"
-            >
-              Sign in to start building your personal bookshelf
-            </button>
-          )}
-        </div>
-      </footer>
+          </div>
+        </footer>
+      )}
     </div>
   );
 }
