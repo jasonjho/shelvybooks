@@ -8,6 +8,7 @@ export const demoBooks: Book[] = [
     author: 'Andy Weir',
     coverUrl: 'https://covers.openlibrary.org/b/id/10441104-M.jpg',
     status: 'reading',
+    createdAt: '2024-01-15T10:00:00Z',
   },
   {
     id: 'demo-2',

@@ -9,6 +9,7 @@ interface BookshelfProps {
   books: Book[];
   skin: ShelfSkin;
   settings: ShelfSettings;
+  activeFilters: BookStatus[];
   onMoveBook?: (id: string, status: BookStatus) => void;
   onRemoveBook?: (id: string) => void;
 }
@@ -99,6 +100,7 @@ interface ShelfRowProps {
   maxPerRow: number;
   skin: ShelfSkin;
   settings: ShelfSettings;
+  activeFilters: BookStatus[];
   onMoveBook?: (id: string, status: BookStatus) => void;
   onRemoveBook?: (id: string) => void;
   onSelectBook: (book: Book) => void;
@@ -110,6 +112,7 @@ function ShelfRow({
   maxPerRow,
   skin,
   settings,
+  activeFilters,
   onMoveBook,
   onRemoveBook,
   onSelectBook,
@@ -165,28 +168,36 @@ function ShelfRow({
       
       {/* Books and decorations */}
       <div className="books-grid flex-1">
-        {items.map((item, index) => (
-          <div
-            key={item.type === 'book' ? item.book.id : `decor-${rowIndex}-${index}`}
-            className="animate-fade-in"
-            style={{ animationDelay: `${index * 50}ms` }}
-          >
-            {item.type === 'book' ? (
-              <BookSpine
-                book={item.book}
-                onMove={onMoveBook}
-                onRemove={onRemoveBook}
-                onSelect={() => onSelectBook(item.book)}
-                isInteractive={!!onMoveBook && !!onRemoveBook}
-              />
-            ) : (
-              <ShelfDecoration
-                type={item.decorationType}
-                seed={item.seed}
-              />
-            )}
-          </div>
-        ))}
+        {items.map((item, index) => {
+          // Check if book should be grayed out based on filters
+          const isGrayed = item.type === 'book' && 
+            activeFilters.length > 0 && 
+            !activeFilters.includes(item.book.status);
+          
+          return (
+            <div
+              key={item.type === 'book' ? item.book.id : `decor-${rowIndex}-${index}`}
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              {item.type === 'book' ? (
+                <BookSpine
+                  book={item.book}
+                  onMove={onMoveBook}
+                  onRemove={onRemoveBook}
+                  onSelect={() => onSelectBook(item.book)}
+                  isInteractive={!!onMoveBook && !!onRemoveBook}
+                  isGrayed={isGrayed}
+                />
+              ) : (
+                <ShelfDecoration
+                  type={item.decorationType}
+                  seed={item.seed}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
       
       {/* Right bookend - always show when enabled */}
@@ -206,7 +217,7 @@ function ShelfRow({
   );
 }
 
-export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: BookshelfProps) {
+export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook }: BookshelfProps) {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [booksPerRow, setBooksPerRow] = useState(8);
@@ -272,6 +283,7 @@ export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: B
           maxPerRow={booksPerRow}
           skin={skin}
           settings={settings}
+          activeFilters={activeFilters}
           onMoveBook={onMoveBook}
           onRemoveBook={onRemoveBook}
           onSelectBook={setSelectedBook}

@@ -4,6 +4,8 @@ export type ShelfSkin = 'oak' | 'walnut' | 'white' | 'dark';
 
 export type DecorDensity = 'minimal' | 'balanced' | 'cozy';
 
+export type SortOption = 'random' | 'recent' | 'status-author' | 'author-title';
+
 export interface ShelfSettings {
   showPlant: boolean;
   showBookends: boolean;
@@ -19,6 +21,7 @@ export interface Book {
   coverUrl: string;
   status: BookStatus;
   openLibraryKey?: string;
+  createdAt?: string;
 }
 
 export interface OpenLibraryBook {
