@@ -56,13 +56,13 @@ export default function Index() {
       )}
       
       {/* Header */}
-      <header className="relative border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-20">
+      <header className="relative border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-20">
         <div className="container py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/20 backdrop-blur-sm">
+            <div className="p-2 rounded-lg bg-primary">
               <Library className="w-6 h-6 text-primary-foreground" />
             </div>
-            <h1 className="font-display text-2xl font-semibold text-white drop-shadow-lg">
+            <h1 className="font-display text-2xl font-semibold text-foreground">
               Book Shelfie
             </h1>
           </div>
@@ -78,12 +78,12 @@ export default function Index() {
       <main className="container py-8 relative z-10">
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BookStatus)}>
           <div className="flex items-center justify-between mb-6">
-            <TabsList className="bg-black/30 backdrop-blur-sm border border-white/10">
+            <TabsList className="bg-muted/50 backdrop-blur-sm border border-border">
               {tabs.map((tab) => (
                 <TabsTrigger
                   key={tab.id}
                   value={tab.id}
-                  className="gap-1.5 text-white/70 data-[state=active]:bg-white/20 data-[state=active]:text-white"
+                  className="gap-1.5 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground"
                 >
                   {tab.icon}
                   <span className="hidden sm:inline">{tab.label}</span>
@@ -100,15 +100,15 @@ export default function Index() {
           {/* Loading state */}
           {(authLoading || booksLoading) && (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-white/50" />
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
             </div>
           )}
 
           {/* Not signed in message */}
           {!authLoading && !user && (
             <div className="text-center py-4 mb-4">
-              <p className="text-white/70 text-lg mb-1">Welcome to Book Shelfie!</p>
-              <p className="text-white/50 text-sm">Here's a preview — sign in with Google to build your own shelf.</p>
+              <p className="text-foreground text-lg mb-1">Welcome to Book Shelfie!</p>
+              <p className="text-muted-foreground text-sm">Here's a preview — sign in with Google to build your own shelf.</p>
             </div>
           )}
 
@@ -129,13 +129,13 @@ export default function Index() {
 
       {/* Footer hint */}
       <footer className="relative z-10 py-6">
-        <div className="container text-center text-sm text-white/50">
+        <div className="container text-center text-sm text-muted-foreground">
           {user ? (
             <p>Right-click a book to move it or remove it from your shelf</p>
           ) : (
             <button 
               onClick={signInWithGoogle}
-              className="hover:text-white/80 underline underline-offset-2 transition-colors"
+              className="hover:text-foreground underline underline-offset-2 transition-colors"
             >
               Sign in to start building your personal bookshelf
             </button>
