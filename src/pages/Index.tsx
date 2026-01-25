@@ -64,7 +64,7 @@ export default function Index() {
               <Library className="w-6 h-6 text-amber-100" />
             </div>
             <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent" style={{ fontFamily: "'Poppins', sans-serif" }}>
-              Shelfie
+              BookShelvy
             </h1>
           </div>
           <div className="flex items-center gap-2">
@@ -108,7 +108,7 @@ export default function Index() {
           {/* Not signed in message */}
           {!authLoading && !user && (
             <div className="text-center py-4 mb-4">
-              <p className="text-foreground text-lg mb-1">Welcome to Shelfie!</p>
+              <p className="text-foreground text-lg mb-1">Welcome to BookShelvy!</p>
               <p className="text-muted-foreground text-sm">
                 Here's a preview — use the <span className="text-primary font-medium">Sign in</span> button above to build your own shelf.
               </p>
