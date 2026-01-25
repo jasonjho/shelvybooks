@@ -35,7 +35,7 @@ function TrailingPlantDecor({ seed }: { seed: number }) {
   return (
     <div className="flex flex-col items-center">
       {/* Foliage sitting in pot */}
-      <div className="relative">
+      <div className="relative h-6">
         {/* Base connection layer */}
         <div className="absolute w-6 h-3 rounded-t-full bottom-0 left-1/2 -translate-x-1/2"
           style={{ background: colors.dark }} />
@@ -64,10 +64,9 @@ function TrailingPlantDecor({ seed }: { seed: number }) {
         <div className="absolute w-4 h-3 rounded-full -top-1 -right-3"
           style={{ background: colors.dark }} />
         
-        <div className="w-7 h-4 opacity-0" />
       </div>
       {/* Pot with rim */}
-      <div className="relative">
+      <div className="relative -mt-2">
         <div className="w-8 h-1.5 rounded-t-sm bg-[hsl(22,55%,48%)]" />
         <div className="w-7 h-5 rounded-b-lg mx-auto"
           style={{ background: 'linear-gradient(180deg, hsl(25,55%,50%), hsl(20,60%,35%))' }} />
