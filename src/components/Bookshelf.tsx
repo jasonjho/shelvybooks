@@ -94,7 +94,6 @@ function generateDecorPositions(
 interface ShelfRowProps {
   books: Book[];
   rowIndex: number;
-  maxBooksPerRow: number;
   decorSlotsPerRow: number;
   skin: ShelfSkin;
   settings: ShelfSettings;
@@ -107,7 +106,6 @@ interface ShelfRowProps {
 function ShelfRow({
   books,
   rowIndex,
-  maxBooksPerRow,
   decorSlotsPerRow,
   skin,
   settings,
@@ -229,18 +227,30 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
   // Calculate how many books fit per row based on container width
   useEffect(() => {
     const updateBooksPerRow = () => {
-      if (containerRef.current) {
-        // Container has p-4 (16px each side) and shelf-row has px-4 (16px each side)
-        const containerWidth = containerRef.current.offsetWidth - 32 - 32; // bookcase p-4 + shelf-row px-4
-        // Account for bookends (20px each + 8px gap each = 56px total when both shown)
-        const bookendWidth = settings.showBookends ? 56 : 0;
-        const availableWidth = containerWidth - bookendWidth;
-        // Each item is 70px wide with 8px gap = 78px per slot
-        const totalSlots = Math.floor(availableWidth / 78);
-        // Reserve slots for decorations
-        const bookSlots = Math.max(totalSlots - decorSlotsPerRow, 3);
-        setBooksPerRow(bookSlots);
-      }
+      const container = containerRef.current;
+      if (!container) return;
+
+      // Measure actual rendered shelf grid width so toggling/reconfiguring decor
+      // recomputes capacity correctly (no fragile border/padding math).
+      const gridEl = container.querySelector('.books-grid') as HTMLElement | null;
+      const bookCoverEl = container.querySelector('.book-cover') as HTMLElement | null;
+
+      const gridWidth = gridEl?.clientWidth ?? container.clientWidth;
+      const itemWidth = bookCoverEl?.offsetWidth ?? 70;
+
+      const gapPx = (() => {
+        if (!gridEl) return 8;
+        const style = window.getComputedStyle(gridEl);
+        // For flex gap, browsers typically expose it via columnGap.
+        const raw = style.columnGap || (style as unknown as { gap?: string }).gap || '8px';
+        const parsed = Number.parseFloat(raw);
+        return Number.isFinite(parsed) ? parsed : 8;
+      })();
+
+      // N items take: N*itemWidth + (N-1)*gap <= gridWidth
+      const totalSlots = Math.max(1, Math.floor((gridWidth + gapPx) / (itemWidth + gapPx)));
+      const bookSlots = Math.max(totalSlots - decorSlotsPerRow, 3);
+      setBooksPerRow(bookSlots);
     };
 
     updateBooksPerRow();
@@ -286,7 +296,6 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
           key={rowIndex}
           books={rowBooks}
           rowIndex={rowIndex}
-          maxBooksPerRow={booksPerRow}
           decorSlotsPerRow={decorSlotsPerRow}
           skin={skin}
           settings={settings}
