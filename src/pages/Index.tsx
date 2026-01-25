@@ -126,9 +126,12 @@ export default function Index() {
             <div className="p-2 rounded-lg bg-gradient-to-br from-amber-700 to-amber-900 shadow-md">
               <Library className="w-6 h-6 text-amber-100" />
             </div>
-            <h1 className="text-3xl font-normal tracking-wide bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
-              <span className="italic">Shelvy</span>Books
-            </h1>
+            <div>
+              <h1 className="text-3xl font-normal tracking-wide bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
+                <span className="italic">Shelvy</span>Books
+              </h1>
+              <p className="text-xs text-muted-foreground">Your personal bookshelf, beautifully organized</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
