@@ -259,6 +259,11 @@ export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: B
       <div className="bookcase-corbel left" />
       <div className="bookcase-corbel right" />
       <div className="bookcase-inner-trim" />
+      {/* Carved rosette corners */}
+      <div className="bookcase-rosette top-left" />
+      <div className="bookcase-rosette top-right" />
+      <div className="bookcase-rosette bottom-left" />
+      <div className="bookcase-rosette bottom-right" />
       {bookRows.map((rowBooks, rowIndex) => (
         <ShelfRow
           key={rowIndex}
