@@ -202,7 +202,7 @@ export default function Index() {
                   <DiscoverCollections onAddBook={addBook} />
                 )}
 
-                <div className="flex items-center justify-end mb-6">
+                <div className="hidden sm:flex items-center justify-end mb-6">
                   <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
                 </div>
 
