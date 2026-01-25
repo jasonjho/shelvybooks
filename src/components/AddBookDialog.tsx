@@ -90,7 +90,7 @@ export function AddBookDialog({ onAddBook, defaultStatus }: AddBookDialogProps) 
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">Add a Book</DialogTitle>
+          <DialogTitle className="font-sans text-lg font-semibold">Add a Book</DialogTitle>
           <DialogDescription className="sr-only">
             Search for a book or add one manually
           </DialogDescription>
