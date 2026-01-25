@@ -289,6 +289,145 @@
     box-shadow: inset 0 0 8px hsl(24 30% 10% / 0.1);
   }
 
+  /* Carved rosette corner details */
+  .bookcase-rosette {
+    @apply absolute w-6 h-6;
+    background: radial-gradient(circle at 50% 50%, 
+      hsl(var(--shelf-oak)) 0%,
+      hsl(var(--shelf-oak-dark)) 25%,
+      hsl(var(--shelf-oak)) 40%,
+      hsl(var(--shelf-oak-dark)) 55%,
+      hsl(var(--shelf-oak)) 70%,
+      hsl(var(--shelf-oak-dark)) 85%,
+      hsl(var(--shelf-oak)) 100%
+    );
+    border-radius: 50%;
+    box-shadow: 
+      inset 0 2px 3px hsl(45 50% 70% / 0.25),
+      inset 0 -2px 3px hsl(24 40% 15% / 0.3),
+      0 1px 3px hsl(24 30% 10% / 0.4);
+  }
+  .bookcase-rosette::before {
+    content: '';
+    @apply absolute inset-1;
+    background: radial-gradient(circle at 50% 50%, 
+      hsl(var(--shelf-oak-dark)) 0%,
+      hsl(var(--shelf-oak)) 30%,
+      hsl(var(--shelf-oak-dark)) 50%,
+      hsl(var(--shelf-oak)) 70%,
+      hsl(var(--shelf-oak-dark)) 100%
+    );
+    border-radius: 50%;
+  }
+  .bookcase-rosette::after {
+    content: '';
+    @apply absolute w-2 h-2 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
+    background: radial-gradient(circle, 
+      hsl(var(--shelf-oak)) 0%,
+      hsl(var(--shelf-oak-dark)) 100%
+    );
+    border-radius: 50%;
+    box-shadow: inset 0 1px 2px hsl(45 50% 70% / 0.3);
+  }
+  .bookcase-rosette.top-left {
+    top: 8px;
+    left: 8px;
+  }
+  .bookcase-rosette.top-right {
+    top: 8px;
+    right: 8px;
+  }
+  .bookcase-rosette.bottom-left {
+    bottom: 12px;
+    left: 8px;
+  }
+  .bookcase-rosette.bottom-right {
+    bottom: 12px;
+    right: 8px;
+  }
+
+  /* Rosette skin variants */
+  .bookcase.skin-walnut .bookcase-rosette {
+    background: radial-gradient(circle at 50% 50%, 
+      hsl(var(--shelf-walnut)) 0%,
+      hsl(var(--shelf-walnut-dark)) 25%,
+      hsl(var(--shelf-walnut)) 40%,
+      hsl(var(--shelf-walnut-dark)) 55%,
+      hsl(var(--shelf-walnut)) 70%,
+      hsl(var(--shelf-walnut-dark)) 85%,
+      hsl(var(--shelf-walnut)) 100%
+    );
+  }
+  .bookcase.skin-walnut .bookcase-rosette::before {
+    background: radial-gradient(circle at 50% 50%, 
+      hsl(var(--shelf-walnut-dark)) 0%,
+      hsl(var(--shelf-walnut)) 30%,
+      hsl(var(--shelf-walnut-dark)) 50%,
+      hsl(var(--shelf-walnut)) 70%,
+      hsl(var(--shelf-walnut-dark)) 100%
+    );
+  }
+  .bookcase.skin-walnut .bookcase-rosette::after {
+    background: radial-gradient(circle, 
+      hsl(var(--shelf-walnut)) 0%,
+      hsl(var(--shelf-walnut-dark)) 100%
+    );
+  }
+
+  .bookcase.skin-white .bookcase-rosette {
+    background: radial-gradient(circle at 50% 50%, 
+      hsl(var(--shelf-white)) 0%,
+      hsl(var(--shelf-white-dark)) 25%,
+      hsl(var(--shelf-white)) 40%,
+      hsl(var(--shelf-white-dark)) 55%,
+      hsl(var(--shelf-white)) 70%,
+      hsl(var(--shelf-white-dark)) 85%,
+      hsl(var(--shelf-white)) 100%
+    );
+  }
+  .bookcase.skin-white .bookcase-rosette::before {
+    background: radial-gradient(circle at 50% 50%, 
+      hsl(var(--shelf-white-dark)) 0%,
+      hsl(var(--shelf-white)) 30%,
+      hsl(var(--shelf-white-dark)) 50%,
+      hsl(var(--shelf-white)) 70%,
+      hsl(var(--shelf-white-dark)) 100%
+    );
+  }
+  .bookcase.skin-white .bookcase-rosette::after {
+    background: radial-gradient(circle, 
+      hsl(var(--shelf-white)) 0%,
+      hsl(var(--shelf-white-dark)) 100%
+    );
+  }
+
+  .bookcase.skin-dark .bookcase-rosette {
+    background: radial-gradient(circle at 50% 50%, 
+      hsl(var(--shelf-dark)) 0%,
+      hsl(var(--shelf-dark-dark)) 25%,
+      hsl(var(--shelf-dark)) 40%,
+      hsl(var(--shelf-dark-dark)) 55%,
+      hsl(var(--shelf-dark)) 70%,
+      hsl(var(--shelf-dark-dark)) 85%,
+      hsl(var(--shelf-dark)) 100%
+    );
+  }
+  .bookcase.skin-dark .bookcase-rosette::before {
+    background: radial-gradient(circle at 50% 50%, 
+      hsl(var(--shelf-dark-dark)) 0%,
+      hsl(var(--shelf-dark)) 30%,
+      hsl(var(--shelf-dark-dark)) 50%,
+      hsl(var(--shelf-dark)) 70%,
+      hsl(var(--shelf-dark-dark)) 100%
+    );
+  }
+  .bookcase.skin-dark .bookcase-rosette::after {
+    background: radial-gradient(circle, 
+      hsl(var(--shelf-dark)) 0%,
+      hsl(var(--shelf-dark-dark)) 100%
+    );
+  }
+
   /* Skin variants for trim elements */
   .bookcase.skin-walnut .bookcase-crown,
   .bookcase.skin-walnut .bookcase-base,
