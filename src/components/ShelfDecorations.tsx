@@ -89,33 +89,21 @@ function TrailingPlantDecor({ seed }: { seed: number }) {
   );
 }
 
-function PottedPlantDecor({ seed }: { seed: number }) {
-  const variants = [
-    // Dense bushy shrub
-    <Potted key="shrub" size="md">
-      <div className="relative h-6">
+function PottedPlantDecor() {
+  return (
+    <Potted size="lg">
+      <div className="relative h-7">
         {/* Main bush sitting low */}
-        <div className="absolute w-10 h-5 rounded-[50%_50%_45%_45%] bottom-0 left-1/2 -translate-x-1/2"
+        <div className="absolute w-12 h-6 rounded-[50%_50%_45%_45%] bottom-0 left-1/2 -translate-x-1/2"
           style={{ background: 'radial-gradient(ellipse at 35% 35%, hsl(130,55%,45%), hsl(140,45%,30%))' }} />
-        <div className="absolute w-4 h-3 rounded-full bottom-3 left-1/2 -translate-x-1/2 bg-[hsl(125,55%,48%)]" />
-        <div className="absolute w-3 h-2.5 rounded-full bottom-2 -left-0.5 bg-[hsl(130,50%,42%)]" />
-        <div className="absolute w-3 h-2.5 rounded-full bottom-2 -right-0.5 bg-[hsl(130,50%,42%)]" />
-        <div className="absolute w-4 h-3 rounded-full bottom-1 -left-2 bg-[hsl(135,48%,38%)]" />
-        <div className="absolute w-4 h-3 rounded-full bottom-1 -right-2 bg-[hsl(135,48%,38%)]" />
+        <div className="absolute w-5 h-3.5 rounded-full bottom-4 left-1/2 -translate-x-1/2 bg-[hsl(125,55%,48%)]" />
+        <div className="absolute w-3.5 h-3 rounded-full bottom-2.5 -left-0.5 bg-[hsl(130,50%,42%)]" />
+        <div className="absolute w-3.5 h-3 rounded-full bottom-2.5 -right-0.5 bg-[hsl(130,50%,42%)]" />
+        <div className="absolute w-4.5 h-3.5 rounded-full bottom-1 -left-2.5 bg-[hsl(135,48%,38%)]" />
+        <div className="absolute w-4.5 h-3.5 rounded-full bottom-1 -right-2.5 bg-[hsl(135,48%,38%)]" />
       </div>
-    </Potted>,
-    // Compact round bush
-    <Potted key="round" size="sm">
-      <div className="relative h-5">
-        <div className="absolute w-9 h-4 rounded-full bottom-0 left-1/2 -translate-x-1/2"
-          style={{ background: 'radial-gradient(ellipse at 40% 40%, hsl(140,50%,42%), hsl(145,40%,28%))' }} />
-        <div className="absolute w-5 h-3 rounded-full bottom-2 left-1/2 -translate-x-1/2 bg-[hsl(135,55%,48%)]" />
-        <div className="absolute w-3.5 h-2.5 rounded-full bottom-0.5 -left-2 bg-[hsl(138,45%,35%)]" />
-        <div className="absolute w-3.5 h-2.5 rounded-full bottom-0.5 -right-2 bg-[hsl(138,45%,35%)]" />
-      </div>
-    </Potted>,
-  ];
-  return variants[seed % variants.length];
+    </Potted>
+  );
 }
 
 function SucculentDecor({ seed }: { seed: number }) {
@@ -446,7 +434,7 @@ function Decoration({ type, seed }: DecorationProps) {
     case 'trailing-plant':
       return <TrailingPlantDecor seed={seed} />;
     case 'potted-plant':
-      return <PottedPlantDecor seed={seed} />;
+      return <PottedPlantDecor />;
     case 'succulent':
       return <SucculentDecor seed={seed} />;
     case 'cactus':
