@@ -130,7 +130,7 @@ export default function PublicShelf() {
   }
 
   return (
-    <div className="min-h-screen office-wall">
+    <div className="min-h-screen office-wall overflow-x-hidden">
       {/* Header */}
       <header className="relative border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-20">
         <div className="container py-4 flex items-center justify-between">
