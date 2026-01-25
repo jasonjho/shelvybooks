@@ -54,21 +54,21 @@ function generateDecorPositions(
   };
 
   // Calculate spacing between decorations based on book count and decoration count
-  // Positions are insertion points BETWEEN books: 1..bookCount+1 (never 0 to avoid "before first book")
+  // Positions are insertion points BETWEEN books: 2..bookCount+1 (never 1 to avoid "before first book")
   const avgSpacing = Math.max(config.minSpacing, Math.floor(bookCount / (decorationCount + 1)));
   
   // Generate positions with organic spacing
   for (let i = 0; i < decorationCount; i++) {
-    // Base position: evenly distributed with jitter
-    const basePos = Math.floor((i + 1) * avgSpacing);
+    // Base position: evenly distributed with jitter, starting after first book
+    const basePos = Math.floor((i + 1) * avgSpacing) + 1; // +1 to skip position 1
     const jitter = Math.floor((seededRandom(i * 3 + rowIndex) - 0.5) * 3);
-    let pos = Math.max(1, Math.min(bookCount + 1, basePos + jitter));
+    let pos = Math.max(2, Math.min(bookCount + 1, basePos + jitter)); // min 2, never before first book
     
     // Find nearest available position that respects minimum spacing
     let found = false;
     for (let d = 0; d <= bookCount && !found; d++) {
       for (const candidate of [pos + d, pos - d]) {
-        if (candidate < 1 || candidate > bookCount + 1) continue;
+        if (candidate < 2 || candidate > bookCount + 1) continue; // min 2 to never be first
         if (usedPositions.has(candidate)) continue;
         
         // Check minimum spacing from other decorations
