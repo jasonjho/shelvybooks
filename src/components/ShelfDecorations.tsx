@@ -503,7 +503,7 @@ export const DECORATION_TYPES: DecorationType[] = [...PLANT_TYPES, ...OTHER_DECO
 
 export function ShelfDecoration({ type, seed }: { type: DecorationType; seed: number }) {
   return (
-    <div className="shelf-decoration flex items-end justify-center animate-fade-in">
+    <div className="shelf-decoration flex items-end justify-center animate-fade-in scale-[1.35] origin-bottom">
       <Decoration type={type} seed={seed} />
     </div>
   );
