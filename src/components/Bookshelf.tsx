@@ -156,7 +156,8 @@ export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: B
   useEffect(() => {
     const updateBooksPerRow = () => {
       if (containerRef.current) {
-        const containerWidth = containerRef.current.offsetWidth - 32; // Account for padding (px-4 = 16px each side)
+        // Container has p-4 (16px each side) and shelf-row has px-4 (16px each side)
+        const containerWidth = containerRef.current.offsetWidth - 32 - 32; // bookcase p-4 + shelf-row px-4
         // Account for bookends (20px each + 8px gap each = 56px total when both shown)
         const bookendWidth = settings.showBookends ? 56 : 0;
         const availableWidth = containerWidth - bookendWidth;
