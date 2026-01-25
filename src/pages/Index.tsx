@@ -138,7 +138,12 @@ export default function Index() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <SettingsPanel settings={settings} onSettingsChange={updateSettings} />
+            <SettingsPanel 
+              settings={settings} 
+              onSettingsChange={updateSettings}
+              currentSkin={shelfSkin}
+              onSkinChange={setShelfSkin}
+            />
             <AuthButton />
           </div>
         </div>
