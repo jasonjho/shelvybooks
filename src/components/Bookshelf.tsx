@@ -21,6 +21,9 @@ type DecorationType = 'plant' | 'figurine' | 'globe' | 'hourglass' | 'candle' | 
 const DECORATION_TYPES: DecorationType[] = ['plant', 'figurine', 'globe', 'hourglass', 'candle', 'photo', 'vase'];
 
 // Generate decoration positions interspersed among books
+// Fibonacci sequence for organic spacing
+const FIB = [1, 2, 3, 5, 8, 13, 21];
+
 function generateDecorPositions(
   bookCount: number,
   maxPerRow: number,
@@ -29,64 +32,56 @@ function generateDecorPositions(
   const emptySlots = maxPerRow - bookCount;
   if (emptySlots <= 0 || bookCount === 0) return [];
   
-  // Add 1-3 decorations max, spread out organically
-  const decorationCount = Math.min(Math.ceil(emptySlots * 0.3), 3);
+  // 1-3 decorations based on shelf size
+  const decorationCount = Math.min(Math.ceil(emptySlots * 0.25), 3);
   if (decorationCount <= 0) return [];
   
   const decorations: { position: number; type: DecorationType; seed: number }[] = [];
   const usedPositions = new Set<number>();
   
-  // Use seeded randomness based on row index for consistent but varied placement
+  // Seeded random for consistent but varied placement per row
   const seededRandom = (i: number) => {
-    const x = Math.sin(rowIndex * 100 + i * 50) * 10000;
+    const x = Math.sin(rowIndex * 127.1 + i * 311.7) * 43758.5453;
     return x - Math.floor(x);
   };
   
-  // Positions are gaps between books: 0 = before the 1st book, bookCount = after the last book
-  const allPositions = Array.from({ length: bookCount + 1 }, (_, idx) => idx);
-
-  const isAllowed = (pos: number, strictSpacing: boolean) => {
-    if (usedPositions.has(pos)) return false;
-    if (!strictSpacing) return true;
-    // Try to keep at least one gap between decorations when possible
-    return !usedPositions.has(pos - 1) && !usedPositions.has(pos + 1);
+  // Pick a Fibonacci number scaled to shelf, with randomness
+  const fibSpacing = (i: number) => {
+    const fibIdx = Math.floor(seededRandom(i + 5) * Math.min(FIB.length, 4));
+    return FIB[fibIdx];
   };
 
-  const pickPositionNear = (preferred: number) => {
-    // Search positions in increasing distance from preferred (bounded, no while loop)
-    const order: number[] = [0];
-    for (let d = 1; d <= bookCount; d++) order.push(d, -d);
-
-    // Pass 1: strict spacing (avoid adjacency)
-    for (const delta of order) {
-      const candidate = preferred + delta;
-      if (candidate < 0 || candidate > bookCount) continue;
-      if (isAllowed(candidate, true)) return candidate;
+  // Generate candidate positions using Fibonacci-based offsets
+  let cursor = Math.floor(seededRandom(rowIndex) * 3); // start offset 0-2
+  
+  for (let i = 0; i < decorationCount && cursor <= bookCount; i++) {
+    // Add some jitter to break up patterns
+    const jitter = Math.floor((seededRandom(i * 3 + 1) - 0.4) * 2); // slight bias forward
+    let pos = Math.max(0, Math.min(bookCount, cursor + jitter));
+    
+    // Find nearest available position (bounded search)
+    let found = false;
+    for (let d = 0; d <= bookCount && !found; d++) {
+      for (const candidate of [pos + d, pos - d]) {
+        if (candidate < 0 || candidate > bookCount) continue;
+        if (usedPositions.has(candidate)) continue;
+        // Avoid clustering: at least 2 positions apart when possible
+        const tooClose = [...usedPositions].some(p => Math.abs(p - candidate) < 2);
+        if (tooClose && d < bookCount / 2) continue; // relax constraint if running out of space
+        
+        usedPositions.add(candidate);
+        decorations.push({
+          position: candidate,
+          type: DECORATION_TYPES[Math.floor(seededRandom(i + 10) * DECORATION_TYPES.length)],
+          seed: rowIndex * 10 + i,
+        });
+        found = true;
+        break;
+      }
     }
-    // Pass 2: relaxed (only uniqueness)
-    for (const delta of order) {
-      const candidate = preferred + delta;
-      if (candidate < 0 || candidate > bookCount) continue;
-      if (isAllowed(candidate, false)) return candidate;
-    }
-    return null;
-  };
-
-  for (let i = 0; i < decorationCount; i++) {
-    // Prefer positions distributed across the shelf, with gentle jitter
-    const base = ((bookCount + 1) / (decorationCount + 1)) * (i + 1);
-    const jitter = (seededRandom(i) - 0.5) * 2; // -1..1
-    const preferred = Math.max(0, Math.min(bookCount, Math.round(base + jitter)));
-
-    const position = pickPositionNear(preferred);
-    if (position == null) continue;
-
-    usedPositions.add(position);
-    decorations.push({
-      position,
-      type: DECORATION_TYPES[Math.floor(seededRandom(i + 10) * DECORATION_TYPES.length)],
-      seed: rowIndex * 10 + i,
-    });
+    
+    // Advance cursor by Fibonacci spacing
+    cursor += fibSpacing(i) + 1;
   }
   
   return decorations.sort((a, b) => a.position - b.position);
