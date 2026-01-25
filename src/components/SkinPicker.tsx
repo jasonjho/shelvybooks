@@ -33,7 +33,7 @@ const skins: { id: ShelfSkin; name: string; gradient: string }[] = [
 export function SkinPicker({ currentSkin, onSkinChange }: SkinPickerProps) {
   return (
     <div className="flex items-center gap-3">
-      <span className="text-sm text-white/60 hidden sm:inline">Wood finish:</span>
+      <span className="text-sm text-muted-foreground hidden sm:inline">Wood finish:</span>
       <div className="flex gap-2">
         {skins.map((skin) => (
           <button
@@ -43,8 +43,8 @@ export function SkinPicker({ currentSkin, onSkinChange }: SkinPickerProps) {
               'w-9 h-9 rounded-full border-2 transition-all flex items-center justify-center shadow-lg',
               skin.gradient,
               currentSkin === skin.id
-                ? 'border-white ring-2 ring-white/30 scale-110'
-                : 'border-white/20 hover:border-white/50 hover:scale-105'
+                ? 'border-primary ring-2 ring-primary/30 scale-110'
+                : 'border-border hover:border-primary/50 hover:scale-105'
             )}
             title={skin.name}
           >
