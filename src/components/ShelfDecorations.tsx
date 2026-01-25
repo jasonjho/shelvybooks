@@ -80,36 +80,31 @@ function PottedPlantDecor({ seed }: { seed: number }) {
   const variants = [
     // Dense bushy shrub
     <div key="shrub" className="flex flex-col items-center">
-      <div className="relative">
-        {/* Base connection */}
-        <div className="absolute w-5 h-2 rounded-t-full bottom-0 left-1/2 -translate-x-1/2 bg-[hsl(140,45%,30%)]" />
-        {/* Main bush */}
-        <div className="absolute w-10 h-6 rounded-[50%_50%_45%_45%] -top-4 left-1/2 -translate-x-1/2"
+      <div className="relative h-6">
+        {/* Main bush sitting low */}
+        <div className="absolute w-10 h-5 rounded-[50%_50%_45%_45%] bottom-0 left-1/2 -translate-x-1/2"
           style={{ background: 'radial-gradient(ellipse at 35% 35%, hsl(130,55%,45%), hsl(140,45%,30%))' }} />
-        <div className="absolute w-4 h-3 rounded-full -top-5 left-1/2 -translate-x-1/2 bg-[hsl(125,55%,48%)]" />
-        <div className="absolute w-3 h-2.5 rounded-full -top-4 -left-1 bg-[hsl(130,50%,42%)]" />
-        <div className="absolute w-3 h-2.5 rounded-full -top-4 -right-1 bg-[hsl(130,50%,42%)]" />
-        <div className="absolute w-4 h-3 rounded-full -top-2 -left-3 bg-[hsl(135,48%,38%)]" />
-        <div className="absolute w-4 h-3 rounded-full -top-2 -right-3 bg-[hsl(135,48%,38%)]" />
-        <div className="w-6 h-4 opacity-0" />
+        <div className="absolute w-4 h-3 rounded-full bottom-3 left-1/2 -translate-x-1/2 bg-[hsl(125,55%,48%)]" />
+        <div className="absolute w-3 h-2.5 rounded-full bottom-2 -left-0.5 bg-[hsl(130,50%,42%)]" />
+        <div className="absolute w-3 h-2.5 rounded-full bottom-2 -right-0.5 bg-[hsl(130,50%,42%)]" />
+        <div className="absolute w-4 h-3 rounded-full bottom-1 -left-2 bg-[hsl(135,48%,38%)]" />
+        <div className="absolute w-4 h-3 rounded-full bottom-1 -right-2 bg-[hsl(135,48%,38%)]" />
       </div>
-      <div className="relative">
+      <div className="relative -mt-1">
         <div className="w-7 h-1 rounded-t-sm bg-[hsl(22,55%,48%)]" />
         <div className="w-6 h-4 rounded-b-lg mx-auto bg-gradient-to-b from-[hsl(25,55%,50%)] to-[hsl(20,60%,38%)]" />
       </div>
     </div>,
     // Compact round bush
     <div key="round" className="flex flex-col items-center">
-      <div className="relative">
-        <div className="absolute w-5 h-2 rounded-t-full bottom-0 left-1/2 -translate-x-1/2 bg-[hsl(145,40%,28%)]" />
-        <div className="absolute w-9 h-5 rounded-full -top-3 left-1/2 -translate-x-1/2"
+      <div className="relative h-5">
+        <div className="absolute w-9 h-4 rounded-full bottom-0 left-1/2 -translate-x-1/2"
           style={{ background: 'radial-gradient(ellipse at 40% 40%, hsl(140,50%,42%), hsl(145,40%,28%))' }} />
-        <div className="absolute w-5 h-3 rounded-full -top-4 left-1/2 -translate-x-1/2 bg-[hsl(135,55%,48%)]" />
-        <div className="absolute w-3.5 h-2.5 rounded-full -top-1 -left-3 bg-[hsl(138,45%,35%)]" />
-        <div className="absolute w-3.5 h-2.5 rounded-full -top-1 -right-3 bg-[hsl(138,45%,35%)]" />
-        <div className="w-5 h-3 opacity-0" />
+        <div className="absolute w-5 h-3 rounded-full bottom-2 left-1/2 -translate-x-1/2 bg-[hsl(135,55%,48%)]" />
+        <div className="absolute w-3.5 h-2.5 rounded-full bottom-0.5 -left-2 bg-[hsl(138,45%,35%)]" />
+        <div className="absolute w-3.5 h-2.5 rounded-full bottom-0.5 -right-2 bg-[hsl(138,45%,35%)]" />
       </div>
-      <div className="relative">
+      <div className="relative -mt-0.5">
         <div className="w-6 h-1 rounded-t-sm bg-[hsl(28,50%,48%)]" />
         <div className="w-5 h-4 rounded-b-md mx-auto bg-gradient-to-b from-[hsl(30,50%,50%)] to-[hsl(25,55%,38%)]" />
       </div>
