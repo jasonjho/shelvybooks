@@ -279,19 +279,29 @@
 
   /* Shelf row */
   .shelf-row {
-    @apply relative flex items-end gap-2 px-6 pb-4 flex-wrap;
+    @apply relative flex items-end gap-2 px-6 pb-4;
     min-height: 160px;
   }
 
-  /* Responsive books grid */
+  /* Responsive books grid - single row, fills available space */
   .books-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    display: flex;
+    flex-wrap: nowrap;
     gap: 0.5rem;
-    align-items: end;
+    align-items: flex-end;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .books-grid::-webkit-scrollbar {
+    display: none;
   }
 
   .books-grid > div {
+    flex: 0 0 auto;
+    min-width: 70px;
+    max-width: 120px;
     display: flex;
     justify-content: center;
   }
