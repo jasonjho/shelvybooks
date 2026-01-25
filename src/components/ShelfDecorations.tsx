@@ -123,9 +123,14 @@ function SucculentDecor({ seed }: { seed: number }) {
   
   return (
     <div className="flex flex-col items-center">
+      {/* Pot first, then plant sitting in it */}
       <div className="relative">
-        {/* Dense rosette succulent */}
-        <div className="w-8 h-4 rounded-full relative"
+        {/* Pot rim */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-1 rounded-t-sm bg-[hsl(18,50%,52%)] z-0" />
+        {/* Pot body */}
+        <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 w-5 h-3.5 rounded-b-md bg-gradient-to-b from-[hsl(20,50%,55%)] to-[hsl(20,55%,40%)] z-0" />
+        {/* Dense rosette succulent sitting on pot */}
+        <div className="relative z-10 w-8 h-4 rounded-full"
           style={{ background: `radial-gradient(ellipse at 50% 40%, ${c.tip}, ${c.base})` }}>
           <div className="absolute w-3 h-2.5 rounded-full top-0 left-1/2 -translate-x-1/2 -translate-y-1" style={{ background: c.tip }} />
           <div className="absolute w-2.5 h-2 rounded-full -top-0.5 left-1" style={{ background: c.mid }} />
@@ -134,10 +139,8 @@ function SucculentDecor({ seed }: { seed: number }) {
           <div className="absolute w-2 h-1.5 rounded-full top-1 -right-1" style={{ background: c.base }} />
         </div>
       </div>
-      <div className="relative -mt-0.5">
-        <div className="w-6 h-1 rounded-t-sm bg-[hsl(18,50%,52%)]" />
-        <div className="w-5 h-3.5 rounded-b-md mx-auto bg-gradient-to-b from-[hsl(20,50%,55%)] to-[hsl(20,55%,40%)]" />
-      </div>
+      {/* Spacer for pot height */}
+      <div className="h-4" />
     </div>
   );
 }
