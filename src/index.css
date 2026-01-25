@@ -283,7 +283,7 @@
     min-height: 140px;
   }
 
-  /* Responsive books grid - flexbox for even distribution */
+  /* Responsive books grid - consistent sizing */
   .books-grid {
     display: flex;
     flex-wrap: nowrap;
@@ -293,9 +293,8 @@
   }
 
   .books-grid > div {
-    flex: 1 1 0;
-    min-width: 70px;
-    max-width: 120px;
+    flex: 0 0 auto;
+    width: 80px;
     display: flex;
     justify-content: center;
   }

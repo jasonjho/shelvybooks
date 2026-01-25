@@ -29,9 +29,9 @@ function BookCover({ book, onSelect }: { book: Book; onSelect?: () => void }) {
     : `https://openlibrary.org/search?q=${encodeURIComponent(book.title + ' ' + book.author)}`;
 
   return (
-    <div className="book-spine group/book relative w-full">
+    <div className="book-spine group/book relative">
       <div
-        className="book-cover w-full min-w-[70px] max-w-[120px] mx-auto aspect-[2/3] cursor-pointer"
+        className="book-cover w-[70px] h-[105px] cursor-pointer"
         onClick={onSelect}
         style={{
           backgroundImage: `url(${book.coverUrl})`,
