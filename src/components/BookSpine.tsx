@@ -14,6 +14,7 @@ interface BookSpineProps {
   onRemove?: (id: string) => void;
   onSelect?: () => void;
   isInteractive?: boolean;
+  isGrayed?: boolean;
 }
 
 const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -22,14 +23,14 @@ const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode 
   { status: 'read', label: 'Read', icon: <CheckCircle className="w-4 h-4" /> },
 ];
 
-function BookCover({ book, onSelect }: { book: Book; onSelect?: () => void }) {
+function BookCover({ book, onSelect, isGrayed }: { book: Book; onSelect?: () => void; isGrayed?: boolean }) {
   // Generate Open Library search URL based on title and author
   const openLibraryUrl = book.openLibraryKey 
     ? `https://openlibrary.org${book.openLibraryKey}`
     : `https://openlibrary.org/search?q=${encodeURIComponent(book.title + ' ' + book.author)}`;
 
   return (
-    <div className="book-spine group/book relative">
+    <div className={`book-spine group/book relative ${isGrayed ? 'book-grayed' : ''}`}>
       <div
         className="book-cover w-[70px] h-[105px] cursor-pointer"
         onClick={onSelect}
@@ -76,16 +77,16 @@ function BookCover({ book, onSelect }: { book: Book; onSelect?: () => void }) {
   );
 }
 
-export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true }: BookSpineProps) {
+export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true, isGrayed = false }: BookSpineProps) {
   // If not interactive, just render the book without context menu
   if (!isInteractive || !onMove || !onRemove) {
-    return <BookCover book={book} onSelect={onSelect} />;
+    return <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} />;
   }
 
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <BookCover book={book} onSelect={onSelect} />
+        <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} />
       </ContextMenuTrigger>
       
       <ContextMenuContent className="w-48">

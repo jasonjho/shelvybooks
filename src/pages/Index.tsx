@@ -1,27 +1,76 @@
-import { useState, useMemo } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState, useMemo, useCallback } from 'react';
 import { Bookshelf } from '@/components/Bookshelf';
 import { SkinPicker } from '@/components/SkinPicker';
 import { SettingsPanel } from '@/components/SettingsPanel';
+import { ShelfControls } from '@/components/ShelfControls';
 import { AddBookDialog } from '@/components/AddBookDialog';
 import { AuthButton } from '@/components/AuthButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useBooks } from '@/hooks/useBooks';
 import { useAuth } from '@/contexts/AuthContext';
-import { BookStatus } from '@/types/book';
+import { BookStatus, SortOption, Book } from '@/types/book';
 import { demoBooks } from '@/data/demoBooks';
-import { BookOpen, BookMarked, CheckCircle, Library, Loader2 } from 'lucide-react';
+import { Library, Loader2 } from 'lucide-react';
 
-const tabs: { id: BookStatus; label: string; icon: React.ReactNode }[] = [
-  { id: 'reading', label: 'Reading', icon: <BookOpen className="w-4 h-4" /> },
-  { id: 'want-to-read', label: 'Want to Read', icon: <BookMarked className="w-4 h-4" /> },
-  { id: 'read', label: 'Read', icon: <CheckCircle className="w-4 h-4" /> },
-];
+// Seeded random for consistent shuffle per session
+function seededShuffle<T>(array: T[], seed: number): T[] {
+  const result = [...array];
+  let currentSeed = seed;
+  
+  const random = () => {
+    currentSeed = (currentSeed * 9301 + 49297) % 233280;
+    return currentSeed / 233280;
+  };
+  
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  
+  return result;
+}
+
+const STATUS_ORDER: Record<BookStatus, number> = {
+  'reading': 0,
+  'want-to-read': 1,
+  'read': 2,
+};
+
+function sortBooks(books: Book[], sortOption: SortOption, shuffleSeed: number): Book[] {
+  switch (sortOption) {
+    case 'random':
+      return seededShuffle(books, shuffleSeed);
+    case 'recent':
+      return [...books].sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+    case 'status-author':
+      return [...books].sort((a, b) => {
+        const statusDiff = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+        if (statusDiff !== 0) return statusDiff;
+        return a.author.localeCompare(b.author);
+      });
+    case 'author-title':
+      return [...books].sort((a, b) => {
+        const authorDiff = a.author.localeCompare(b.author);
+        if (authorDiff !== 0) return authorDiff;
+        return a.title.localeCompare(b.title);
+      });
+    default:
+      return books;
+  }
+}
 
 export default function Index() {
-  const [activeTab, setActiveTab] = useState<BookStatus>('reading');
+  const [activeFilters, setActiveFilters] = useState<BookStatus[]>([]);
+  const [sortOption, setSortOption] = useState<SortOption>('random');
+  const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
+  
   const { user, loading: authLoading } = useAuth();
   const { 
+    books,
     loading: booksLoading,
     shelfSkin, 
     setShelfSkin, 
@@ -29,20 +78,32 @@ export default function Index() {
     updateSettings,
     addBook, 
     removeBook, 
-    moveBook, 
-    getBooksByStatus 
+    moveBook,
   } = useBooks();
 
-  // Use demo books for guests, real books for authenticated users
-  const displayBooks = useMemo(() => {
-    if (user) return getBooksByStatus;
-    return (status: BookStatus) => demoBooks.filter(book => book.status === status);
-  }, [user, getBooksByStatus]);
+  // Get all books - demo for guests, real for authenticated users
+  const allBooks = useMemo(() => {
+    return user ? books : demoBooks;
+  }, [user, books]);
 
-  const getBookCount = (status: BookStatus) => {
-    if (user) return getBooksByStatus(status).length;
-    return demoBooks.filter(book => book.status === status).length;
-  };
+  // Sort books
+  const sortedBooks = useMemo(() => {
+    return sortBooks(allBooks, sortOption, shuffleSeed);
+  }, [allBooks, sortOption, shuffleSeed]);
+
+  // Calculate book counts by status
+  const bookCounts = useMemo(() => {
+    return {
+      reading: allBooks.filter(b => b.status === 'reading').length,
+      'want-to-read': allBooks.filter(b => b.status === 'want-to-read').length,
+      read: allBooks.filter(b => b.status === 'read').length,
+    };
+  }, [allBooks]);
+
+  const handleShuffle = useCallback(() => {
+    setShuffleSeed(Date.now());
+    setSortOption('random');
+  }, []);
 
   return (
     <div className="min-h-screen office-wall">
@@ -63,7 +124,7 @@ export default function Index() {
             <div className="p-2 rounded-lg bg-gradient-to-br from-amber-700 to-amber-900 shadow-md">
               <Library className="w-6 h-6 text-amber-100" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent" style={{ fontFamily: "'Poppins', sans-serif" }}>
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
               ShelvyBooks
             </h1>
           </div>
@@ -77,65 +138,53 @@ export default function Index() {
 
       {/* Main Content */}
       <main className="container py-8 relative z-10">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BookStatus)}>
-          <div className="flex items-center justify-between mb-6">
-            <TabsList className="bg-muted/50 backdrop-blur-sm border border-border">
-              {tabs.map((tab) => (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  className="gap-1.5 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground"
-                >
-                  {tab.icon}
-                  <span className="hidden sm:inline">{tab.label}</span>
-                  <span className="ml-1 text-xs opacity-70">
-                    ({getBookCount(tab.id)})
-                  </span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            
-            {user && <AddBookDialog onAddBook={addBook} defaultStatus={activeTab} />}
+        {/* Loading state */}
+        {(authLoading || booksLoading) && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
+        )}
 
-          {/* Loading state */}
-          {(authLoading || booksLoading) && (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        {/* Not signed in message */}
+        {!authLoading && !user && (
+          <div className="text-center py-4 mb-4">
+            <p className="text-foreground text-lg mb-1">Welcome to ShelvyBooks!</p>
+            <p className="text-muted-foreground text-sm">
+              Here's a preview — use the <span className="text-primary font-medium">Sign in</span> button above to build your own shelf.
+            </p>
+          </div>
+        )}
+
+        {/* Shelf Controls & Bookshelf */}
+        {!authLoading && !booksLoading && (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <ShelfControls
+                activeFilters={activeFilters}
+                onFilterChange={setActiveFilters}
+                sortOption={sortOption}
+                onSortChange={setSortOption}
+                onShuffle={handleShuffle}
+                bookCounts={bookCounts}
+              />
+              
+              {user && <AddBookDialog onAddBook={addBook} defaultStatus="reading" />}
             </div>
-          )}
 
-          {/* Not signed in message */}
-          {!authLoading && !user && (
-            <div className="text-center py-4 mb-4">
-              <p className="text-foreground text-lg mb-1">Welcome to ShelvyBooks!</p>
-              <p className="text-muted-foreground text-sm">
-                Here's a preview — use the <span className="text-primary font-medium">Sign in</span> button above to build your own shelf.
-              </p>
-            </div>
-          )}
-
-
-          {/* Shelf customization controls */}
-          {!authLoading && !booksLoading && (
-            <div className="flex items-center justify-end mb-4 mt-6">
+            <div className="flex items-center justify-end mb-4">
               <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
             </div>
-          )}
 
-          {/* Show bookshelf for everyone - demo books for guests, real books for users */}
-          {!authLoading && !booksLoading && tabs.map((tab) => (
-            <TabsContent key={tab.id} value={tab.id} className="mt-0">
-              <Bookshelf
-                books={displayBooks(tab.id)}
-                skin={shelfSkin}
-                settings={settings}
-                onMoveBook={user ? moveBook : undefined}
-                onRemoveBook={user ? removeBook : undefined}
-              />
-            </TabsContent>
-          ))}
-        </Tabs>
+            <Bookshelf
+              books={sortedBooks}
+              skin={shelfSkin}
+              settings={settings}
+              activeFilters={activeFilters}
+              onMoveBook={user ? moveBook : undefined}
+              onRemoveBook={user ? removeBook : undefined}
+            />
+          </>
+        )}
       </main>
 
       {/* Footer hint - only show for logged in users */}

@@ -788,6 +788,17 @@
   .trailing-plant-container > div {
     overflow: visible;
   }
+  /* Grayed out books - filtered state */
+  .book-grayed {
+    opacity: 0.3;
+    filter: grayscale(0.7);
+    transition: opacity 0.3s ease, filter 0.3s ease;
+  }
+
+  .book-grayed:hover {
+    opacity: 0.6;
+    filter: grayscale(0.4);
+  }
 }
 
 @layer utilities {
