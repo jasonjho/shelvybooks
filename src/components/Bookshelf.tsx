@@ -6,8 +6,8 @@ interface BookshelfProps {
   books: Book[];
   skin: ShelfSkin;
   settings: ShelfSettings;
-  onMoveBook: (id: string, status: BookStatus) => void;
-  onRemoveBook: (id: string) => void;
+  onMoveBook?: (id: string, status: BookStatus) => void;
+  onRemoveBook?: (id: string) => void;
 }
 
 function Bookend() {
@@ -86,6 +86,7 @@ export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: B
                   book={item}
                   onMove={onMoveBook}
                   onRemove={onRemoveBook}
+                  isInteractive={!!onMoveBook && !!onRemoveBook}
                 />
               </div>
             );

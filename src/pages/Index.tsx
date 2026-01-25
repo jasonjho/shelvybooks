@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Bookshelf } from '@/components/Bookshelf';
 import { SkinPicker } from '@/components/SkinPicker';
@@ -8,6 +8,7 @@ import { AuthButton } from '@/components/AuthButton';
 import { useBooks } from '@/hooks/useBooks';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookStatus } from '@/types/book';
+import { demoBooks } from '@/data/demoBooks';
 import { BookOpen, BookMarked, CheckCircle, Library, Loader2 } from 'lucide-react';
 
 const tabs: { id: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -30,6 +31,17 @@ export default function Index() {
     moveBook, 
     getBooksByStatus 
   } = useBooks();
+
+  // Use demo books for guests, real books for authenticated users
+  const displayBooks = useMemo(() => {
+    if (user) return getBooksByStatus;
+    return (status: BookStatus) => demoBooks.filter(book => book.status === status);
+  }, [user, getBooksByStatus]);
+
+  const getBookCount = (status: BookStatus) => {
+    if (user) return getBooksByStatus(status).length;
+    return demoBooks.filter(book => book.status === status).length;
+  };
 
   return (
     <div className="min-h-screen office-wall">
@@ -76,7 +88,7 @@ export default function Index() {
                   {tab.icon}
                   <span className="hidden sm:inline">{tab.label}</span>
                   <span className="ml-1 text-xs opacity-70">
-                    ({getBooksByStatus(tab.id).length})
+                    ({getBookCount(tab.id)})
                   </span>
                 </TabsTrigger>
               ))}
@@ -96,19 +108,19 @@ export default function Index() {
           {!authLoading && !user && (
             <div className="text-center py-4 mb-4">
               <p className="text-white/70 text-lg mb-1">Welcome to Book Shelfie!</p>
-              <p className="text-white/50 text-sm">Sign in with Google to save your reading list.</p>
+              <p className="text-white/50 text-sm">Here's a preview — sign in with Google to build your own shelf.</p>
             </div>
           )}
 
-          {/* Show bookshelf for everyone - empty preview for guests */}
+          {/* Show bookshelf for everyone - demo books for guests, real books for users */}
           {!authLoading && !booksLoading && tabs.map((tab) => (
             <TabsContent key={tab.id} value={tab.id} className="mt-0">
               <Bookshelf
-                books={user ? getBooksByStatus(tab.id) : []}
+                books={displayBooks(tab.id)}
                 skin={shelfSkin}
                 settings={settings}
-                onMoveBook={moveBook}
-                onRemoveBook={removeBook}
+                onMoveBook={user ? moveBook : undefined}
+                onRemoveBook={user ? removeBook : undefined}
               />
             </TabsContent>
           ))}
