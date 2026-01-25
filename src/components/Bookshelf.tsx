@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Book, BookStatus, ShelfSkin, ShelfSettings } from '@/types/book';
 import { BookSpine } from './BookSpine';
+import { BookDetailDialog } from './BookDetailDialog';
 import { cn } from '@/lib/utils';
 
 interface BookshelfProps {
@@ -24,6 +26,7 @@ function PlantDecor() {
 }
 
 export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: BookshelfProps) {
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const booksPerRow = 8;
   const rows: (Book | 'bookend-left' | 'bookend-right' | 'plant')[][] = [];
   
@@ -86,6 +89,7 @@ export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: B
                   book={item}
                   onMove={onMoveBook}
                   onRemove={onRemoveBook}
+                  onSelect={() => setSelectedBook(item)}
                   isInteractive={!!onMoveBook && !!onRemoveBook}
                 />
               </div>
@@ -104,6 +108,13 @@ export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: B
           <div className="shelf-front" />
         </div>
       ))}
+
+      {/* Book detail dialog */}
+      <BookDetailDialog
+        book={selectedBook}
+        open={!!selectedBook}
+        onOpenChange={(open) => !open && setSelectedBook(null)}
+      />
     </div>
   );
 }
