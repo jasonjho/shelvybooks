@@ -13,65 +13,55 @@ export interface Collection {
   id: string;
   name: string;
   description: string;
-  subject: string;
+  query: string; // Google Books search query
   icon: string;
 }
 
-// Curated collections using Open Library subjects
+// Curated collections using Google Books queries
 export const COLLECTIONS: Collection[] = [
   {
     id: 'classics',
     name: 'Classics',
     description: 'Timeless literary masterpieces',
-    subject: 'classic_literature',
+    query: 'subject:classics',
     icon: '📚',
   },
   {
     id: 'sci-fi',
     name: 'Science Fiction',
     description: 'Explore the universe of imagination',
-    subject: 'science_fiction',
+    query: 'subject:science+fiction',
     icon: '🚀',
   },
   {
     id: 'mystery',
     name: 'Mystery & Thriller',
     description: 'Page-turning suspense',
-    subject: 'mystery',
+    query: 'subject:mystery+thriller',
     icon: '🔍',
   },
   {
     id: 'fantasy',
     name: 'Fantasy',
     description: 'Epic magical adventures',
-    subject: 'fantasy',
+    query: 'subject:fantasy',
     icon: '🐉',
   },
   {
     id: 'romance',
     name: 'Romance',
     description: 'Stories of love and connection',
-    subject: 'romance',
+    query: 'subject:romance',
     icon: '💕',
   },
   {
-    id: 'philosophy',
-    name: 'Philosophy',
-    description: 'Explore big ideas',
-    subject: 'philosophy',
-    icon: '🤔',
+    id: 'bestsellers',
+    name: 'Bestsellers',
+    description: 'Popular recent reads',
+    query: 'bestseller+2024',
+    icon: '⭐',
   },
 ];
-
-// Generate a random book color
-function generateBookColor(): string {
-  const colors = [
-    '#8B4513', '#2F4F4F', '#8B0000', '#191970', '#006400',
-    '#4A4A4A', '#800020', '#355E3B', '#4B0082', '#8B7355',
-    '#C19A6B', '#1C3A63', '#5C4033', '#704241', '#3D5C5C',
-  ];
-  return colors[Math.floor(Math.random() * colors.length)];
-}
 
 export function useOpenLibraryCollections() {
   const [loadingCollection, setLoadingCollection] = useState<string | null>(null);
@@ -89,7 +79,7 @@ export function useOpenLibraryCollections() {
 
     try {
       const response = await fetch(
-        `https://openlibrary.org/subjects/${collection.subject}.json?limit=${limit}`
+        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(collection.query)}&maxResults=${limit}&printType=books&orderBy=relevance`
       );
       
       if (!response.ok) {
@@ -98,20 +88,31 @@ export function useOpenLibraryCollections() {
 
       const data = await response.json();
       
-      const books: CollectionBook[] = data.works?.map((work: {
-        key: string;
-        title: string;
-        authors?: { name: string }[];
-        cover_id?: number;
-      }) => ({
-        key: work.key,
-        title: work.title,
-        author: work.authors?.[0]?.name || 'Unknown Author',
-        coverUrl: work.cover_id 
-          ? `https://covers.openlibrary.org/b/id/${work.cover_id}-M.jpg`
-          : null,
-        openLibraryKey: work.key,
-      })) || [];
+      const books: CollectionBook[] = (data.items || []).map((item: {
+        id: string;
+        volumeInfo: {
+          title: string;
+          authors?: string[];
+          imageLinks?: {
+            thumbnail?: string;
+            smallThumbnail?: string;
+          };
+          infoLink?: string;
+        };
+      }) => {
+        const thumbnail = item.volumeInfo.imageLinks?.thumbnail || 
+                         item.volumeInfo.imageLinks?.smallThumbnail;
+        
+        return {
+          key: item.id,
+          title: item.volumeInfo.title,
+          author: item.volumeInfo.authors?.[0] || 'Unknown Author',
+          coverUrl: thumbnail 
+            ? thumbnail.replace('http://', 'https://').replace('zoom=1', 'zoom=2')
+            : null,
+          openLibraryKey: item.volumeInfo.infoLink || item.id,
+        };
+      });
 
       setCollectionBooks(prev => ({
         ...prev,

@@ -24,6 +24,21 @@ export interface Book {
   createdAt?: string;
 }
 
+export interface GoogleBook {
+  id: string;
+  volumeInfo: {
+    title: string;
+    authors?: string[];
+    imageLinks?: {
+      thumbnail?: string;
+      smallThumbnail?: string;
+    };
+    publishedDate?: string;
+    infoLink?: string;
+  };
+}
+
+// Keep for backwards compatibility with existing code
 export interface OpenLibraryBook {
   key: string;
   title: string;
