@@ -1,1 +1,4 @@
 project_id = "gzzkaxivhqqoezfqtpsd"
+
+[functions.nyt-bestsellers]
+verify_jwt = false
