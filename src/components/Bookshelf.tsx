@@ -30,17 +30,18 @@ const DENSITY_CONFIG: Record<DecorDensity, { ratio: number; minSpacing: number }
 
 function generateDecorPositions(
   bookCount: number,
-  maxPerRow: number,
+  maxDecorSlots: number,
   rowIndex: number,
   density: DecorDensity = 'balanced'
 ): { position: number; type: DecorationType; seed: number }[] {
-  if (bookCount === 0) return [];
+  if (bookCount === 0 || maxDecorSlots <= 0) return [];
   
   const config = DENSITY_CONFIG[density];
   
-  // Calculate decoration count based on book count, ensuring at least some decorations
+  // Calculate decoration count based on book count, but cap to available slots
   const baseCount = Math.ceil(bookCount * config.ratio);
-  const decorationCount = Math.max(density === 'minimal' ? 0 : 1, baseCount);
+  const desiredCount = Math.max(density === 'minimal' ? 0 : 1, baseCount);
+  const decorationCount = Math.min(desiredCount, maxDecorSlots); // Cap to available slots
   
   if (decorationCount <= 0) return [];
   
@@ -93,7 +94,8 @@ function generateDecorPositions(
 interface ShelfRowProps {
   books: Book[];
   rowIndex: number;
-  maxPerRow: number;
+  maxBooksPerRow: number;
+  decorSlotsPerRow: number;
   skin: ShelfSkin;
   settings: ShelfSettings;
   activeFilters: BookStatus[];
@@ -105,7 +107,8 @@ interface ShelfRowProps {
 function ShelfRow({
   books,
   rowIndex,
-  maxPerRow,
+  maxBooksPerRow,
+  decorSlotsPerRow,
   skin,
   settings,
   activeFilters,
@@ -116,13 +119,9 @@ function ShelfRow({
   const hasBooks = books.length > 0;
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
   
-  // Calculate available slots for books + decorations (excluding bookends)
-  const bookendSlots = settings.showBookends && hasBooks ? 2 : 0;
-  const availableSlots = maxPerRow - bookendSlots;
-  
-  // Generate decoration positions interspersed among books
+  // Generate decoration positions - cap to reserved slots
   const decorPositions = settings.showPlant 
-    ? generateDecorPositions(books.length, availableSlots, rowIndex, settings.decorDensity)
+    ? generateDecorPositions(books.length, decorSlotsPerRow, rowIndex, settings.decorDensity)
     : [];
 
   // Build items array: interleave books and decorations
@@ -287,7 +286,8 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
           key={rowIndex}
           books={rowBooks}
           rowIndex={rowIndex}
-          maxPerRow={booksPerRow}
+          maxBooksPerRow={booksPerRow}
+          decorSlotsPerRow={decorSlotsPerRow}
           skin={skin}
           settings={settings}
           activeFilters={activeFilters}
