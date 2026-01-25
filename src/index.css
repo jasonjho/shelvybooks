@@ -279,8 +279,21 @@
 
   /* Shelf row */
   .shelf-row {
-    @apply relative flex items-end gap-2 px-6 pb-4;
+    @apply relative flex items-end gap-2 px-6 pb-4 flex-wrap;
     min-height: 160px;
+  }
+
+  /* Responsive books grid */
+  .books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 0.5rem;
+    align-items: end;
+  }
+
+  .books-grid > div {
+    display: flex;
+    justify-content: center;
   }
 
   /* Wood grain shelf surface */
