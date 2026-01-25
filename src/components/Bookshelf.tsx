@@ -52,18 +52,20 @@ function generateDecorPositions(
   };
 
   // Generate candidate positions using Fibonacci-based offsets
-  let cursor = Math.floor(seededRandom(rowIndex) * 3); // start offset 0-2
+  // Start at position 1+ so decorations never appear before the first book
+  let cursor = 1 + Math.floor(seededRandom(rowIndex) * 2); // start offset 1-2
   
   for (let i = 0; i < decorationCount && cursor <= bookCount; i++) {
     // Add some jitter to break up patterns
     const jitter = Math.floor((seededRandom(i * 3 + 1) - 0.4) * 2); // slight bias forward
-    let pos = Math.max(0, Math.min(bookCount, cursor + jitter));
+    let pos = Math.max(1, Math.min(bookCount, cursor + jitter)); // min 1, never position 0
     
     // Find nearest available position (bounded search)
     let found = false;
     for (let d = 0; d <= bookCount && !found; d++) {
       for (const candidate of [pos + d, pos - d]) {
-        if (candidate < 0 || candidate > bookCount) continue;
+        // Skip position 0 - decorations should never be first
+        if (candidate < 1 || candidate > bookCount) continue;
         if (usedPositions.has(candidate)) continue;
         // Avoid clustering: at least 2 positions apart when possible
         const tooClose = [...usedPositions].some(p => Math.abs(p - candidate) < 2);
