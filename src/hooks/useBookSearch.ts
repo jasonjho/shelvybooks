@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { OpenLibraryBook } from '@/types/book';
+import { GoogleBook } from '@/types/book';
 
 export function useBookSearch() {
-  const [results, setResults] = useState<OpenLibraryBook[]>([]);
+  const [results, setResults] = useState<GoogleBook[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +17,7 @@ export function useBookSearch() {
 
     try {
       const response = await fetch(
-        `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=12&fields=key,title,author_name,cover_i,first_publish_year`
+        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=12&printType=books`
       );
 
       if (!response.ok) {
@@ -25,7 +25,7 @@ export function useBookSearch() {
       }
 
       const data = await response.json();
-      setResults(data.docs || []);
+      setResults(data.items || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setResults([]);
@@ -48,9 +48,15 @@ export function useBookSearch() {
   };
 }
 
-export function getCoverUrl(coverId: number | undefined, size: 'S' | 'M' | 'L' = 'M'): string {
-  if (!coverId) {
+export function getCoverUrl(book: GoogleBook): string {
+  // Google Books returns HTTP URLs, convert to HTTPS
+  const thumbnail = book.volumeInfo?.imageLinks?.thumbnail || 
+                    book.volumeInfo?.imageLinks?.smallThumbnail;
+  
+  if (!thumbnail) {
     return '/placeholder.svg';
   }
-  return `https://covers.openlibrary.org/b/id/${coverId}-${size}.jpg`;
+  
+  // Replace HTTP with HTTPS and increase zoom for better quality
+  return thumbnail.replace('http://', 'https://').replace('zoom=1', 'zoom=2');
 }

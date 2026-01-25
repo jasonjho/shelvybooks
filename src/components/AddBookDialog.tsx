@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useBookSearch, getCoverUrl } from '@/hooks/useBookSearch';
-import { BookStatus, OpenLibraryBook } from '@/types/book';
+import { BookStatus, GoogleBook } from '@/types/book';
 import { Plus, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -36,13 +36,13 @@ export function AddBookDialog({ onAddBook, defaultStatus }: AddBookDialogProps) 
     return () => clearTimeout(timer);
   }, [query]);
 
-  const handleSelect = (book: OpenLibraryBook) => {
+  const handleSelect = (book: GoogleBook) => {
     onAddBook({
-      title: book.title,
-      author: book.author_name?.[0] || 'Unknown Author',
-      coverUrl: getCoverUrl(book.cover_i, 'M'),
+      title: book.volumeInfo.title,
+      author: book.volumeInfo.authors?.[0] || 'Unknown Author',
+      coverUrl: getCoverUrl(book),
       status: defaultStatus,
-      openLibraryKey: book.key,
+      openLibraryKey: book.volumeInfo.infoLink || book.id, // Use Google Books link as reference
     });
     setOpen(false);
     setQuery('');
@@ -107,7 +107,7 @@ export function AddBookDialog({ onAddBook, defaultStatus }: AddBookDialogProps) 
           <div className="grid grid-cols-3 gap-3">
             {results.map((book) => (
               <button
-                key={book.key}
+                key={book.id}
                 onClick={() => handleSelect(book)}
                 className={cn(
                   'group p-2 rounded-lg text-left transition-colors',
@@ -116,8 +116,8 @@ export function AddBookDialog({ onAddBook, defaultStatus }: AddBookDialogProps) 
               >
                 <div className="aspect-[2/3] rounded overflow-hidden bg-muted mb-2">
                   <img
-                    src={getCoverUrl(book.cover_i, 'M')}
-                    alt={book.title}
+                    src={getCoverUrl(book)}
+                    alt={book.volumeInfo.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = '/placeholder.svg';
@@ -125,10 +125,10 @@ export function AddBookDialog({ onAddBook, defaultStatus }: AddBookDialogProps) 
                   />
                 </div>
                 <p className="text-xs font-medium line-clamp-2 leading-tight">
-                  {book.title}
+                  {book.volumeInfo.title}
                 </p>
                 <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                  {book.author_name?.[0] || 'Unknown'}
+                  {book.volumeInfo.authors?.[0] || 'Unknown'}
                 </p>
               </button>
             ))}
