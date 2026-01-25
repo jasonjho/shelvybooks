@@ -1,4 +1,4 @@
-import { ShelfSettings, DecorDensity } from '@/types/book';
+import { ShelfSettings, DecorDensity, ShelfSkin } from '@/types/book';
 import {
   Popover,
   PopoverContent,
@@ -7,13 +7,22 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Settings, Lamp, Trees, BookmarkMinus, Sparkles } from 'lucide-react';
+import { Settings, Lamp, Trees, BookmarkMinus, Sparkles, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SettingsPanelProps {
   settings: ShelfSettings;
   onSettingsChange: (settings: Partial<ShelfSettings>) => void;
+  currentSkin?: ShelfSkin;
+  onSkinChange?: (skin: ShelfSkin) => void;
 }
+
+const skins: { id: ShelfSkin; name: string; gradient: string }[] = [
+  { id: 'oak', name: 'Oak', gradient: 'bg-gradient-to-br from-amber-600 to-amber-800' },
+  { id: 'walnut', name: 'Walnut', gradient: 'bg-gradient-to-br from-amber-900 to-stone-900' },
+  { id: 'white', name: 'White Oak', gradient: 'bg-gradient-to-br from-stone-200 to-stone-400' },
+  { id: 'dark', name: 'Ebony', gradient: 'bg-gradient-to-br from-slate-700 to-slate-900' },
+];
 
 const toggleSettings = [
   {
@@ -48,7 +57,7 @@ const densityOptions: { value: DecorDensity; label: string; description: string 
   { value: 'cozy', label: 'Cozy', description: 'Lush, lived-in feel' },
 ];
 
-export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps) {
+export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinChange }: SettingsPanelProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -122,6 +131,36 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
                     )}
                   >
                     <span className="font-medium">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Wood Finish - for mobile users */}
+          {currentSkin && onSkinChange && (
+            <div className="space-y-2 pt-2 border-t border-border sm:hidden">
+              <span className="text-sm font-medium">Wood Finish</span>
+              <div className="flex gap-2">
+                {skins.map((skin) => (
+                  <button
+                    key={skin.id}
+                    onClick={() => onSkinChange(skin.id)}
+                    className={cn(
+                      'w-9 h-9 rounded-full border-2 transition-all flex items-center justify-center shadow-lg',
+                      skin.gradient,
+                      currentSkin === skin.id
+                        ? 'border-primary ring-2 ring-primary/30 scale-110'
+                        : 'border-border hover:border-primary/50 hover:scale-105'
+                    )}
+                    title={skin.name}
+                  >
+                    {currentSkin === skin.id && (
+                      <Check className={cn(
+                        'w-4 h-4',
+                        skin.id === 'white' ? 'text-stone-700' : 'text-white'
+                      )} />
+                    )}
                   </button>
                 ))}
               </div>
