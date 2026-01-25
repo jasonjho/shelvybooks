@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Bookshelf } from '@/components/Bookshelf';
+import { MobileBookshelf } from '@/components/MobileBookshelf';
 import { SkinPicker } from '@/components/SkinPicker';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { ShelfControls } from '@/components/ShelfControls';
@@ -10,6 +11,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { useBooks } from '@/hooks/useBooks';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { BookStatus, SortOption, Book } from '@/types/book';
 import { demoBooks } from '@/data/demoBooks';
 import { Library, Loader2 } from 'lucide-react';
@@ -66,6 +68,7 @@ function sortBooks(books: Book[], sortOption: SortOption, shuffleSeed: number): 
 }
 
 export default function Index() {
+  const isMobile = useIsMobile();
   const [activeFilters, setActiveFilters] = useState<BookStatus[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
@@ -203,14 +206,25 @@ export default function Index() {
                   <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
                 </div>
 
-                <Bookshelf
-                  books={sortedBooks}
-                  skin={shelfSkin}
-                  settings={settings}
-                  activeFilters={activeFilters}
-                  onMoveBook={user ? moveBook : undefined}
-                  onRemoveBook={user ? removeBook : undefined}
-                />
+                {isMobile ? (
+                  <MobileBookshelf
+                    books={sortedBooks}
+                    skin={shelfSkin}
+                    settings={settings}
+                    activeFilters={activeFilters}
+                    onMoveBook={user ? moveBook : undefined}
+                    onRemoveBook={user ? removeBook : undefined}
+                  />
+                ) : (
+                  <Bookshelf
+                    books={sortedBooks}
+                    skin={shelfSkin}
+                    settings={settings}
+                    activeFilters={activeFilters}
+                    onMoveBook={user ? moveBook : undefined}
+                    onRemoveBook={user ? removeBook : undefined}
+                  />
+                )}
               </>
             )}
           </>

@@ -2,11 +2,13 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Bookshelf } from '@/components/Bookshelf';
+import { MobileBookshelf } from '@/components/MobileBookshelf';
 import { BookInteractions } from '@/components/BookInteractions';
 import { BookDetailDialog } from '@/components/BookDetailDialog';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Book, ShelfSettings as ShelfSettingsType, BookStatus } from '@/types/book';
 import { Library, Loader2, ArrowLeft, Lock, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,6 +30,7 @@ const DEFAULT_SETTINGS: ShelfSettingsType = {
 export default function PublicShelf() {
   const { shareId } = useParams<{ shareId: string }>();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -178,13 +181,22 @@ export default function PublicShelf() {
           )}
         </div>
 
-        {/* Bookshelf */}
-        <Bookshelf
-          books={books}
-          skin="oak"
-          settings={DEFAULT_SETTINGS}
-          activeFilters={[]}
-        />
+        {/* Bookshelf - Mobile vs Desktop */}
+        {isMobile ? (
+          <MobileBookshelf
+            books={books}
+            skin="oak"
+            settings={DEFAULT_SETTINGS}
+            activeFilters={[]}
+          />
+        ) : (
+          <Bookshelf
+            books={books}
+            skin="oak"
+            settings={DEFAULT_SETTINGS}
+            activeFilters={[]}
+          />
+        )}
       </main>
 
       {/* Book detail dialog */}
