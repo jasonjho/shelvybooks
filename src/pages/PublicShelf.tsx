@@ -103,7 +103,7 @@ export default function PublicShelf() {
     loadPublicShelf();
   }, [shareId]);
 
-  const ownerName = shelfOwner?.display_name || 'Someone';
+  const shelfTitle = shelfOwner?.display_name || "Someone's Bookshelf";
 
   if (loading) {
     return (
@@ -154,7 +154,7 @@ export default function PublicShelf() {
       <main className="container py-8 relative z-10">
         {/* Owner info */}
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-display mb-2">{ownerName}'s Bookshelf</h2>
+          <h2 className="text-2xl font-display mb-2">{shelfTitle}</h2>
           <p className="text-muted-foreground">
             {books.length} book{books.length !== 1 ? 's' : ''} on the shelf
           </p>
