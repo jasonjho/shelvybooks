@@ -60,10 +60,10 @@ export default function Index() {
       <header className="relative border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-20">
         <div className="container py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 shadow-md">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-rose-700 to-rose-900 shadow-md">
               <Library className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-amber-600 to-amber-800 dark:from-amber-400 dark:to-amber-600 bg-clip-text text-transparent" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-rose-700 to-rose-900 dark:from-rose-400 dark:to-rose-600 bg-clip-text text-transparent" style={{ fontFamily: "'Libre Baskerville', serif" }}>
               Shelfie
             </h1>
           </div>
