@@ -159,7 +159,7 @@ export default function Index() {
         {/* Shelf Controls & Bookshelf */}
         {!authLoading && !booksLoading && (
           <>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-6">
               <ShelfControls
                 activeFilters={activeFilters}
                 onFilterChange={setActiveFilters}
@@ -177,7 +177,7 @@ export default function Index() {
               )}
             </div>
 
-            <div className="flex items-center justify-end mb-4">
+            <div className="flex items-center justify-end mb-6">
               <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
             </div>
 
