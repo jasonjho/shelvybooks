@@ -537,11 +537,12 @@
   .book-spine {
     @apply relative transition-all duration-300 ease-out cursor-pointer;
     transform-style: preserve-3d;
+    z-index: 1;
   }
 
   .book-spine:hover {
     transform: translateY(-8px) rotateY(-5deg) rotateX(2deg);
-    z-index: 10;
+    z-index: 20;
   }
 
   .book-cover {
@@ -570,7 +571,7 @@
   .shelf-row {
     @apply relative flex items-end gap-2 px-4 pb-4 pt-4;
     min-height: 130px;
-    overflow: hidden;
+    overflow: visible;
   }
 
   /* Responsive books grid - consistent sizing */
@@ -580,7 +581,9 @@
     gap: 0.5rem;
     align-items: flex-end;
     justify-content: flex-start;
-    overflow: hidden;
+    overflow: visible;
+    position: relative;
+    z-index: 1;
   }
 
   .books-grid > div {
