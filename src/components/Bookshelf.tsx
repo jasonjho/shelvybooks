@@ -20,17 +20,20 @@ function Bookend() {
 type DecorationType = 'plant' | 'figurine' | 'globe' | 'hourglass' | 'candle' | 'photo' | 'vase';
 const DECORATION_TYPES: DecorationType[] = ['plant', 'figurine', 'globe', 'hourglass', 'candle', 'photo', 'vase'];
 
-// Generate decorations to fill empty slots in a row
+// Generate decorations to fill empty slots in a row (limit to reasonable amount)
 function generateRowDecorations(
   bookCount: number,
   maxPerRow: number,
   rowIndex: number
 ): { type: DecorationType; seed: number }[] {
   const emptySlots = maxPerRow - bookCount;
-  if (emptySlots <= 1) return [];
+  if (emptySlots <= 0) return [];
   
-  // Add decorations to fill ~40-60% of empty space
-  const decorationCount = Math.min(Math.ceil(emptySlots * 0.5), 4);
+  // Only fill up to 50% of empty space with decorations to avoid clutter
+  // Also cap at 5 decorations max per row
+  const decorationCount = Math.min(Math.floor(emptySlots * 0.5), 5);
+  if (decorationCount <= 0) return [];
+  
   const decorations: { type: DecorationType; seed: number }[] = [];
   
   for (let i = 0; i < decorationCount; i++) {
@@ -72,19 +75,17 @@ function ShelfRow({
     ? generateRowDecorations(books.length, maxPerRow, rowIndex)
     : [];
 
-  // Interleave books and decorations
+  // Build items array: books first, then decorations to fill remaining space
   const items: Array<{ type: 'book'; book: Book } | { type: 'decoration'; decorationType: DecorationType; seed: number }> = [];
   
-  // Add books first
+  // Add all books
   books.forEach(book => {
     items.push({ type: 'book', book });
   });
   
-  // Spread decorations evenly across remaining space
+  // Add decorations to fill the remaining slots
   decorations.forEach((dec, i) => {
-    // Insert decorations at spaced intervals
-    const insertPos = Math.floor((i + 1) * (items.length + decorations.length) / (decorations.length + 1));
-    items.splice(Math.min(insertPos, items.length), 0, { 
+    items.push({ 
       type: 'decoration', 
       decorationType: dec.type, 
       seed: dec.seed 
@@ -159,9 +160,9 @@ export function Bookshelf({ books, skin, settings, onMoveBook, onRemoveBook }: B
   useEffect(() => {
     const updateBooksPerRow = () => {
       if (containerRef.current) {
-        const containerWidth = containerRef.current.offsetWidth - 48; // Account for padding
-        // Each book is ~80px wide with gap
-        const perRow = Math.floor(containerWidth / 85);
+        const containerWidth = containerRef.current.offsetWidth - 32; // Account for padding (px-4 = 16px each side)
+        // Each item is 70px wide with 8px gap = 78px per slot
+        const perRow = Math.floor(containerWidth / 78);
         setBooksPerRow(Math.max(perRow, 3));
       }
     };
