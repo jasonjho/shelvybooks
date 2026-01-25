@@ -179,7 +179,7 @@ export default function Index() {
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                   <ShelfControls
                     activeFilters={activeFilters}
                     onFilterChange={setActiveFilters}
