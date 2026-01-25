@@ -474,7 +474,8 @@ export interface ShelfDecorationItem {
   position: number;
 }
 
-export const DECORATION_TYPES: DecorationType[] = [
+// All plant types for preview
+const PLANT_TYPES: DecorationType[] = [
   'trailing-plant',
   'potted-plant', 
   'succulent',
@@ -482,6 +483,10 @@ export const DECORATION_TYPES: DecorationType[] = [
   'bonsai',
   'fern',
   'monstera',
+];
+
+// Non-plant decorations
+const OTHER_DECORATION_TYPES: DecorationType[] = [
   'figurine', 
   'globe', 
   'hourglass', 
@@ -492,6 +497,9 @@ export const DECORATION_TYPES: DecorationType[] = [
   'books-stack',
   'lantern',
 ];
+
+// DEBUG: Show only plants for preview - change back to full list when done
+export const DECORATION_TYPES: DecorationType[] = PLANT_TYPES;
 
 export function ShelfDecoration({ type, seed }: { type: DecorationType; seed: number }) {
   return (
