@@ -35,8 +35,8 @@ const settingsConfig = [
   },
   {
     key: 'showPlant' as const,
-    label: 'Plant Decor',
-    description: 'Small potted plant',
+    label: 'Decor',
+    description: 'Plants and decorative items',
     icon: Trees,
   },
 ];
@@ -48,7 +48,7 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
         <Button 
           variant="outline" 
           size="icon"
-          className="bg-black/30 border-white/20 text-white hover:bg-white/20 hover:text-white"
+          className="bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground"
         >
           <Settings className="w-4 h-4" />
         </Button>
