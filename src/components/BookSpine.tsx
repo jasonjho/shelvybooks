@@ -32,10 +32,8 @@ type BookCoverProps = {
 
 const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
   ({ book, onSelect, isGrayed }, ref) => {
-  // Use stored link (now Google Books) or fallback to Google search
-  const bookInfoUrl = book.openLibraryKey?.startsWith('http') 
-    ? book.openLibraryKey
-    : `https://www.google.com/search?q=${encodeURIComponent(book.title + ' ' + book.author + ' book')}`;
+  // Link to Amazon search for the book
+  const amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author)}`;
 
   return (
     <div ref={ref} className={`book-spine group/book relative ${isGrayed ? 'book-grayed' : ''}`}>
@@ -70,13 +68,13 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
           <p className="font-medium leading-snug">{book.title}</p>
           <p className="text-muted-foreground mt-1.5 text-xs">{book.author}</p>
           <a 
-            href={bookInfoUrl}
+            href={amazonUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:underline mt-2 text-xs flex items-center gap-1 font-medium"
             onClick={(e) => e.stopPropagation()}
           >
-            View on Google Books →
+            View on Amazon →
           </a>
         </div>
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 border-[8px] border-transparent border-t-popover" />

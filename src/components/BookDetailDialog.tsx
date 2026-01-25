@@ -23,9 +23,8 @@ export function BookDetailDialog({ book, open, onOpenChange }: BookDetailDialogP
   // Demo books have non-UUID IDs like "demo-1"
   const isDemoBook = book.id.startsWith('demo-');
 
-  const openLibraryUrl = book.openLibraryKey
-    ? `https://openlibrary.org${book.openLibraryKey}`
-    : `https://openlibrary.org/search?q=${encodeURIComponent(book.title + ' ' + book.author)}`;
+  // Link to Amazon search for the book
+  const amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author)}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -51,12 +50,12 @@ export function BookDetailDialog({ book, open, onOpenChange }: BookDetailDialogP
           <div className="flex-1 min-w-0">
             <p className="text-muted-foreground text-sm">{book.author}</p>
             <a
-              href={openLibraryUrl}
+              href={amazonUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline text-xs mt-2 inline-block"
             >
-              View on Open Library →
+              View on Amazon →
             </a>
           </div>
         </div>
