@@ -251,7 +251,7 @@
   }
 
   .book-spine:hover {
-    transform: translateY(-12px) rotateY(-8deg) rotateX(2deg);
+    transform: translateY(-8px) rotateY(-5deg) rotateX(2deg);
     z-index: 10;
   }
 
@@ -279,8 +279,8 @@
 
   /* Shelf row */
   .shelf-row {
-    @apply relative flex items-end gap-2 px-6 pb-4;
-    min-height: 140px;
+    @apply relative flex items-end gap-2 px-6 pb-4 pt-4;
+    min-height: 130px;
   }
 
   /* Responsive books grid - consistent sizing */
