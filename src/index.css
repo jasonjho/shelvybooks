@@ -569,8 +569,8 @@
 
   /* Shelf row */
   .shelf-row {
-    @apply relative flex items-end gap-2 px-4 pb-4 pt-8;
-    min-height: 140px;
+    @apply relative flex items-end gap-2 px-4 pb-4 pt-12;
+    min-height: 160px;
     overflow: visible;
   }
 
