@@ -153,8 +153,8 @@ export default function Index() {
         {/* Not signed in message */}
         {!authLoading && !user && (
           <div className="py-4 mb-4">
-            <p className="text-muted-foreground text-sm">
-              Track your reading journey, organize by status, and discover new favorites. <span className="text-primary font-medium cursor-pointer hover:underline">Sign in</span> to build your own shelf — here's a preview:
+            <p className="text-foreground/80 text-base">
+              <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, and <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites. <span className="text-primary font-medium cursor-pointer hover:underline">Sign in</span> to build your own shelf — here's a preview:
             </p>
           </div>
         )}
