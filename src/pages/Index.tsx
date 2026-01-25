@@ -5,6 +5,7 @@ import { SkinPicker } from '@/components/SkinPicker';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { ShelfControls } from '@/components/ShelfControls';
 import { AddBookDialog } from '@/components/AddBookDialog';
+import { ImportBooksDialog } from '@/components/ImportBooksDialog';
 import { ShareShelfDialog } from '@/components/ShareShelfDialog';
 import { AuthButton } from '@/components/AuthButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -197,6 +198,7 @@ export default function Index() {
                   {user && (
                     <div className="flex items-center gap-2">
                       <ShareShelfDialog />
+                      <ImportBooksDialog onAddBook={addBook} />
                       <AddBookDialog onAddBook={addBook} defaultStatus="reading" />
                     </div>
                   )}
