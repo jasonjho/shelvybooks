@@ -63,6 +63,11 @@
     --shelf-dark-dark: 220 25% 8%;
     --shelf-dark-grain: 220 15% 12%;
 
+    /* Decoration pot colors (cool ceramic to contrast wood) */
+    --decor-pot-rim: 210 12% 42%;
+    --decor-pot-body: 210 10% 56%;
+    --decor-pot-body-dark: 210 12% 38%;
+
     /* Book shadow */
     --book-shadow: 0 4px 12px -2px hsl(24 30% 10% / 0.4);
     --book-shadow-hover: 0 12px 24px -4px hsl(24 30% 10% / 0.5);
@@ -113,6 +118,11 @@
     /* Dark mode wall colors */
     --wall: 24 15% 12%;
     --wall-light: 24 12% 16%;
+
+    /* Decoration pot colors (slightly brighter in dark mode) */
+    --decor-pot-rim: 210 10% 50%;
+    --decor-pot-body: 210 10% 60%;
+    --decor-pot-body-dark: 210 12% 42%;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -453,9 +463,25 @@
   .pot {
     width: 30px;
     height: 25px;
-    background: linear-gradient(180deg, hsl(20 60% 45%) 0%, hsl(20 65% 35%) 100%);
+    background: linear-gradient(
+      180deg,
+      hsl(var(--decor-pot-body)) 0%,
+      hsl(var(--decor-pot-body-dark)) 100%
+    );
     border-radius: 3px 3px 6px 6px;
     margin-top: -5px;
+  }
+
+  .decor-pot-rim {
+    background: hsl(var(--decor-pot-rim));
+  }
+
+  .decor-pot-body {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--decor-pot-body)) 0%,
+      hsl(var(--decor-pot-body-dark)) 100%
+    );
   }
 
   /* Shelf decoration items - allow overflow for leafy plants */
