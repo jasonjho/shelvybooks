@@ -535,7 +535,7 @@
   }
 
   .book-spine {
-    @apply relative transition-all duration-300 ease-out cursor-pointer;
+    @apply relative transition-all duration-300 ease-out cursor-pointer border-0;
     transform-style: preserve-3d;
     z-index: 1;
   }
@@ -569,8 +569,8 @@
 
   /* Shelf row */
   .shelf-row {
-    @apply relative flex items-end gap-2 px-4 pb-4 pt-4;
-    min-height: 130px;
+    @apply relative flex items-end gap-2 px-4 pb-4 pt-8;
+    min-height: 140px;
     overflow: visible;
   }
 
