@@ -23,6 +23,13 @@ interface DecorationProps {
   seed: number;
 }
 
+// Pot colors - using cooler tones for contrast with warm wood shelves
+const POT_COLORS = {
+  rim: 'hsl(200,12%,45%)',      // Cool gray rim
+  body: 'hsl(200,10%,55%)',     // Light slate
+  bodyDark: 'hsl(200,12%,38%)', // Darker slate
+};
+
 // Dense bushy plant - compact and full
 function TrailingPlantDecor({ seed }: { seed: number }) {
   const leafColors = [
@@ -65,11 +72,11 @@ function TrailingPlantDecor({ seed }: { seed: number }) {
           style={{ background: colors.dark }} />
         
       </div>
-      {/* Pot with rim */}
+      {/* Pot with rim - cool gray for contrast */}
       <div className="relative -mt-2">
-        <div className="w-8 h-1.5 rounded-t-sm bg-[hsl(22,55%,48%)]" />
+        <div className="w-8 h-1.5 rounded-t-sm" style={{ background: POT_COLORS.rim }} />
         <div className="w-7 h-5 rounded-b-lg mx-auto"
-          style={{ background: 'linear-gradient(180deg, hsl(25,55%,50%), hsl(20,60%,35%))' }} />
+          style={{ background: `linear-gradient(180deg, ${POT_COLORS.body}, ${POT_COLORS.bodyDark})` }} />
       </div>
     </div>
   );
@@ -90,8 +97,8 @@ function PottedPlantDecor({ seed }: { seed: number }) {
         <div className="absolute w-4 h-3 rounded-full bottom-1 -right-2 bg-[hsl(135,48%,38%)]" />
       </div>
       <div className="relative -mt-1">
-        <div className="w-7 h-1 rounded-t-sm bg-[hsl(22,55%,48%)]" />
-        <div className="w-6 h-4 rounded-b-lg mx-auto bg-gradient-to-b from-[hsl(25,55%,50%)] to-[hsl(20,60%,38%)]" />
+        <div className="w-7 h-1 rounded-t-sm" style={{ background: POT_COLORS.rim }} />
+        <div className="w-6 h-4 rounded-b-lg mx-auto" style={{ background: `linear-gradient(180deg, ${POT_COLORS.body}, ${POT_COLORS.bodyDark})` }} />
       </div>
     </div>,
     // Compact round bush
@@ -104,8 +111,8 @@ function PottedPlantDecor({ seed }: { seed: number }) {
         <div className="absolute w-3.5 h-2.5 rounded-full bottom-0.5 -right-2 bg-[hsl(138,45%,35%)]" />
       </div>
       <div className="relative -mt-0.5">
-        <div className="w-6 h-1 rounded-t-sm bg-[hsl(28,50%,48%)]" />
-        <div className="w-5 h-4 rounded-b-md mx-auto bg-gradient-to-b from-[hsl(30,50%,50%)] to-[hsl(25,55%,38%)]" />
+        <div className="w-6 h-1 rounded-t-sm" style={{ background: POT_COLORS.rim }} />
+        <div className="w-5 h-4 rounded-b-md mx-auto" style={{ background: `linear-gradient(180deg, ${POT_COLORS.body}, ${POT_COLORS.bodyDark})` }} />
       </div>
     </div>,
   ];
@@ -125,9 +132,9 @@ function SucculentDecor({ seed }: { seed: number }) {
       {/* Pot first, then plant sitting in it */}
       <div className="relative">
         {/* Pot rim */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-1 rounded-t-sm bg-[hsl(18,50%,52%)] z-0" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-1 rounded-t-sm z-0" style={{ background: POT_COLORS.rim }} />
         {/* Pot body */}
-        <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 w-5 h-3.5 rounded-b-md bg-gradient-to-b from-[hsl(20,50%,55%)] to-[hsl(20,55%,40%)] z-0" />
+        <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 w-5 h-3.5 rounded-b-md z-0" style={{ background: `linear-gradient(180deg, ${POT_COLORS.body}, ${POT_COLORS.bodyDark})` }} />
         {/* Dense rosette succulent sitting on pot */}
         <div className="relative z-10 w-8 h-4 rounded-full"
           style={{ background: `radial-gradient(ellipse at 50% 40%, ${c.tip}, ${c.base})` }}>
@@ -162,8 +169,8 @@ function CactusDecor({ seed }: { seed: number }) {
         </div>
       </div>
       <div className="relative -mt-0.5">
-        <div className="w-7 h-1 rounded-t-sm bg-[hsl(22,55%,48%)]" />
-        <div className="w-6 h-4 rounded-b-lg mx-auto bg-gradient-to-b from-[hsl(25,55%,50%)] to-[hsl(20,60%,35%)]" />
+        <div className="w-7 h-1 rounded-t-sm" style={{ background: POT_COLORS.rim }} />
+        <div className="w-6 h-4 rounded-b-lg mx-auto" style={{ background: `linear-gradient(180deg, ${POT_COLORS.body}, ${POT_COLORS.bodyDark})` }} />
       </div>
     </div>,
     // Tall saguaro-style
@@ -180,8 +187,8 @@ function CactusDecor({ seed }: { seed: number }) {
         </div>
       </div>
       <div className="relative -mt-0.5">
-        <div className="w-6 h-1 rounded-t-sm bg-[hsl(22,55%,48%)]" />
-        <div className="w-5 h-3.5 rounded-b-md mx-auto bg-gradient-to-b from-[hsl(25,55%,50%)] to-[hsl(20,60%,35%)]" />
+        <div className="w-6 h-1 rounded-t-sm" style={{ background: POT_COLORS.rim }} />
+        <div className="w-5 h-3.5 rounded-b-md mx-auto" style={{ background: `linear-gradient(180deg, ${POT_COLORS.body}, ${POT_COLORS.bodyDark})` }} />
       </div>
     </div>,
   ];
@@ -213,8 +220,8 @@ function BonsaiDecor({ seed }: { seed: number }) {
           style={{ background: 'linear-gradient(90deg, hsl(25,40%,30%), hsl(30,35%,40%), hsl(25,40%,30%))' }} />
       </div>
       <div className="relative -mt-0.5">
-        <div className="w-8 h-1.5 rounded-t-sm bg-[hsl(22,50%,45%)]" />
-        <div className="w-7 h-3 rounded-b-md mx-auto bg-gradient-to-b from-[hsl(25,50%,48%)] to-[hsl(20,55%,35%)]" />
+        <div className="w-8 h-1.5 rounded-t-sm" style={{ background: POT_COLORS.rim }} />
+        <div className="w-7 h-3 rounded-b-md mx-auto" style={{ background: `linear-gradient(180deg, ${POT_COLORS.body}, ${POT_COLORS.bodyDark})` }} />
       </div>
     </div>
   );
@@ -247,8 +254,8 @@ function FernDecor({ seed }: { seed: number }) {
         <div className="w-5 h-4 opacity-0" />
       </div>
       <div className="relative -mt-0.5">
-        <div className="w-6 h-1 rounded-t-sm bg-[hsl(28,50%,48%)]" />
-        <div className="w-5 h-3.5 rounded-b-md mx-auto bg-gradient-to-b from-[hsl(30,50%,50%)] to-[hsl(25,55%,38%)]" />
+        <div className="w-6 h-1 rounded-t-sm" style={{ background: POT_COLORS.rim }} />
+        <div className="w-5 h-3.5 rounded-b-md mx-auto" style={{ background: `linear-gradient(180deg, ${POT_COLORS.body}, ${POT_COLORS.bodyDark})` }} />
       </div>
     </div>
   );
@@ -282,8 +289,8 @@ function MonsteraDecor({ seed }: { seed: number }) {
         <div className="w-5 h-4 opacity-0" />
       </div>
       <div className="relative -mt-0.5">
-        <div className="w-6 h-1 rounded-t-sm bg-[hsl(22,55%,48%)]" />
-        <div className="w-5 h-4 rounded-b-md mx-auto bg-gradient-to-b from-[hsl(25,55%,50%)] to-[hsl(20,60%,35%)]" />
+        <div className="w-6 h-1 rounded-t-sm" style={{ background: POT_COLORS.rim }} />
+        <div className="w-5 h-4 rounded-b-md mx-auto" style={{ background: `linear-gradient(180deg, ${POT_COLORS.body}, ${POT_COLORS.bodyDark})` }} />
       </div>
     </div>
   );
