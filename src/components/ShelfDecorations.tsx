@@ -55,35 +55,29 @@ function TrailingPlantDecor({ seed }: { seed: number }) {
   
   return (
     <Potted size="lg">
-      {/* Foliage sitting in pot */}
-      <div className="relative h-6">
-        {/* Base connection layer */}
-        <div className="absolute w-6 h-3 rounded-t-full bottom-0 left-1/2 -translate-x-1/2"
+      {/* Foliage sitting in pot - h-8 with bottom-aligned base ensures overlap */}
+      <div className="relative h-8">
+        {/* Base layer that sits ON the pot rim */}
+        <div className="absolute w-8 h-4 rounded-t-full bottom-0 left-1/2 -translate-x-1/2"
           style={{ background: colors.dark }} />
         
         {/* Center dome */}
-        <div className="absolute w-8 h-6 rounded-full -top-4 left-1/2 -translate-x-1/2"
+        <div className="absolute w-10 h-7 rounded-full bottom-2 left-1/2 -translate-x-1/2"
           style={{ background: `radial-gradient(ellipse at 40% 30%, ${colors.light}, ${colors.main})` }} />
         
-        {/* Top layer */}
-        <div className="absolute w-4 h-3 rounded-full -top-5 left-1/2 -translate-x-1/2"
+        {/* Top highlights */}
+        <div className="absolute w-5 h-4 rounded-full bottom-6 left-1/2 -translate-x-1/2"
           style={{ background: colors.light }} />
-        <div className="absolute w-3 h-2.5 rounded-full -top-4 -left-0.5"
+        <div className="absolute w-4 h-3 rounded-full bottom-5 left-0"
           style={{ background: colors.light }} />
-        <div className="absolute w-3 h-2.5 rounded-full -top-4 -right-0.5"
+        <div className="absolute w-4 h-3 rounded-full bottom-5 right-0"
           style={{ background: colors.light }} />
         
-        {/* Middle layer */}
-        <div className="absolute w-5 h-4 rounded-[60%_60%_50%_50%] -top-3 -left-2"
+        {/* Side clusters */}
+        <div className="absolute w-5 h-4 rounded-[60%_60%_50%_50%] bottom-3 -left-1"
           style={{ background: `linear-gradient(135deg, ${colors.main}, ${colors.dark})` }} />
-        <div className="absolute w-5 h-4 rounded-[60%_60%_50%_50%] -top-3 -right-2"
+        <div className="absolute w-5 h-4 rounded-[60%_60%_50%_50%] bottom-3 -right-1"
           style={{ background: `linear-gradient(135deg, ${colors.main}, ${colors.dark})` }} />
-        
-        {/* Bottom layer connecting to pot */}
-        <div className="absolute w-4 h-3 rounded-full -top-1 -left-3"
-          style={{ background: colors.dark }} />
-        <div className="absolute w-4 h-3 rounded-full -top-1 -right-3"
-          style={{ background: colors.dark }} />
       </div>
     </Potted>
   );
@@ -179,19 +173,21 @@ function BonsaiDecor({ seed }: { seed: number }) {
   
   return (
     <Potted size="lg">
-      <div className="relative">
-        {/* Canopy clusters */}
-        <div className="absolute w-7 h-4 rounded-[50%_50%_40%_40%] -top-6 left-1/2 -translate-x-1/2"
-          style={{ background: `radial-gradient(ellipse at 40% 40%, ${colors.highlight}, ${colors.canopy})` }} />
-        <div className="absolute w-4 h-3 rounded-full -top-7 left-1/2 -translate-x-1/2"
-          style={{ background: colors.highlight }} />
-        <div className="absolute w-4 h-3 rounded-full -top-5 -left-1"
-          style={{ background: colors.canopy }} />
-        <div className="absolute w-4 h-3 rounded-full -top-5 -right-1"
-          style={{ background: colors.canopy }} />
-        {/* Trunk */}
-        <div className="w-2 h-5 mx-auto rounded-sm"
+      {/* Bonsai with trunk base sitting on pot */}
+      <div className="relative h-10">
+        {/* Trunk base that sits ON the pot rim */}
+        <div className="absolute w-3 h-6 bottom-0 left-1/2 -translate-x-1/2 rounded-t-sm"
           style={{ background: 'linear-gradient(90deg, hsl(25,40%,30%), hsl(30,35%,40%), hsl(25,40%,30%))' }} />
+        
+        {/* Canopy clusters */}
+        <div className="absolute w-8 h-5 rounded-[50%_50%_40%_40%] bottom-5 left-1/2 -translate-x-1/2"
+          style={{ background: `radial-gradient(ellipse at 40% 40%, ${colors.highlight}, ${colors.canopy})` }} />
+        <div className="absolute w-5 h-3.5 rounded-full bottom-8 left-1/2 -translate-x-1/2"
+          style={{ background: colors.highlight }} />
+        <div className="absolute w-4 h-3 rounded-full bottom-6 left-0"
+          style={{ background: colors.canopy }} />
+        <div className="absolute w-4 h-3 rounded-full bottom-6 right-0"
+          style={{ background: colors.canopy }} />
       </div>
     </Potted>
   );
@@ -207,21 +203,25 @@ function FernDecor({ seed }: { seed: number }) {
   
   return (
     <Potted size="sm">
-      <div className="relative">
-        {/* Multiple fronds spreading out */}
-        <div className="absolute w-5 h-5 rounded-[60%_60%_50%_50%] -top-5 left-1/2 -translate-x-1/2 rotate-0"
+      {/* Fern with base sitting on pot */}
+      <div className="relative h-7">
+        {/* Base clump that sits ON the pot rim */}
+        <div className="absolute w-6 h-3 rounded-t-full bottom-0 left-1/2 -translate-x-1/2"
+          style={{ background: c.dark }} />
+        
+        {/* Central frond */}
+        <div className="absolute w-5 h-5 rounded-[60%_60%_50%_50%] bottom-2 left-1/2 -translate-x-1/2"
           style={{ background: `radial-gradient(ellipse at 50% 70%, ${c.frond}, ${c.dark})` }} />
-        <div className="absolute w-4 h-4 rounded-full -top-4 -left-2 rotate-[-30deg]"
+        
+        {/* Side fronds */}
+        <div className="absolute w-4 h-4 rounded-full bottom-3 -left-1 rotate-[-30deg]"
           style={{ background: c.frond }} />
-        <div className="absolute w-4 h-4 rounded-full -top-4 -right-2 rotate-[30deg]"
+        <div className="absolute w-4 h-4 rounded-full bottom-3 -right-1 rotate-[30deg]"
           style={{ background: c.frond }} />
-        <div className="absolute w-3.5 h-3 rounded-full -top-2 -left-3 rotate-[-45deg]"
+        <div className="absolute w-3.5 h-3 rounded-full bottom-4 -left-2 rotate-[-45deg]"
           style={{ background: c.dark }} />
-        <div className="absolute w-3.5 h-3 rounded-full -top-2 -right-3 rotate-[45deg]"
+        <div className="absolute w-3.5 h-3 rounded-full bottom-4 -right-2 rotate-[45deg]"
           style={{ background: c.dark }} />
-        <div className="absolute w-4 h-2 rounded-full bottom-0 left-1/2 -translate-x-1/2"
-          style={{ background: c.dark }} />
-        <div className="w-5 h-4 opacity-0" />
       </div>
     </Potted>
   );
