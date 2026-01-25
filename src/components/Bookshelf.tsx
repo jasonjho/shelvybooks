@@ -70,12 +70,16 @@ function ShelfRow({
   const hasBooks = books.length > 0;
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
   
+  // Calculate available slots for books + decorations (excluding bookends)
+  const bookendSlots = settings.showBookends && hasBooks ? 2 : 0;
+  const availableSlots = maxPerRow - bookendSlots;
+  
   // Generate decorations for empty space in this row
   const decorations = settings.showPlant 
-    ? generateRowDecorations(books.length, maxPerRow, rowIndex)
+    ? generateRowDecorations(books.length, availableSlots, rowIndex)
     : [];
 
-  // Build items array: books first, then decorations to fill remaining space
+  // Build items array: books then decorations
   const items: Array<{ type: 'book'; book: Book } | { type: 'decoration'; decorationType: DecorationType; seed: number }> = [];
   
   // Add all books
@@ -97,15 +101,11 @@ function ShelfRow({
       {/* Shelf shadow */}
       <div className="shelf-shadow" />
       
+      {/* Left bookend - always show when enabled */}
+      {settings.showBookends && hasBooks && <Bookend />}
+      
       {/* Books and decorations */}
       <div className="books-grid flex-1">
-        {/* Left bookend - only if no decorations */}
-        {settings.showBookends && hasBooks && decorations.length === 0 && (
-          <div className="flex items-end justify-center">
-            <Bookend />
-          </div>
-        )}
-        
         {items.map((item, index) => (
           <div
             key={item.type === 'book' ? item.book.id : `decor-${rowIndex}-${index}`}
@@ -128,14 +128,10 @@ function ShelfRow({
             )}
           </div>
         ))}
-        
-        {/* Right bookend - only if no decorations */}
-        {settings.showBookends && hasBooks && decorations.length === 0 && (
-          <div className="flex items-end justify-center">
-            <Bookend />
-          </div>
-        )}
       </div>
+      
+      {/* Right bookend - always show when enabled */}
+      {settings.showBookends && hasBooks && <Bookend />}
       
       {/* Empty shelf message */}
       {!hasBooks && (
