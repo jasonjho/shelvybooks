@@ -2,7 +2,7 @@ import { Book, BookStatus, ShelfSkin, ShelfSettings } from '@/types/book';
 import { BookSpine } from './BookSpine';
 import { BookDetailDialog } from './BookDetailDialog';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 interface MobileBookshelfProps {
   books: Book[];
@@ -13,22 +13,24 @@ interface MobileBookshelfProps {
   onRemoveBook?: (id: string) => void;
 }
 
-function MiniShelf({ 
-  book, 
+const BOOKS_PER_ROW = 4; // Number of books per mini-shelf on mobile
+
+function MiniShelfRow({ 
+  books, 
   skin, 
   settings,
-  isGrayed,
+  activeFilters,
   onMoveBook,
   onRemoveBook,
-  onSelect,
+  onSelectBook,
 }: { 
-  book: Book; 
+  books: Book[]; 
   skin: ShelfSkin; 
   settings: ShelfSettings;
-  isGrayed: boolean;
+  activeFilters: BookStatus[];
   onMoveBook?: (id: string, status: BookStatus) => void;
   onRemoveBook?: (id: string) => void;
-  onSelect: () => void;
+  onSelectBook: (book: Book) => void;
 }) {
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
   
@@ -36,14 +38,20 @@ function MiniShelf({
     <div className={cn('mini-shelf', `shelf-${skin}`, grainClass)}>
       <div className="mini-shelf-back" />
       <div className="mini-shelf-content">
-        <BookSpine
-          book={book}
-          onMove={onMoveBook}
-          onRemove={onRemoveBook}
-          onSelect={onSelect}
-          isInteractive={!!onMoveBook && !!onRemoveBook}
-          isGrayed={isGrayed}
-        />
+        {books.map((book) => {
+          const isGrayed = activeFilters.length > 0 && !activeFilters.includes(book.status);
+          return (
+            <BookSpine
+              key={book.id}
+              book={book}
+              onMove={onMoveBook}
+              onRemove={onRemoveBook}
+              onSelect={() => onSelectBook(book)}
+              isInteractive={!!onMoveBook && !!onRemoveBook}
+              isGrayed={isGrayed}
+            />
+          );
+        })}
       </div>
       <div className="mini-shelf-surface" />
       <div className="mini-shelf-front" />
@@ -63,6 +71,15 @@ export function MobileBookshelf({
   const skinClass = `skin-${skin}`;
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
 
+  // Split books into rows
+  const bookRows = useMemo(() => {
+    const rows: Book[][] = [];
+    for (let i = 0; i < books.length; i += BOOKS_PER_ROW) {
+      rows.push(books.slice(i, i + BOOKS_PER_ROW));
+    }
+    return rows;
+  }, [books]);
+
   return (
     <div className={cn('mobile-bookcase', skinClass, grainClass)}>
       {books.length === 0 ? (
@@ -71,21 +88,18 @@ export function MobileBookshelf({
         </div>
       ) : (
         <div className="mobile-shelf-list">
-          {books.map((book) => {
-            const isGrayed = activeFilters.length > 0 && !activeFilters.includes(book.status);
-            return (
-              <MiniShelf
-                key={book.id}
-                book={book}
-                skin={skin}
-                settings={settings}
-                isGrayed={isGrayed}
-                onMoveBook={onMoveBook}
-                onRemoveBook={onRemoveBook}
-                onSelect={() => setSelectedBook(book)}
-              />
-            );
-          })}
+          {bookRows.map((rowBooks, index) => (
+            <MiniShelfRow
+              key={index}
+              books={rowBooks}
+              skin={skin}
+              settings={settings}
+              activeFilters={activeFilters}
+              onMoveBook={onMoveBook}
+              onRemoveBook={onRemoveBook}
+              onSelectBook={setSelectedBook}
+            />
+          ))}
         </div>
       )}
 
