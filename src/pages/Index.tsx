@@ -19,7 +19,7 @@ const tabs: { id: BookStatus; label: string; icon: React.ReactNode }[] = [
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<BookStatus>('reading');
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signInWithGoogle } = useAuth();
   const { 
     loading: booksLoading,
     shelfSkin, 
@@ -133,7 +133,12 @@ export default function Index() {
           {user ? (
             <p>Right-click a book to move it or remove it from your shelf</p>
           ) : (
-            <p>Sign in to start building your personal bookshelf</p>
+            <button 
+              onClick={signInWithGoogle}
+              className="hover:text-white/80 underline underline-offset-2 transition-colors"
+            >
+              Sign in to start building your personal bookshelf
+            </button>
           )}
         </div>
       </footer>
