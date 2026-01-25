@@ -6,6 +6,7 @@ import { SettingsPanel } from '@/components/SettingsPanel';
 import { AddBookDialog } from '@/components/AddBookDialog';
 import { AuthButton } from '@/components/AuthButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { PlantPreview } from '@/components/PlantPreview';
 import { useBooks } from '@/hooks/useBooks';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookStatus } from '@/types/book';
@@ -122,9 +123,12 @@ export default function Index() {
             </div>
           )}
 
+          {/* DEBUG: Plant preview - remove after review */}
+          <PlantPreview />
+
           {/* Shelf customization controls */}
           {!authLoading && !booksLoading && (
-            <div className="flex items-center justify-end mb-4">
+            <div className="flex items-center justify-end mb-4 mt-6">
               <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
             </div>
           )}
