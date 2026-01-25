@@ -6,6 +6,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { BookInteractions } from '@/components/BookInteractions';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 interface BookDetailDialogProps {
   book: Book | null;
@@ -14,7 +16,12 @@ interface BookDetailDialogProps {
 }
 
 export function BookDetailDialog({ book, open, onOpenChange }: BookDetailDialogProps) {
+  const { user, signInWithGoogle } = useAuth();
+  
   if (!book) return null;
+
+  // Demo books have non-UUID IDs like "demo-1"
+  const isDemoBook = book.id.startsWith('demo-');
 
   const openLibraryUrl = book.openLibraryKey
     ? `https://openlibrary.org${book.openLibraryKey}`
@@ -54,8 +61,19 @@ export function BookDetailDialog({ book, open, onOpenChange }: BookDetailDialogP
           </div>
         </div>
 
-        {/* Interactions */}
-        <BookInteractions bookId={book.id} bookTitle={book.title} />
+        {/* Interactions - only for real books */}
+        {isDemoBook ? (
+          <div className="text-center py-4 border-t border-border">
+            <p className="text-muted-foreground text-sm mb-3">
+              Sign in to like books and leave comments
+            </p>
+            <Button onClick={signInWithGoogle} size="sm">
+              Sign in with Google
+            </Button>
+          </div>
+        ) : (
+          <BookInteractions bookId={book.id} bookTitle={book.title} />
+        )}
       </DialogContent>
     </Dialog>
   );
