@@ -96,18 +96,18 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger asChild>
+      <ContextMenuTrigger>
         <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} />
       </ContextMenuTrigger>
       
-      <ContextMenuContent className="w-48">
+      <ContextMenuContent className="w-48 z-50">
         {statusOptions
           .filter((opt) => opt.status !== book.status)
           .map((opt) => (
             <ContextMenuItem
               key={opt.status}
               onClick={() => onMove(book.id, opt.status)}
-              className="gap-2"
+              className="gap-2 cursor-pointer"
             >
               {opt.icon}
               Move to {opt.label}
@@ -116,7 +116,7 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
         <ContextMenuSeparator />
         <ContextMenuItem
           onClick={() => onRemove(book.id)}
-          className="gap-2 text-destructive focus:text-destructive"
+          className="gap-2 text-destructive focus:text-destructive cursor-pointer"
         >
           <Trash2 className="w-4 h-4" />
           Remove
