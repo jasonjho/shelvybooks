@@ -49,12 +49,12 @@ function BookCover({ book }: { book: Book }) {
       </div>
       
       {/* Hover tooltip */}
-      <div className="absolute -top-20 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-        <div className="bg-foreground/95 text-background px-3 py-2 rounded-lg text-xs max-w-[180px] shadow-xl backdrop-blur-sm">
-          <p className="font-medium line-clamp-2">{book.title}</p>
-          <p className="text-background/70 mt-1 line-clamp-1">{book.author}</p>
+      <div className="absolute -top-24 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-30">
+        <div className="bg-popover text-popover-foreground px-4 py-3 rounded-lg text-sm min-w-[200px] max-w-[280px] shadow-xl border border-border">
+          <p className="font-medium leading-snug">{book.title}</p>
+          <p className="text-muted-foreground mt-1.5 text-xs">{book.author}</p>
         </div>
-        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-foreground/95" />
+        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[8px] border-transparent border-t-popover" />
       </div>
     </div>
   );
