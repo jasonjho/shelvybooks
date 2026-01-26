@@ -45,7 +45,28 @@ function mapGoodreadsStatus(shelf: string | undefined): BookStatus {
 }
 
 function normalizeForComparison(str: string): string {
-  return str.toLowerCase().trim().replace(/[^\w\s]/g, '');
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s]/g, '') // Remove punctuation
+    .replace(/\s+/g, ' '); // Normalize whitespace
+}
+
+// Calculate word overlap similarity (0-1)
+function wordSimilarity(str1: string, str2: string): number {
+  const words1 = new Set(normalizeForComparison(str1).split(' ').filter(w => w.length > 2));
+  const words2 = new Set(normalizeForComparison(str2).split(' ').filter(w => w.length > 2));
+  
+  if (words1.size === 0 || words2.size === 0) return 0;
+  
+  let matchCount = 0;
+  words1.forEach(word => {
+    if (words2.has(word)) matchCount++;
+  });
+  
+  // Return similarity based on smaller set (to handle subtitles well)
+  const minSize = Math.min(words1.size, words2.size);
+  return matchCount / minSize;
 }
 
 function isDuplicate(book: { title: string; author: string }, existingBooks: { title: string; author: string }[]): boolean {
@@ -55,7 +76,25 @@ function isDuplicate(book: { title: string; author: string }, existingBooks: { t
   return existingBooks.some(existing => {
     const existingTitle = normalizeForComparison(existing.title);
     const existingAuthor = normalizeForComparison(existing.author);
-    return existingTitle === normalizedTitle && existingAuthor === normalizedAuthor;
+    
+    // Check author similarity (at least one significant word matches)
+    const authorWords1 = normalizedAuthor.split(' ').filter(w => w.length > 2);
+    const authorWords2 = existingAuthor.split(' ').filter(w => w.length > 2);
+    const authorMatch = authorWords1.some(w => authorWords2.includes(w)) || 
+                        authorWords2.some(w => authorWords1.includes(w));
+    
+    if (!authorMatch) return false;
+    
+    // Exact title match
+    if (existingTitle === normalizedTitle) return true;
+    
+    // One title contains the other (handles subtitles)
+    if (existingTitle.includes(normalizedTitle) || normalizedTitle.includes(existingTitle)) return true;
+    
+    // High word overlap (>70% of significant words match)
+    if (wordSimilarity(book.title, existing.title) >= 0.7) return true;
+    
+    return false;
   });
 }
 
@@ -185,10 +224,10 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
           Import
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
+      <DialogContent className="max-w-lg overflow-hidden">
+        <DialogHeader className="pr-6">
           <DialogTitle className="font-sans text-lg font-semibold">Import from Goodreads</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             Upload your Goodreads library export (CSV) to bulk-add books
           </DialogDescription>
         </DialogHeader>
@@ -266,12 +305,12 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
                   >
                     <Checkbox checked={book.selected} className="pointer-events-none" />
                     <Book className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{book.title}</p>
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <p className="text-sm font-medium truncate" title={book.title}>{book.title}</p>
                       <p className="text-xs text-muted-foreground truncate">{book.author}</p>
                     </div>
                     {book.isDuplicate ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground flex-shrink-0">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground flex-shrink-0 whitespace-nowrap">
                         Already on shelf
                       </span>
                     ) : (
