@@ -197,7 +197,7 @@ export default function Index() {
                   />
                   
                   {user && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                       <MagicRecommender books={allBooks} onAddBook={addBook} />
                       <ShareShelfDialog />
                       <ImportBooksDialog onAddBook={addBook} existingBooks={allBooks} />
