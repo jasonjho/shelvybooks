@@ -226,14 +226,14 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
         onClick={() => setOpen(true)}
         disabled={disabled}
         className={cn(
-          'group relative overflow-hidden transition-all duration-300',
+          'group relative overflow-hidden transition-all duration-300 flex-shrink-0',
           'bg-background/80 backdrop-blur-sm',
           'border-border hover:border-violet-300/50',
           'hover:bg-muted/50'
         )}
       >
-        <Sparkles className="h-4 w-4 mr-1.5 text-violet-500 group-hover:animate-pulse" />
-        <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent font-medium">
+        <Sparkles className="h-4 w-4 mr-1.5 flex-shrink-0 text-violet-500 group-hover:animate-pulse" />
+        <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent font-medium whitespace-nowrap">
           Magic Recommender
         </span>
         <span className="absolute top-1 right-2 w-1 h-1 bg-violet-400 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping" />
