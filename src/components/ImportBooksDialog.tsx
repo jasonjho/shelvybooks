@@ -224,7 +224,7 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
           Import
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg overflow-hidden">
+      <DialogContent className="max-w-2xl w-[90vw] overflow-hidden">
         <DialogHeader className="pr-6">
           <DialogTitle className="font-sans text-lg font-semibold">Import from Goodreads</DialogTitle>
           <DialogDescription className="text-sm">
