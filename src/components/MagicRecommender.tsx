@@ -330,7 +330,7 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="font-semibold text-foreground">{rec.title}</h4>
+                              <h4 className="font-sans font-semibold text-foreground">{rec.title}</h4>
                               <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 whitespace-nowrap">
                                 {rec.vibe}
                               </span>
