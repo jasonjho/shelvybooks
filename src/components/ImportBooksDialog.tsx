@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { BookStatus } from '@/types/book';
 import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, Book } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { fetchCoverUrl } from '@/hooks/useBookSearch';
 
 interface ParsedBook {
   title: string;
@@ -181,10 +182,13 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
     for (let i = 0; i < selectedBooks.length; i++) {
       const book = selectedBooks[i];
       try {
+        // Fetch cover from Google Books API
+        const coverUrl = await fetchCoverUrl(book.title, book.author);
+        
         await onAddBook({
           title: book.title,
           author: book.author,
-          coverUrl: '',
+          coverUrl: coverUrl || '',
           status: book.status,
           openLibraryKey: `goodreads-import-${Date.now()}-${i}`,
         });

@@ -62,3 +62,24 @@ export function getCoverUrl(book: GoogleBook): string {
   // Replace HTTP with HTTPS and increase zoom for better quality
   return thumbnail.replace('http://', 'https://').replace('zoom=1', 'zoom=2');
 }
+
+// Fetch cover URL for a book by title and author
+export async function fetchCoverUrl(title: string, author: string): Promise<string> {
+  try {
+    const query = `intitle:${title} inauthor:${author}`;
+    const response = await fetch(
+      `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=1&printType=books`
+    );
+    
+    if (!response.ok) return '';
+    
+    const data = await response.json();
+    const book = data.items?.[0];
+    
+    if (!book) return '';
+    
+    return getCoverUrl(book);
+  } catch {
+    return '';
+  }
+}
