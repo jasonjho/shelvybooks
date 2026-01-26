@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Bookshelf } from '@/components/Bookshelf';
@@ -9,9 +9,15 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Book, ShelfSettings as ShelfSettingsType, BookStatus } from '@/types/book';
-import { Library, Loader2, ArrowLeft, Lock, BookOpen, BookMarked, CheckCircle } from 'lucide-react';
+import { Book, ShelfSettings as ShelfSettingsType, BookStatus, SortOption } from '@/types/book';
+import { Library, Loader2, ArrowLeft, Lock, BookOpen, BookMarked, CheckCircle, Shuffle, Clock, Layers, ArrowDownAZ } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 interface ShelfOwner {
@@ -34,6 +40,63 @@ const statusFilters: { status: BookStatus; label: string; icon: React.ReactNode 
   { status: 'read', label: 'Read', icon: <CheckCircle className="w-4 h-4" /> },
 ];
 
+const sortOptions: { value: SortOption; label: string; icon: React.ReactNode }[] = [
+  { value: 'random', label: 'Random', icon: <Shuffle className="w-4 h-4" /> },
+  { value: 'recent', label: 'Recently Added', icon: <Clock className="w-4 h-4" /> },
+  { value: 'status-author', label: 'Status + Author', icon: <Layers className="w-4 h-4" /> },
+  { value: 'author-title', label: 'Author + Title', icon: <ArrowDownAZ className="w-4 h-4" /> },
+];
+
+const STATUS_ORDER: Record<BookStatus, number> = {
+  'reading': 0,
+  'want-to-read': 1,
+  'read': 2,
+};
+
+function seededShuffle<T>(array: T[], seed: number): T[] {
+  const result = [...array];
+  let currentSeed = seed;
+  
+  const random = () => {
+    currentSeed = (currentSeed * 9301 + 49297) % 233280;
+    return currentSeed / 233280;
+  };
+  
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  
+  return result;
+}
+
+function sortBooks(books: Book[], sortOption: SortOption, shuffleSeed: number): Book[] {
+  switch (sortOption) {
+    case 'random':
+      return seededShuffle(books, shuffleSeed);
+    case 'recent':
+      return [...books].sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+    case 'status-author':
+      return [...books].sort((a, b) => {
+        const statusDiff = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+        if (statusDiff !== 0) return statusDiff;
+        return a.author.localeCompare(b.author);
+      });
+    case 'author-title':
+      return [...books].sort((a, b) => {
+        const authorDiff = a.author.localeCompare(b.author);
+        if (authorDiff !== 0) return authorDiff;
+        return a.title.localeCompare(b.title);
+      });
+    default:
+      return books;
+  }
+}
+
 export default function PublicShelf() {
   const { shareId } = useParams<{ shareId: string }>();
   const { user } = useAuth();
@@ -45,6 +108,8 @@ export default function PublicShelf() {
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [activeFilters, setActiveFilters] = useState<BookStatus[]>([]);
+  const [sortOption, setSortOption] = useState<SortOption>('random');
+  const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
 
   useEffect(() => {
     async function loadPublicShelf() {
@@ -114,6 +179,11 @@ export default function PublicShelf() {
     loadPublicShelf();
   }, [shareId]);
 
+  // Sort books
+  const sortedBooks = useMemo(() => {
+    return sortBooks(books, sortOption, shuffleSeed);
+  }, [books, sortOption, shuffleSeed]);
+
   // Calculate book counts by status
   const bookCounts = useMemo(() => {
     return {
@@ -132,6 +202,11 @@ export default function PublicShelf() {
       setActiveFilters([...activeFilters, status]);
     }
   };
+
+  const handleShuffle = useCallback(() => {
+    setShuffleSeed(Date.now());
+    setSortOption('random');
+  }, []);
 
   const isAllSelected = activeFilters.length === 0;
 
@@ -210,7 +285,7 @@ export default function PublicShelf() {
           )}
         </div>
 
-        {/* Filters */}
+        {/* Filters and Sort */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
           <Button
             variant={isAllSelected ? 'default' : 'outline'}
@@ -241,19 +316,43 @@ export default function PublicShelf() {
               </Button>
             );
           })}
+
+          {/* Sort Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                {sortOptions.find((o) => o.value === sortOption)?.icon}
+                <span className="hidden sm:inline">
+                  {sortOptions.find((o) => o.value === sortOption)?.label}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="bg-popover">
+              {sortOptions.map((option) => (
+                <DropdownMenuItem
+                  key={option.value}
+                  onClick={() => option.value === 'random' ? handleShuffle() : setSortOption(option.value)}
+                  className="gap-2"
+                >
+                  {option.icon}
+                  {option.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Bookshelf - Mobile vs Desktop */}
         {isMobile ? (
           <MobileBookshelf
-            books={books}
+            books={sortedBooks}
             skin="oak"
             settings={DEFAULT_SETTINGS}
             activeFilters={activeFilters}
           />
         ) : (
           <Bookshelf
-            books={books}
+            books={sortedBooks}
             skin="oak"
             settings={DEFAULT_SETTINGS}
             activeFilters={activeFilters}
