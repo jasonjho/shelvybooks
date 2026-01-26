@@ -175,9 +175,12 @@ export default function Index() {
             {/* Empty shelf - show collection suggestions prominently */}
             {user && allBooks.length === 0 ? (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <p className="text-muted-foreground">Your shelf is empty. Browse collections below or add a book manually.</p>
-                  <AddBookDialog onAddBook={addBook} defaultStatus="reading" />
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <ImportBooksDialog onAddBook={addBook} existingBooks={allBooks} />
+                    <AddBookDialog onAddBook={addBook} defaultStatus="reading" />
+                  </div>
                 </div>
                 <DiscoverCollections 
                   onAddBook={addBook} 
