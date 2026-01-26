@@ -144,7 +144,7 @@ export default function PublicShelf() {
               </div>
               <div>
                 <h1 className="text-3xl font-normal tracking-wide bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
-                  <span className="italic">Shelvy</span>Books
+                  ShelvyBooks
                 </h1>
                 <p className="text-sm text-muted-foreground">Your personal bookshelf, beautifully organized</p>
               </div>

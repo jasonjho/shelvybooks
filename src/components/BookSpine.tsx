@@ -108,7 +108,7 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
               className="gap-2 cursor-pointer"
             >
               {opt.icon}
-              Move to {opt.label}
+              {opt.label}
             </ContextMenuItem>
           ))}
         <ContextMenuSeparator />
