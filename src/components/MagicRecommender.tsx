@@ -227,9 +227,9 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
         disabled={disabled}
         className={cn(
           'group relative overflow-hidden transition-all duration-300',
-          'bg-gradient-to-r from-violet-500/5 to-fuchsia-500/5',
-          'border-violet-200/40 hover:border-violet-300/60',
-          'hover:from-violet-500/10 hover:to-fuchsia-500/10'
+          'bg-background/80 backdrop-blur-sm',
+          'border-border hover:border-violet-300/50',
+          'hover:bg-muted/50'
         )}
       >
         <Sparkles className="h-4 w-4 mr-1.5 text-violet-500 group-hover:animate-pulse" />
