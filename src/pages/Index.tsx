@@ -75,7 +75,7 @@ export default function Index() {
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
   
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
   const { 
     books,
     loading: booksLoading,
@@ -164,7 +164,7 @@ export default function Index() {
         {!authLoading && !user && (
           <div className="py-4 mb-4">
             <p className="text-foreground/80 text-base">
-              <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, and <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites. <span className="text-primary font-medium cursor-pointer hover:underline">Sign in</span> to build your own shelf — here's a preview:
+              <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, and <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites. <button onClick={() => setAuthDialogOpen(true)} className="text-primary font-medium cursor-pointer hover:underline">Sign in</button> to build your own shelf — here's a preview:
             </p>
           </div>
         )}
