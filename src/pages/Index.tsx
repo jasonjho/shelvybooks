@@ -133,7 +133,7 @@ export default function Index() {
             </div>
             <div>
               <h1 className="text-3xl font-normal tracking-wide bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
-                ShelvyBooks
+                Shelvy
               </h1>
               <p className="text-xs text-muted-foreground hidden sm:block">Your personal bookshelf, beautifully organized</p>
             </div>
