@@ -9,6 +9,7 @@ import { ImportBooksDialog } from '@/components/ImportBooksDialog';
 import { ShareShelfDialog } from '@/components/ShareShelfDialog';
 import { AuthButton } from '@/components/AuthButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { MagicRecommender } from '@/components/MagicRecommender';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { useBooks } from '@/hooks/useBooks';
 import { useAuth } from '@/contexts/AuthContext';
@@ -197,6 +198,7 @@ export default function Index() {
                   
                   {user && (
                     <div className="flex items-center gap-2">
+                      <MagicRecommender books={allBooks} />
                       <ShareShelfDialog />
                       <ImportBooksDialog onAddBook={addBook} existingBooks={allBooks} />
                       <AddBookDialog onAddBook={addBook} defaultStatus="reading" />

@@ -2,3 +2,6 @@ project_id = "gzzkaxivhqqoezfqtpsd"
 
 [functions.nyt-bestsellers]
 verify_jwt = false
+
+[functions.book-recommender]
+verify_jwt = false
