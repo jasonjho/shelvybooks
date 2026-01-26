@@ -198,7 +198,7 @@ export default function Index() {
                   {user && (
                     <div className="flex items-center gap-2">
                       <ShareShelfDialog />
-                      <ImportBooksDialog onAddBook={addBook} />
+                      <ImportBooksDialog onAddBook={addBook} existingBooks={allBooks} />
                       <AddBookDialog onAddBook={addBook} defaultStatus="reading" />
                     </div>
                   )}
