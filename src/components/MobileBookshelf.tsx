@@ -16,7 +16,7 @@ interface MobileBookshelfProps {
 
 const BOOK_WIDTH = 55; // Width of mobile book covers
 const BOOK_GAP = 4; // Gap between books (gap-1 = 0.25rem = 4px)
-const SHELF_PADDING = 64; // Padding on left and right (2rem * 2 = 64px)
+const SHELF_PADDING = 96; // Padding on left and right (3rem * 2 = 96px)
 
 // Density config for decorations on mobile (slightly lower than desktop)
 const MOBILE_DENSITY_CONFIG: Record<DecorDensity, { ratio: number; minSpacing: number }> = {
@@ -224,13 +224,14 @@ export function MobileBookshelf({
       const availableWidth = containerWidth - SHELF_PADDING - 16;
       
       // Account for decoration slots when calculating book capacity
-      // Each decoration takes approximately 35px width at 0.7 scale
+      // Each decoration takes approximately 40px width at 0.7 scale (being conservative)
       const config = MOBILE_DENSITY_CONFIG[settings.decorDensity];
       const estimatedDecorCount = settings.showPlant ? Math.max(1, Math.ceil(4 * config.ratio)) : 0;
-      const decorWidth = estimatedDecorCount * 38; // 35px decoration + gap
+      const decorWidth = estimatedDecorCount * 42; // 38px decoration + gap (conservative)
       const effectiveWidth = availableWidth - decorWidth;
       
-      const count = Math.max(2, Math.floor((effectiveWidth + BOOK_GAP) / (BOOK_WIDTH + BOOK_GAP)));
+      // Add 8px safety margin per book to prevent edge clipping
+      const count = Math.max(2, Math.floor((effectiveWidth + BOOK_GAP) / (BOOK_WIDTH + BOOK_GAP + 8)));
       setBooksPerRow(count);
     };
 
