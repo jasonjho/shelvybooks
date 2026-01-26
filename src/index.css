@@ -845,6 +845,12 @@
     height: 82px;
   }
 
+  /* Scale down decorations on mobile */
+  .mobile-decoration {
+    transform: scale(0.7);
+    transform-origin: bottom center;
+  }
+
   .mini-shelf-surface {
     @apply absolute bottom-4 left-0 right-0;
     height: 8px;
