@@ -10,8 +10,9 @@ import { AuthButton } from '@/components/AuthButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Book, ShelfSettings as ShelfSettingsType, BookStatus } from '@/types/book';
-import { Library, Loader2, ArrowLeft, Lock, BookOpen } from 'lucide-react';
+import { Library, Loader2, ArrowLeft, Lock, BookOpen, BookMarked, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ShelfOwner {
   user_id: string;
@@ -27,6 +28,12 @@ const DEFAULT_SETTINGS: ShelfSettingsType = {
   decorDensity: 'balanced',
 };
 
+const statusFilters: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
+  { status: 'reading', label: 'Reading', icon: <BookOpen className="w-4 h-4" /> },
+  { status: 'want-to-read', label: 'To Read', icon: <BookMarked className="w-4 h-4" /> },
+  { status: 'read', label: 'Read', icon: <CheckCircle className="w-4 h-4" /> },
+];
+
 export default function PublicShelf() {
   const { shareId } = useParams<{ shareId: string }>();
   const { user } = useAuth();
@@ -37,6 +44,7 @@ export default function PublicShelf() {
   const [shelfOwner, setShelfOwner] = useState<ShelfOwner | null>(null);
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [activeFilters, setActiveFilters] = useState<BookStatus[]>([]);
 
   useEffect(() => {
     async function loadPublicShelf() {
@@ -106,6 +114,27 @@ export default function PublicShelf() {
     loadPublicShelf();
   }, [shareId]);
 
+  // Calculate book counts by status
+  const bookCounts = useMemo(() => {
+    return {
+      reading: books.filter(b => b.status === 'reading').length,
+      'want-to-read': books.filter(b => b.status === 'want-to-read').length,
+      read: books.filter(b => b.status === 'read').length,
+    };
+  }, [books]);
+
+  const totalBooks = bookCounts.reading + bookCounts['want-to-read'] + bookCounts.read;
+
+  const toggleFilter = (status: BookStatus) => {
+    if (activeFilters.includes(status)) {
+      setActiveFilters(activeFilters.filter((f) => f !== status));
+    } else {
+      setActiveFilters([...activeFilters, status]);
+    }
+  };
+
+  const isAllSelected = activeFilters.length === 0;
+
   const shelfTitle = shelfOwner?.display_name || "Someone's Bookshelf";
 
   if (loading) {
@@ -125,7 +154,7 @@ export default function PublicShelf() {
         <Link to="/">
           <Button variant="outline" className="gap-2">
             <ArrowLeft className="w-4 h-4" />
-            Go to ShelvyBooks
+            Go to Shelvy
           </Button>
         </Link>
       </div>
@@ -144,7 +173,7 @@ export default function PublicShelf() {
               </div>
               <div>
                 <h1 className="text-3xl font-normal tracking-wide bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
-                  ShelvyBooks
+                  Shelvy
                 </h1>
                 <p className="text-sm text-muted-foreground hidden sm:block">Your personal bookshelf, beautifully organized</p>
               </div>
@@ -181,20 +210,53 @@ export default function PublicShelf() {
           )}
         </div>
 
+        {/* Filters */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+          <Button
+            variant={isAllSelected ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setActiveFilters([])}
+            className="gap-1.5"
+          >
+            All
+            <span className="text-xs opacity-70">({totalBooks})</span>
+          </Button>
+          
+          {statusFilters.map((filter) => {
+            const isActive = activeFilters.includes(filter.status);
+            return (
+              <Button
+                key={filter.status}
+                variant={isActive ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => toggleFilter(filter.status)}
+                className={cn(
+                  'gap-1.5 transition-all',
+                  !isActive && !isAllSelected && 'opacity-60'
+                )}
+              >
+                {filter.icon}
+                <span className="hidden sm:inline">{filter.label}</span>
+                <span className="text-xs opacity-70">({bookCounts[filter.status]})</span>
+              </Button>
+            );
+          })}
+        </div>
+
         {/* Bookshelf - Mobile vs Desktop */}
         {isMobile ? (
           <MobileBookshelf
             books={books}
             skin="oak"
             settings={DEFAULT_SETTINGS}
-            activeFilters={[]}
+            activeFilters={activeFilters}
           />
         ) : (
           <Bookshelf
             books={books}
             skin="oak"
             settings={DEFAULT_SETTINGS}
-            activeFilters={[]}
+            activeFilters={activeFilters}
           />
         )}
       </main>
