@@ -3,22 +3,15 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Bookshelf } from '@/components/Bookshelf';
 import { MobileBookshelf } from '@/components/MobileBookshelf';
-import { BookInteractions } from '@/components/BookInteractions';
 import { BookDetailDialog } from '@/components/BookDetailDialog';
+import { ShelfControls } from '@/components/ShelfControls';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Book, ShelfSettings as ShelfSettingsType, BookStatus, SortOption } from '@/types/book';
-import { Library, Loader2, ArrowLeft, Lock, BookOpen, BookMarked, CheckCircle, Shuffle, Clock, Layers, ArrowDownAZ } from 'lucide-react';
+import { Library, Loader2, ArrowLeft, Lock, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
 
 interface ShelfOwner {
   user_id: string;
@@ -33,19 +26,6 @@ const DEFAULT_SETTINGS: ShelfSettingsType = {
   showPlant: true,
   decorDensity: 'balanced',
 };
-
-const statusFilters: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
-  { status: 'reading', label: 'Reading', icon: <BookOpen className="w-4 h-4" /> },
-  { status: 'want-to-read', label: 'To Read', icon: <BookMarked className="w-4 h-4" /> },
-  { status: 'read', label: 'Read', icon: <CheckCircle className="w-4 h-4" /> },
-];
-
-const sortOptions: { value: SortOption; label: string; icon: React.ReactNode }[] = [
-  { value: 'random', label: 'Random', icon: <Shuffle className="w-4 h-4" /> },
-  { value: 'recent', label: 'Recently Added', icon: <Clock className="w-4 h-4" /> },
-  { value: 'status-author', label: 'Status + Author', icon: <Layers className="w-4 h-4" /> },
-  { value: 'author-title', label: 'Author + Title', icon: <ArrowDownAZ className="w-4 h-4" /> },
-];
 
 const STATUS_ORDER: Record<BookStatus, number> = {
   'reading': 0,
@@ -193,22 +173,10 @@ export default function PublicShelf() {
     };
   }, [books]);
 
-  const totalBooks = bookCounts.reading + bookCounts['want-to-read'] + bookCounts.read;
-
-  const toggleFilter = (status: BookStatus) => {
-    if (activeFilters.includes(status)) {
-      setActiveFilters(activeFilters.filter((f) => f !== status));
-    } else {
-      setActiveFilters([...activeFilters, status]);
-    }
-  };
-
   const handleShuffle = useCallback(() => {
     setShuffleSeed(Date.now());
     setSortOption('random');
   }, []);
-
-  const isAllSelected = activeFilters.length === 0;
 
   const shelfTitle = shelfOwner?.display_name || "Someone's Bookshelf";
 
@@ -286,60 +254,15 @@ export default function PublicShelf() {
         </div>
 
         {/* Filters and Sort */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-          <Button
-            variant={isAllSelected ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setActiveFilters([])}
-            className="gap-1.5"
-          >
-            All
-            <span className="text-xs opacity-70">({totalBooks})</span>
-          </Button>
-          
-          {statusFilters.map((filter) => {
-            const isActive = activeFilters.includes(filter.status);
-            return (
-              <Button
-                key={filter.status}
-                variant={isActive ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => toggleFilter(filter.status)}
-                className={cn(
-                  'gap-1.5 transition-all',
-                  !isActive && !isAllSelected && 'opacity-60'
-                )}
-              >
-                {filter.icon}
-                <span className="hidden sm:inline">{filter.label}</span>
-                <span className="text-xs opacity-70">({bookCounts[filter.status]})</span>
-              </Button>
-            );
-          })}
-
-          {/* Sort Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                {sortOptions.find((o) => o.value === sortOption)?.icon}
-                <span className="hidden sm:inline">
-                  {sortOptions.find((o) => o.value === sortOption)?.label}
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="bg-popover">
-              {sortOptions.map((option) => (
-                <DropdownMenuItem
-                  key={option.value}
-                  onClick={() => option.value === 'random' ? handleShuffle() : setSortOption(option.value)}
-                  className="gap-2"
-                >
-                  {option.icon}
-                  {option.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex justify-center mb-6">
+          <ShelfControls
+            activeFilters={activeFilters}
+            onFilterChange={setActiveFilters}
+            sortOption={sortOption}
+            onSortChange={setSortOption}
+            onShuffle={handleShuffle}
+            bookCounts={bookCounts}
+          />
         </div>
 
         {/* Bookshelf - Mobile vs Desktop */}
