@@ -33,6 +33,7 @@ interface ImportBooksDialogProps {
     status: BookStatus;
     openLibraryKey: string;
   }) => Promise<void>;
+  existingBooks: { title: string; author: string }[];
 }
 
 function mapGoodreadsStatus(shelf: string | undefined): BookStatus {
@@ -43,10 +44,25 @@ function mapGoodreadsStatus(shelf: string | undefined): BookStatus {
   return 'want-to-read';
 }
 
-export function ImportBooksDialog({ onAddBook }: ImportBooksDialogProps) {
+function normalizeForComparison(str: string): string {
+  return str.toLowerCase().trim().replace(/[^\w\s]/g, '');
+}
+
+function isDuplicate(book: { title: string; author: string }, existingBooks: { title: string; author: string }[]): boolean {
+  const normalizedTitle = normalizeForComparison(book.title);
+  const normalizedAuthor = normalizeForComparison(book.author);
+  
+  return existingBooks.some(existing => {
+    const existingTitle = normalizeForComparison(existing.title);
+    const existingAuthor = normalizeForComparison(existing.author);
+    return existingTitle === normalizedTitle && existingAuthor === normalizedAuthor;
+  });
+}
+
+export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialogProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<'upload' | 'preview' | 'importing' | 'done'>('upload');
-  const [parsedBooks, setParsedBooks] = useState<ParsedBook[]>([]);
+  const [parsedBooks, setParsedBooks] = useState<(ParsedBook & { isDuplicate: boolean })[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [importProgress, setImportProgress] = useState(0);
   const [importResults, setImportResults] = useState({ success: 0, failed: 0 });
@@ -72,14 +88,21 @@ export function ImportBooksDialog({ onAddBook }: ImportBooksDialogProps) {
           return;
         }
 
-        const books: ParsedBook[] = results.data
+        const books = results.data
           .filter((row) => row.Title && row.Title.trim())
-          .map((row) => ({
-            title: row.Title?.trim() || '',
-            author: row.Author?.trim() || row['Author l-f']?.trim() || 'Unknown Author',
-            status: mapGoodreadsStatus(row['Exclusive Shelf'] || row['Bookshelves']),
-            selected: true,
-          }));
+          .map((row) => {
+            const book = {
+              title: row.Title?.trim() || '',
+              author: row.Author?.trim() || row['Author l-f']?.trim() || 'Unknown Author',
+              status: mapGoodreadsStatus(row['Exclusive Shelf'] || row['Bookshelves']),
+            };
+            const duplicate = isDuplicate(book, existingBooks);
+            return {
+              ...book,
+              selected: !duplicate, // Deselect duplicates by default
+              isDuplicate: duplicate,
+            };
+          });
 
         if (books.length === 0) {
           setError('No books found in the CSV file. Make sure it\'s a Goodreads export.');
@@ -247,16 +270,22 @@ export function ImportBooksDialog({ onAddBook }: ImportBooksDialogProps) {
                       <p className="text-sm font-medium truncate">{book.title}</p>
                       <p className="text-xs text-muted-foreground truncate">{book.author}</p>
                     </div>
-                    <span
-                      className={cn(
-                        'text-xs px-2 py-0.5 rounded-full flex-shrink-0',
-                        book.status === 'reading' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-                        book.status === 'want-to-read' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-                        book.status === 'read' && 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      )}
-                    >
-                      {book.status === 'reading' ? 'Reading' : book.status === 'read' ? 'Read' : 'Want to Read'}
-                    </span>
+                    {book.isDuplicate ? (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground flex-shrink-0">
+                        Already on shelf
+                      </span>
+                    ) : (
+                      <span
+                        className={cn(
+                          'text-xs px-2 py-0.5 rounded-full flex-shrink-0',
+                          book.status === 'reading' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                          book.status === 'want-to-read' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                          book.status === 'read' && 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        )}
+                      >
+                        {book.status === 'reading' ? 'Reading' : book.status === 'read' ? 'Read' : 'Want to Read'}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
