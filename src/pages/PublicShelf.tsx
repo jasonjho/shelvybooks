@@ -136,7 +136,7 @@ export default function PublicShelf() {
     <div className="min-h-screen office-wall overflow-x-hidden">
       {/* Header */}
       <header className="relative border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="container py-4 flex items-center justify-between">
+        <div className="container py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <div className="p-2 rounded-lg bg-gradient-to-br from-amber-700 to-amber-900 shadow-md">
@@ -146,7 +146,7 @@ export default function PublicShelf() {
                 <h1 className="text-3xl font-normal tracking-wide bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
                   ShelvyBooks
                 </h1>
-                <p className="text-sm text-muted-foreground">Your personal bookshelf, beautifully organized</p>
+                <p className="text-sm text-muted-foreground hidden sm:block">Your personal bookshelf, beautifully organized</p>
               </div>
             </Link>
           </div>
