@@ -1,6 +1,7 @@
-import { Book, BookStatus, ShelfSkin, ShelfSettings } from '@/types/book';
+import { Book, BookStatus, ShelfSkin, ShelfSettings, DecorDensity } from '@/types/book';
 import { BookSpine } from './BookSpine';
 import { BookDetailDialog } from './BookDetailDialog';
+import { ShelfDecoration, DECORATION_TYPES, DecorationType } from './ShelfDecorations';
 import { cn } from '@/lib/utils';
 import { useState, useMemo, useRef, useEffect } from 'react';
 
@@ -17,11 +18,77 @@ const BOOK_WIDTH = 55; // Width of mobile book covers
 const BOOK_GAP = 4; // Gap between books (gap-1 = 0.25rem = 4px)
 const SHELF_PADDING = 48; // Padding on left and right (1.5rem * 2 = 48px)
 
+// Density config for decorations on mobile (slightly lower than desktop)
+const MOBILE_DENSITY_CONFIG: Record<DecorDensity, { ratio: number; minSpacing: number }> = {
+  minimal: { ratio: 0.06, minSpacing: 5 },
+  balanced: { ratio: 0.12, minSpacing: 3 },
+  cozy: { ratio: 0.20, minSpacing: 2 },
+};
+
+function generateMobileDecorPositions(
+  bookCount: number,
+  maxDecorSlots: number,
+  rowIndex: number,
+  density: DecorDensity = 'balanced'
+): { position: number; type: DecorationType; seed: number }[] {
+  if (bookCount === 0 || maxDecorSlots <= 0) return [];
+  
+  const config = MOBILE_DENSITY_CONFIG[density];
+  
+  // Calculate decoration count based on book count
+  const baseCount = Math.ceil(bookCount * config.ratio);
+  const desiredCount = Math.max(density === 'minimal' ? 0 : 1, baseCount);
+  const decorationCount = Math.min(desiredCount, maxDecorSlots);
+  
+  if (decorationCount <= 0) return [];
+  
+  const decorations: { position: number; type: DecorationType; seed: number }[] = [];
+  const usedPositions = new Set<number>();
+  
+  // Seeded random for consistent placement
+  const seededRandom = (i: number) => {
+    const x = Math.sin(rowIndex * 127.1 + i * 311.7) * 43758.5453;
+    return x - Math.floor(x);
+  };
+
+  const avgSpacing = Math.max(config.minSpacing, Math.floor(bookCount / (decorationCount + 1)));
+  
+  for (let i = 0; i < decorationCount; i++) {
+    const basePos = Math.floor((i + 1) * avgSpacing) + 1;
+    const jitter = Math.floor((seededRandom(i * 3 + rowIndex) - 0.5) * 2);
+    let pos = Math.max(2, Math.min(bookCount + 1, basePos + jitter));
+    
+    let found = false;
+    for (let d = 0; d <= bookCount && !found; d++) {
+      for (const candidate of [pos + d, pos - d]) {
+        if (candidate < 2 || candidate > bookCount + 1) continue;
+        if (usedPositions.has(candidate)) continue;
+        
+        const tooClose = [...usedPositions].some(p => Math.abs(p - candidate) < config.minSpacing);
+        if (tooClose) continue;
+        
+        usedPositions.add(candidate);
+        decorations.push({
+          position: candidate,
+          type: DECORATION_TYPES[Math.floor(seededRandom(i + 10 + rowIndex) * DECORATION_TYPES.length)],
+          seed: rowIndex * 10 + i,
+        });
+        found = true;
+        break;
+      }
+    }
+  }
+  
+  return decorations.sort((a, b) => a.position - b.position);
+}
+
 function MiniShelfRow({ 
   books, 
   skin, 
   settings,
   activeFilters,
+  rowIndex,
+  decorSlotsPerRow,
   onMoveBook,
   onRemoveBook,
   onSelectBook,
@@ -30,28 +97,77 @@ function MiniShelfRow({
   skin: ShelfSkin; 
   settings: ShelfSettings;
   activeFilters: BookStatus[];
+  rowIndex: number;
+  decorSlotsPerRow: number;
   onMoveBook?: (id: string, status: BookStatus) => void;
   onRemoveBook?: (id: string) => void;
   onSelectBook: (book: Book) => void;
 }) {
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
   
+  // Generate decoration positions
+  const decorPositions = settings.showPlant 
+    ? generateMobileDecorPositions(books.length, decorSlotsPerRow, rowIndex, settings.decorDensity)
+    : [];
+
+  // Build items array: interleave books and decorations
+  const items: Array<{ type: 'book'; book: Book } | { type: 'decoration'; decorationType: DecorationType; seed: number }> = [];
+  
+  let decorIndex = 0;
+  books.forEach((book, bookIndex) => {
+    while (decorIndex < decorPositions.length && decorPositions[decorIndex].position === bookIndex + 1) {
+      const dec = decorPositions[decorIndex];
+      items.push({ 
+        type: 'decoration', 
+        decorationType: dec.type, 
+        seed: dec.seed 
+      });
+      decorIndex++;
+    }
+    items.push({ type: 'book', book });
+  });
+  
+  // Add remaining decorations at the end
+  while (decorIndex < decorPositions.length) {
+    const dec = decorPositions[decorIndex];
+    items.push({ 
+      type: 'decoration', 
+      decorationType: dec.type, 
+      seed: dec.seed 
+    });
+    decorIndex++;
+  }
+  
   return (
     <div className={cn('mini-shelf', `shelf-${skin}`, grainClass)}>
       <div className="mini-shelf-back" />
       <div className="mini-shelf-content">
-        {books.map((book) => {
-          const isGrayed = activeFilters.length > 0 && !activeFilters.includes(book.status);
+        {items.map((item, index) => {
+          if (item.type === 'book') {
+            const isGrayed = activeFilters.length > 0 && !activeFilters.includes(item.book.status);
+            return (
+              <BookSpine
+                key={item.book.id}
+                book={item.book}
+                onMove={onMoveBook}
+                onRemove={onRemoveBook}
+                onSelect={() => onSelectBook(item.book)}
+                isInteractive={!!onMoveBook && !!onRemoveBook}
+                isGrayed={isGrayed}
+              />
+            );
+          }
+          
           return (
-            <BookSpine
-              key={book.id}
-              book={book}
-              onMove={onMoveBook}
-              onRemove={onRemoveBook}
-              onSelect={() => onSelectBook(book)}
-              isInteractive={!!onMoveBook && !!onRemoveBook}
-              isGrayed={isGrayed}
-            />
+            <div
+              key={`decor-${rowIndex}-${index}`}
+              className="mobile-decoration"
+            >
+              <ShelfDecoration
+                type={item.decorationType}
+                seed={item.seed}
+              />
+            </div>
           );
         })}
       </div>
@@ -75,6 +191,13 @@ export function MobileBookshelf({
   const skinClass = `skin-${skin}`;
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
 
+  // Calculate decoration slots per row
+  const decorSlotsPerRow = useMemo(() => {
+    if (!settings.showPlant) return 0;
+    const config = MOBILE_DENSITY_CONFIG[settings.decorDensity];
+    return Math.max(1, Math.ceil(booksPerRow * config.ratio));
+  }, [settings.showPlant, settings.decorDensity, booksPerRow]);
+
   // Calculate how many books fit per row based on container width
   useEffect(() => {
     const updateBooksPerRow = () => {
@@ -82,10 +205,13 @@ export function MobileBookshelf({
       if (!container) return;
 
       const containerWidth = container.clientWidth;
-      const availableWidth = containerWidth - SHELF_PADDING - 16; // Subtract shelf padding and container padding
+      const availableWidth = containerWidth - SHELF_PADDING - 16;
       
-      // Calculate how many books fit: N books take N*BOOK_WIDTH + (N-1)*BOOK_GAP
-      const count = Math.max(3, Math.floor((availableWidth + BOOK_GAP) / (BOOK_WIDTH + BOOK_GAP)));
+      // Account for decoration slots when calculating book capacity
+      const decorWidth = settings.showPlant ? 40 : 0; // Approximate decoration width
+      const effectiveWidth = availableWidth - decorWidth;
+      
+      const count = Math.max(3, Math.floor((effectiveWidth + BOOK_GAP) / (BOOK_WIDTH + BOOK_GAP)));
       setBooksPerRow(count);
     };
 
@@ -96,7 +222,7 @@ export function MobileBookshelf({
     }
 
     return () => resizeObserver.disconnect();
-  }, []);
+  }, [settings.showPlant]);
 
   // Split books into rows based on calculated capacity
   const bookRows = useMemo(() => {
@@ -122,6 +248,8 @@ export function MobileBookshelf({
               skin={skin}
               settings={settings}
               activeFilters={activeFilters}
+              rowIndex={index}
+              decorSlotsPerRow={decorSlotsPerRow}
               onMoveBook={onMoveBook}
               onRemoveBook={onRemoveBook}
               onSelectBook={setSelectedBook}
