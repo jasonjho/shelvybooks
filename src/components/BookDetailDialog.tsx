@@ -30,7 +30,7 @@ export function BookDetailDialog({ book, open, onOpenChange }: BookDetailDialogP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-lg font-display">{book.title}</DialogTitle>
+          <DialogTitle className="text-lg font-sans font-semibold">{book.title}</DialogTitle>
         </DialogHeader>
 
         <div className="flex gap-4">

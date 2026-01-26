@@ -188,6 +188,27 @@ export function useBooks() {
     [user, toast]
   );
 
+  const updateBookCover = useCallback(
+    async (id: string, coverUrl: string) => {
+      if (!user || !coverUrl) return;
+
+      const { error } = await supabase
+        .from('books')
+        .update({ cover_url: coverUrl })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating book cover:', error);
+        return;
+      }
+
+      setBooks((prev) =>
+        prev.map((book) => (book.id === id ? { ...book, coverUrl } : book))
+      );
+    },
+    [user]
+  );
+
   const getBooksByStatus = useCallback(
     (status: BookStatus) => {
       return books.filter((book) => book.status === status);
@@ -209,6 +230,7 @@ export function useBooks() {
     addBook,
     removeBook,
     moveBook,
+    updateBookCover,
     getBooksByStatus,
   };
 }
