@@ -224,8 +224,8 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
           Import
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl w-[90vw] overflow-hidden">
-        <DialogHeader className="pr-6">
+      <DialogContent className="max-w-2xl w-[90vw]">
+        <DialogHeader>
           <DialogTitle className="font-sans text-lg font-semibold">Import from Goodreads</DialogTitle>
           <DialogDescription className="text-sm">
             Upload your Goodreads library export (CSV) to bulk-add books
@@ -276,12 +276,12 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
         )}
 
         {step === 'preview' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
+          <div className="space-y-4 w-full">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <p className="text-sm text-muted-foreground flex-shrink-0">
                 Found <span className="font-medium text-foreground">{parsedBooks.length}</span> books
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <Button variant="ghost" size="sm" onClick={() => toggleAll(true)}>
                   Select all
                 </Button>
@@ -291,7 +291,7 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
               </div>
             </div>
 
-            <ScrollArea className="h-[300px] border rounded-lg">
+            <ScrollArea className="h-[300px] border rounded-lg w-full">
               <div className="p-2 space-y-1">
                 {parsedBooks.map((book, index) => (
                   <div
@@ -330,11 +330,11 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
               </div>
             </ScrollArea>
 
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep('upload')} className="flex-1">
+            <div className="flex gap-2 w-full">
+              <Button variant="outline" onClick={() => setStep('upload')} className="flex-1 min-w-0">
                 Back
               </Button>
-              <Button onClick={handleImport} disabled={selectedCount === 0} className="flex-1">
+              <Button onClick={handleImport} disabled={selectedCount === 0} className="flex-1 min-w-0">
                 Import {selectedCount} {selectedCount === 1 ? 'book' : 'books'}
               </Button>
             </div>
