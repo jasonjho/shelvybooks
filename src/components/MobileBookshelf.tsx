@@ -157,7 +157,7 @@ function MiniShelfRow({
   return (
     <div className={cn('mini-shelf', `shelf-${skin}`, grainClass)}>
       <div className="mini-shelf-back" />
-      <div className="mini-shelf-content">
+      <div className="mini-shelf-content overflow-hidden">
         {items.map((item, index) => {
           if (item.type === 'book') {
             const isGrayed = activeFilters.length > 0 && !activeFilters.includes(item.book.status);
@@ -177,7 +177,7 @@ function MiniShelfRow({
           return (
             <div
               key={`decor-${rowIndex}-${index}`}
-              className="mobile-decoration"
+              className="mobile-decoration flex-shrink-0"
             >
               <ShelfDecoration
                 type={item.decorationType}
@@ -224,10 +224,13 @@ export function MobileBookshelf({
       const availableWidth = containerWidth - SHELF_PADDING - 16;
       
       // Account for decoration slots when calculating book capacity
-      const decorWidth = settings.showPlant ? 40 : 0; // Approximate decoration width
+      // Each decoration takes approximately 35px width at 0.7 scale
+      const config = MOBILE_DENSITY_CONFIG[settings.decorDensity];
+      const estimatedDecorCount = settings.showPlant ? Math.max(1, Math.ceil(4 * config.ratio)) : 0;
+      const decorWidth = estimatedDecorCount * 38; // 35px decoration + gap
       const effectiveWidth = availableWidth - decorWidth;
       
-      const count = Math.max(3, Math.floor((effectiveWidth + BOOK_GAP) / (BOOK_WIDTH + BOOK_GAP)));
+      const count = Math.max(2, Math.floor((effectiveWidth + BOOK_GAP) / (BOOK_WIDTH + BOOK_GAP)));
       setBooksPerRow(count);
     };
 
@@ -238,7 +241,7 @@ export function MobileBookshelf({
     }
 
     return () => resizeObserver.disconnect();
-  }, [settings.showPlant]);
+  }, [settings.showPlant, settings.decorDensity]);
 
   // Split books into rows based on calculated capacity
   const bookRows = useMemo(() => {
