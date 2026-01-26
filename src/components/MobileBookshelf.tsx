@@ -44,6 +44,7 @@ function generateMobileDecorPositions(
   
   const decorations: { position: number; type: DecorationType; seed: number }[] = [];
   const usedPositions = new Set<number>();
+  const usedTypes = new Set<DecorationType>(); // Track used types to avoid duplicates
   
   // Seeded random for consistent placement
   const seededRandom = (i: number) => {
@@ -67,10 +68,25 @@ function generateMobileDecorPositions(
         const tooClose = [...usedPositions].some(p => Math.abs(p - candidate) < config.minSpacing);
         if (tooClose) continue;
         
+        // Find a decoration type that hasn't been used on this row
+        let decorType: DecorationType | null = null;
+        const startIdx = Math.floor(seededRandom(i + 10 + rowIndex) * DECORATION_TYPES.length);
+        for (let t = 0; t < DECORATION_TYPES.length; t++) {
+          const candidateType = DECORATION_TYPES[(startIdx + t) % DECORATION_TYPES.length];
+          if (!usedTypes.has(candidateType)) {
+            decorType = candidateType;
+            break;
+          }
+        }
+        
+        // If all types are used, skip adding more decorations
+        if (!decorType) break;
+        
         usedPositions.add(candidate);
+        usedTypes.add(decorType);
         decorations.push({
           position: candidate,
-          type: DECORATION_TYPES[Math.floor(seededRandom(i + 10 + rowIndex) * DECORATION_TYPES.length)],
+          type: decorType,
           seed: rowIndex * 10 + i,
         });
         found = true;
