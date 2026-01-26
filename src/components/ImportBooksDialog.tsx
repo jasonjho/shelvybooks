@@ -155,7 +155,7 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
         setError('Failed to read file: ' + err.message);
       },
     });
-  }, []);
+  }, [existingBooks]);
 
   const toggleBook = useCallback((index: number) => {
     setParsedBooks((prev) =>
@@ -216,6 +216,12 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
 
   const selectedCount = parsedBooks.filter((b) => b.selected).length;
 
+  const getStatusLabel = (status: BookStatus) => {
+    if (status === 'reading') return 'Reading';
+    if (status === 'read') return 'Read';
+    return 'To Read';
+  };
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => (isOpen ? setOpen(true) : handleClose())}>
       <DialogTrigger asChild>
@@ -224,7 +230,7 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
           Import
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl w-[90vw]">
+      <DialogContent className="max-w-2xl w-[90vw] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="font-sans text-lg font-semibold">Import from Goodreads</DialogTitle>
           <DialogDescription className="text-sm">
@@ -276,12 +282,12 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
         )}
 
         {step === 'preview' && (
-          <div className="space-y-4 w-full">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <p className="text-sm text-muted-foreground flex-shrink-0">
+          <div className="space-y-4 overflow-hidden">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm text-muted-foreground">
                 Found <span className="font-medium text-foreground">{parsedBooks.length}</span> books
               </p>
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={() => toggleAll(true)}>
                   Select all
                 </Button>
@@ -291,50 +297,48 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
               </div>
             </div>
 
-            <ScrollArea className="h-[300px] border rounded-lg w-full">
+            <ScrollArea className="h-[300px] border rounded-lg">
               <div className="p-2 space-y-1">
                 {parsedBooks.map((book, index) => (
                   <div
                     key={index}
                     className={cn(
-                      'flex items-center gap-3 p-2 rounded-md transition-colors',
+                      'flex items-center gap-2 p-2 rounded-md transition-colors',
                       'hover:bg-muted/50 cursor-pointer',
                       !book.selected && 'opacity-50'
                     )}
                     onClick={() => toggleBook(index)}
                   >
-                    <Checkbox checked={book.selected} className="pointer-events-none" />
+                    <Checkbox checked={book.selected} className="pointer-events-none flex-shrink-0" />
                     <Book className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                    <div className="flex-1 min-w-0 overflow-hidden">
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate" title={book.title}>{book.title}</p>
                       <p className="text-xs text-muted-foreground truncate">{book.author}</p>
                     </div>
-                    {book.isDuplicate ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground flex-shrink-0 whitespace-nowrap">
-                        Already on shelf
-                      </span>
-                    ) : (
-                      <span
-                        className={cn(
-                          'text-xs px-2 py-0.5 rounded-full flex-shrink-0',
-                          book.status === 'reading' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-                          book.status === 'want-to-read' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-                          book.status === 'read' && 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        )}
-                      >
-                        {book.status === 'reading' ? 'Reading' : book.status === 'read' ? 'Read' : 'Want to Read'}
-                      </span>
-                    )}
+                    <span
+                      className={cn(
+                        'text-xs px-2 py-0.5 rounded-full flex-shrink-0 whitespace-nowrap',
+                        book.isDuplicate 
+                          ? 'bg-muted text-muted-foreground'
+                          : book.status === 'reading' 
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                            : book.status === 'want-to-read' 
+                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                              : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                      )}
+                    >
+                      {book.isDuplicate ? 'On shelf' : getStatusLabel(book.status)}
+                    </span>
                   </div>
                 ))}
               </div>
             </ScrollArea>
 
-            <div className="flex gap-2 w-full">
-              <Button variant="outline" onClick={() => setStep('upload')} className="flex-1 min-w-0">
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setStep('upload')} className="flex-1">
                 Back
               </Button>
-              <Button onClick={handleImport} disabled={selectedCount === 0} className="flex-1 min-w-0">
+              <Button onClick={handleImport} disabled={selectedCount === 0} className="flex-1">
                 Import {selectedCount} {selectedCount === 1 ? 'book' : 'books'}
               </Button>
             </div>
