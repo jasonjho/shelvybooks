@@ -304,7 +304,7 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
                 </div>
 
                 {/* Recommendations */}
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
                   {result.recommendations.map((rec, index) => {
                     const isAdded = addedRecs.has(index);
                     const isSelected = selectedRecs.has(index);
