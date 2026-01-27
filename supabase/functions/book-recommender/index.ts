@@ -59,7 +59,7 @@ Format your response as a JSON object with this structure:
   ]
 }
 
-Provide exactly 3 recommendations. Make sure they're real, well-known books.`;
+Provide exactly 10 recommendations. Make sure they're real, well-known books.`;
 
     const userPrompt = `Here's my bookshelf (${books.length} total books):
 - Currently reading: ${readingStatus.reading}
