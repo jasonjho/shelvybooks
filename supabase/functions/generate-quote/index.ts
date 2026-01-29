@@ -12,25 +12,28 @@ serve(async (req) => {
   }
 
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
+      throw new Error('LOVABLE_API_KEY not configured');
+    }
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENROUTER_API_KEY')}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://lovable.dev',
-        'X-Title': 'Shelvy Book Quotes',
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
-            content: `You are a literary expert. Generate a single inspiring, memorable quote from a well-known book. Return ONLY valid JSON in this exact format, no markdown:
+            content: `You are a literary expert. Generate a single inspiring, memorable quote from a well-known book. Return ONLY valid JSON in this exact format, no markdown or code blocks:
 {"quote": "the quote text", "book": {"title": "Book Title", "author": "Author Name"}}`
           },
           {
             role: 'user',
-            content: 'Give me a memorable, inspiring quote from a classic or popular book. Choose something different and unexpected - not the most famous quotes everyone knows. Focus on books from various genres: literary fiction, fantasy, sci-fi, romance, philosophy, memoirs, or contemporary fiction.'
+            content: 'Give me a memorable, inspiring quote from a classic or popular book. Choose something different and unexpected - not the most famous quotes everyone knows. Focus on books from various genres: literary fiction, fantasy, sci-fi, romance, philosophy, memoirs, or contemporary fiction. Make sure the quote is real and actually from the book you cite.'
           }
         ],
         temperature: 1.0,
@@ -38,13 +41,21 @@ serve(async (req) => {
       }),
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('AI API error:', response.status, errorText);
+      throw new Error(`AI API returned ${response.status}`);
+    }
+
     const data = await response.json();
     
     if (!data.choices?.[0]?.message?.content) {
+      console.error('No content in AI response:', JSON.stringify(data));
       throw new Error('No response from AI');
     }
 
     const content = data.choices[0].message.content.trim();
+    console.log('AI response content:', content);
     
     // Parse the JSON response
     let quoteData;
@@ -55,6 +66,12 @@ serve(async (req) => {
     } catch (parseError) {
       console.error('Failed to parse AI response:', content);
       throw new Error('Invalid response format');
+    }
+
+    // Validate the response structure
+    if (!quoteData.quote || !quoteData.book?.title || !quoteData.book?.author) {
+      console.error('Invalid quote structure:', JSON.stringify(quoteData));
+      throw new Error('Invalid quote structure');
     }
 
     // Generate a cover URL from Open Library
@@ -68,6 +85,8 @@ serve(async (req) => {
     if (olData.docs?.[0]?.cover_i) {
       coverUrl = `https://covers.openlibrary.org/b/id/${olData.docs[0].cover_i}-L.jpg`;
     }
+
+    console.log('Returning quote:', quoteData.book.title, 'by', quoteData.book.author);
 
     return new Response(
       JSON.stringify({
