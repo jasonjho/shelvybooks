@@ -6,7 +6,7 @@ export type DecorDensity = 'minimal' | 'balanced' | 'cozy';
 
 export type SortOption = 'random' | 'recent' | 'status-author' | 'author-title';
 
-export type BackgroundTheme = 'office' | 'library' | 'cozy' | 'space' | 'floral' | 'forest' | 'ocean' | 'mountains';
+export type BackgroundTheme = 'office' | 'library' | 'cozy' | 'space' | 'forest' | 'ocean';
 
 export interface ShelfSettings {
   showPlant: boolean;
