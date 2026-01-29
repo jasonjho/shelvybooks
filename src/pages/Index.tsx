@@ -11,7 +11,7 @@ import { AuthButton } from '@/components/AuthButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MagicRecommender } from '@/components/MagicRecommender';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
-import { SeasonalDecorations } from '@/components/SeasonalDecorations';
+
 import { useBooks } from '@/hooks/useBooks';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -120,14 +120,16 @@ export default function Index() {
       case 'library': return 'bg-theme-library';
       case 'cozy': return 'bg-theme-cozy';
       case 'space': return 'bg-theme-space';
+      case 'floral': return 'bg-theme-floral';
+      case 'forest': return 'bg-theme-forest';
+      case 'ocean': return 'bg-theme-ocean';
+      case 'mountains': return 'bg-theme-mountains';
       default: return 'office-wall';
     }
   };
 
   return (
     <div className={cn("min-h-screen", getBackgroundClass(settings.backgroundTheme))}>
-      {/* Seasonal decorations */}
-      <SeasonalDecorations theme={settings.seasonalTheme} />
 
       {/* Ambient top light */}
       {settings.showAmbientLight && settings.backgroundTheme === 'office' && (
