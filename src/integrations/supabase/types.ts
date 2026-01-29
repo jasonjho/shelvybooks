@@ -319,6 +319,15 @@ export type Database = {
           title: string
         }[]
       }
+      get_public_shelf_info_for_users: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          display_name: string
+          is_public: boolean
+          share_id: string
+          user_id: string
+        }[]
+      }
       is_club_member: {
         Args: { _club_id: string; _user_id: string }
         Returns: boolean
