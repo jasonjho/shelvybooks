@@ -157,7 +157,7 @@ function MiniShelfRow({
   return (
     <div className={cn('mini-shelf', `shelf-${skin}`, grainClass)}>
       <div className="mini-shelf-back" />
-      <div className="mini-shelf-content overflow-hidden">
+      <div className="mini-shelf-content overflow-x-hidden overflow-y-visible">
         {items.map((item, index) => {
           if (item.type === 'book') {
             const isGrayed = activeFilters.length > 0 && !activeFilters.includes(item.book.status);
