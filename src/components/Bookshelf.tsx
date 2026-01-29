@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Book, BookStatus, ShelfSkin, ShelfSettings, DecorDensity } from '@/types/book';
-import { BookSpine } from './BookSpine';
+import { BookSpine, ClubInfo } from './BookSpine';
 import { BookDetailDialog } from './BookDetailDialog';
 import { ShelfDecoration, DECORATION_TYPES, DecorationType } from './ShelfDecorations';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ interface BookshelfProps {
   activeFilters: BookStatus[];
   onMoveBook?: (id: string, status: BookStatus) => void;
   onRemoveBook?: (id: string) => void;
+  getBookClubInfo?: (title: string, author: string) => ClubInfo[];
 }
 
 function Bookend() {
@@ -117,6 +118,7 @@ interface ShelfRowProps {
   onMoveBook?: (id: string, status: BookStatus) => void;
   onRemoveBook?: (id: string) => void;
   onSelectBook: (book: Book) => void;
+  getBookClubInfo?: (title: string, author: string) => ClubInfo[];
 }
 
 function ShelfRow({
@@ -129,6 +131,7 @@ function ShelfRow({
   onMoveBook,
   onRemoveBook,
   onSelectBook,
+  getBookClubInfo,
 }: ShelfRowProps) {
   const hasBooks = books.length > 0;
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
@@ -185,6 +188,7 @@ function ShelfRow({
             !activeFilters.includes(item.book.status);
           
           if (item.type === 'book') {
+            const clubInfo = getBookClubInfo?.(item.book.title, item.book.author);
             return (
               <BookSpine
                 key={item.book.id}
@@ -194,6 +198,7 @@ function ShelfRow({
                 onSelect={() => onSelectBook(item.book)}
                 isInteractive={!!onMoveBook && !!onRemoveBook}
                 isGrayed={isGrayed}
+                clubInfo={clubInfo}
               />
             );
           }
@@ -230,7 +235,7 @@ function ShelfRow({
   );
 }
 
-export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook }: BookshelfProps) {
+export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, getBookClubInfo }: BookshelfProps) {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [booksPerRow, setBooksPerRow] = useState(8);
@@ -322,6 +327,7 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
           onMoveBook={onMoveBook}
           onRemoveBook={onRemoveBook}
           onSelectBook={setSelectedBook}
+          getBookClubInfo={getBookClubInfo}
         />
       ))}
 
