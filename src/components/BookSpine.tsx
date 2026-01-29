@@ -177,7 +177,15 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
       {/* Hover tooltip */}
       <div className="absolute -top-24 sm:-top-28 left-1/2 -translate-x-1/2 opacity-0 group-hover/book:opacity-100 transition-opacity duration-200 z-30 pb-4 hidden sm:block pointer-events-none group-hover/book:pointer-events-auto">
         <div className="bg-popover text-popover-foreground px-4 py-3 rounded-lg text-sm min-w-[200px] max-w-[280px] shadow-xl border border-border">
-          <p className="font-medium leading-snug">{book.title}</p>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect?.();
+            }}
+            className="font-medium leading-snug text-left hover:text-primary transition-colors"
+          >
+            {book.title}
+          </button>
           <p className="text-muted-foreground mt-1.5 text-xs">{book.author}</p>
           {hasClubInfo && (
             <div className="flex items-center gap-1.5 mt-2 text-xs text-primary">
