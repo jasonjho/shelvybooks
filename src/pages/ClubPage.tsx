@@ -191,26 +191,27 @@ export default function ClubPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="container py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+        <div className="container py-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div>
-              <h1 className="text-xl font-semibold font-sans">{club.name}</h1>
+            <div className="min-w-0">
+              <h1 className="text-xl font-semibold font-sans truncate">{club.name}</h1>
               {club.description && (
-                <p className="text-sm text-muted-foreground font-sans">{club.description}</p>
+                <p className="text-sm text-muted-foreground font-sans truncate">{club.description}</p>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Badge variant="secondary" className="gap-1">
               <Users className="w-3 h-3" />
-              {members.length} {members.length === 1 ? 'member' : 'members'}
+              <span className="hidden sm:inline">{members.length} {members.length === 1 ? 'member' : 'members'}</span>
+              <span className="sm:hidden">{members.length}</span>
             </Badge>
             <Button variant="outline" size="sm" onClick={handleCopyInvite} className="gap-1.5">
               {copied ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
-              {copied ? 'Copied!' : 'Invite'}
+              <span className="hidden sm:inline">{copied ? 'Copied!' : 'Invite'}</span>
             </Button>
             {isOwner && (
               <DropdownMenu>
