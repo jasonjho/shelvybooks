@@ -49,7 +49,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
   const amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author)}`;
   const hasClubInfo = clubInfo && clubInfo.length > 0;
   const isCurrentlyReading = clubInfo?.some(c => c.status === 'reading');
-  const showPlaceholder = book.coverUrl === '/placeholder.svg' || imageError;
+  const showPlaceholder = !book.coverUrl || book.coverUrl === '/placeholder.svg' || imageError;
 
   return (
     <div 
