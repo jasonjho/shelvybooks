@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
 import { format } from 'date-fns';
-import { CalendarCheck } from 'lucide-react';
+import { CalendarCheck, BookMarked, Check } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -25,10 +25,14 @@ interface BookDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdateCompletedAt?: (id: string, completedAt: string | null) => void;
+  /** For public shelf viewing - callback to add book to user's shelf */
+  onAddToShelf?: (book: Book) => void;
+  /** Whether the book is already on user's shelf */
+  isOnShelf?: boolean;
 }
 
-export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt }: BookDetailDialogProps) {
-  const { setAuthDialogOpen } = useAuth();
+export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt, onAddToShelf, isOnShelf }: BookDetailDialogProps) {
+  const { user, setAuthDialogOpen } = useAuth();
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   
   if (!book) return null;
@@ -118,6 +122,43 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
             >
               View on Amazon →
             </a>
+
+            {/* Add to shelf button for public shelf viewing */}
+            {onAddToShelf && (
+              <div className="mt-3">
+                {user ? (
+                  <Button
+                    size="sm"
+                    variant={isOnShelf ? "secondary" : "default"}
+                    disabled={isOnShelf}
+                    onClick={() => onAddToShelf(book)}
+                    className="gap-1.5"
+                  >
+                    {isOnShelf ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        On Your Shelf
+                      </>
+                    ) : (
+                      <>
+                        <BookMarked className="w-4 h-4" />
+                        Add to My Shelf
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setAuthDialogOpen(true)}
+                    className="gap-1.5"
+                  >
+                    <BookMarked className="w-4 h-4" />
+                    Sign in to Add
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

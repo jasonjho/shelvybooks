@@ -8,10 +8,12 @@ import { ShelfControls } from '@/components/ShelfControls';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBooks } from '@/hooks/useBooks';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Book, ShelfSettings as ShelfSettingsType, BookStatus, SortOption } from '@/types/book';
 import { Library, Loader2, ArrowLeft, Lock, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 interface ShelfOwner {
   display_name: string | null;
@@ -80,7 +82,9 @@ function sortBooks(books: Book[], sortOption: SortOption, shuffleSeed: number): 
 export default function PublicShelf() {
   const { shareId } = useParams<{ shareId: string }>();
   const { user } = useAuth();
+  const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { addBook, books: userBooks } = useBooks();
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +94,28 @@ export default function PublicShelf() {
   const [activeFilters, setActiveFilters] = useState<BookStatus[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
+
+  // Check if a book is already on the user's shelf
+  const isBookOnShelf = useCallback((title: string, author: string) => {
+    return userBooks.some(
+      (b) => b.title.toLowerCase() === title.toLowerCase() && 
+             b.author.toLowerCase() === author.toLowerCase()
+    );
+  }, [userBooks]);
+
+  const handleAddToShelf = useCallback(async (book: Book) => {
+    if (isBookOnShelf(book.title, book.author)) {
+      toast({ title: 'Already on your shelf', description: `"${book.title}" is already in your library.` });
+      return;
+    }
+    await addBook({
+      title: book.title,
+      author: book.author,
+      coverUrl: book.coverUrl || '',
+      status: 'want-to-read',
+    });
+    toast({ title: 'Added to your shelf!', description: `"${book.title}" has been added.` });
+  }, [addBook, isBookOnShelf, toast]);
 
   useEffect(() => {
     async function loadPublicShelf() {
@@ -270,6 +296,7 @@ export default function PublicShelf() {
             skin="oak"
             settings={DEFAULT_SETTINGS}
             activeFilters={activeFilters}
+            onSelectBook={setSelectedBook}
           />
         ) : (
           <Bookshelf
@@ -277,6 +304,7 @@ export default function PublicShelf() {
             skin="oak"
             settings={DEFAULT_SETTINGS}
             activeFilters={activeFilters}
+            onSelectBook={setSelectedBook}
           />
         )}
       </main>
@@ -286,6 +314,8 @@ export default function PublicShelf() {
         book={selectedBook}
         open={!!selectedBook}
         onOpenChange={(open) => !open && setSelectedBook(null)}
+        onAddToShelf={handleAddToShelf}
+        isOnShelf={selectedBook ? isBookOnShelf(selectedBook.title, selectedBook.author) : false}
       />
     </div>
   );
