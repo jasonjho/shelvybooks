@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { GoogleBook } from '@/types/book';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useBookSearch() {
   const [results, setResults] = useState<GoogleBook[]>([]);
@@ -16,17 +17,18 @@ export function useBookSearch() {
     setError(null);
 
     try {
-      // Use intitle: prefix for better title matching
-      const searchQuery = `intitle:${query}`;
-      const response = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}&maxResults=12&printType=books`
-      );
+      const { data, error: fnError } = await supabase.functions.invoke('book-search', {
+        body: { query }
+      });
 
-      if (!response.ok) {
-        throw new Error('Failed to search books');
+      if (fnError) {
+        throw new Error(fnError.message || 'Failed to search books');
       }
 
-      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
       setResults(data.items || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
