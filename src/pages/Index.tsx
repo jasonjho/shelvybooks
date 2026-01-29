@@ -11,6 +11,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { MagicRecommender } from '@/components/MagicRecommender';
 import { ClubsDropdown } from '@/components/ClubsDropdown';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
+import { OnboardingTips } from '@/components/OnboardingTips';
 import { Button } from '@/components/ui/button';
 
 import { useBooks } from '@/hooks/useBooks';
@@ -305,6 +306,9 @@ export default function Index() {
           </div>
         </footer>
       )}
+
+      {/* Onboarding tips for new users */}
+      {user && allBooks.length > 0 && <OnboardingTips />}
     </div>
   );
 }
