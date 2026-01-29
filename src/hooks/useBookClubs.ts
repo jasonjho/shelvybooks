@@ -593,3 +593,121 @@ export function useClubDetails(clubId: string | undefined) {
     refetch: fetchClubData,
   };
 }
+
+// Hook to get all books from all user's clubs (for filtering personal shelf)
+export interface ClubBook {
+  title: string;
+  author: string;
+  clubId: string;
+  clubName: string;
+  status: 'suggested' | 'reading' | 'read';
+}
+
+export function useClubBooks() {
+  const { user } = useAuth();
+  const [clubBooks, setClubBooks] = useState<ClubBook[]>([]);
+  const [clubsWithBooks, setClubsWithBooks] = useState<{ id: string; name: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setClubBooks([]);
+      setClubsWithBooks([]);
+      setLoading(false);
+      return;
+    }
+
+    const fetchClubBooks = async () => {
+      setLoading(true);
+
+      // Get all clubs user is a member of
+      const { data: memberData } = await supabase
+        .from('book_club_members')
+        .select('club_id')
+        .eq('user_id', user.id);
+
+      if (!memberData || memberData.length === 0) {
+        setClubBooks([]);
+        setClubsWithBooks([]);
+        setLoading(false);
+        return;
+      }
+
+      const clubIds = memberData.map((m) => m.club_id);
+
+      // Get club names
+      const { data: clubData } = await supabase
+        .from('book_clubs')
+        .select('id, name')
+        .in('id', clubIds);
+
+      const clubMap = new Map<string, string>();
+      clubData?.forEach((c) => clubMap.set(c.id, c.name));
+
+      // Get all suggestions from those clubs
+      const { data: suggestionsData } = await supabase
+        .from('book_club_suggestions')
+        .select('*')
+        .in('club_id', clubIds);
+
+      if (!suggestionsData) {
+        setClubBooks([]);
+        setClubsWithBooks([]);
+        setLoading(false);
+        return;
+      }
+
+      const books: ClubBook[] = suggestionsData.map((s) => ({
+        title: s.title,
+        author: s.author,
+        clubId: s.club_id,
+        clubName: clubMap.get(s.club_id) || 'Unknown Club',
+        status: s.status as 'suggested' | 'reading' | 'read',
+      }));
+
+      // Get unique clubs that have books
+      const uniqueClubs = Array.from(
+        new Map(books.map((b) => [b.clubId, { id: b.clubId, name: b.clubName }])).values()
+      );
+
+      setClubBooks(books);
+      setClubsWithBooks(clubData?.map((c) => ({ id: c.id, name: c.name })) || []);
+      setLoading(false);
+    };
+
+    fetchClubBooks();
+  }, [user]);
+
+  // Check if a book (by title/author) is in any club
+  const isBookInClub = useCallback(
+    (title: string, author: string, clubId?: string) => {
+      return clubBooks.some(
+        (cb) =>
+          cb.title.toLowerCase() === title.toLowerCase() &&
+          cb.author.toLowerCase() === author.toLowerCase() &&
+          (!clubId || cb.clubId === clubId)
+      );
+    },
+    [clubBooks]
+  );
+
+  // Get club info for a book
+  const getBookClubs = useCallback(
+    (title: string, author: string) => {
+      return clubBooks.filter(
+        (cb) =>
+          cb.title.toLowerCase() === title.toLowerCase() &&
+          cb.author.toLowerCase() === author.toLowerCase()
+      );
+    },
+    [clubBooks]
+  );
+
+  return {
+    clubBooks,
+    clubsWithBooks,
+    loading,
+    isBookInClub,
+    getBookClubs,
+  };
+}
