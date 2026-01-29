@@ -811,13 +811,17 @@
   }
 
   .mobile-shelf-list {
-    @apply flex flex-col gap-4 pt-24;
+    @apply flex flex-col gap-3;
     overflow: visible;
+  }
+
+  .mobile-shelf-list > .mini-shelf:first-child {
+    margin-top: 0.5rem;
   }
 
   .mini-shelf {
     @apply relative mx-2;
-    height: 140px;
+    height: 115px;
     background: linear-gradient(180deg, 
       hsl(var(--shelf-oak-dark) / 0.3) 0%, 
       transparent 30%
@@ -847,6 +851,11 @@
   .mini-shelf .book-cover {
     width: 55px;
     height: 82px;
+  }
+
+  /* Reduce hover lift on mobile to prevent clipping */
+  .mini-shelf .book-spine:hover {
+    transform: translateY(-4px) rotateY(-3deg) rotateX(1deg);
   }
 
   /* Scale down decorations on mobile */
