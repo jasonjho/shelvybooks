@@ -1,5 +1,5 @@
 import { Book, BookStatus } from '@/types/book';
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/context-menu';
 import { BookOpen, BookMarked, CheckCircle, Trash2, Users } from 'lucide-react';
 import { useBookAnimations } from '@/contexts/BookAnimationContext';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 export interface ClubInfo {
@@ -43,9 +44,12 @@ type BookCoverProps = {
 
 const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
   ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo }, ref) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author)}`;
   const hasClubInfo = clubInfo && clubInfo.length > 0;
   const isCurrentlyReading = clubInfo?.some(c => c.status === 'reading');
+  const showPlaceholder = book.coverUrl === '/placeholder.svg' || imageError;
 
   return (
     <div 
@@ -59,17 +63,32 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
     >
       <div
         className={cn(
-          'book-cover w-[70px] h-[105px] cursor-pointer',
+          'book-cover w-[70px] h-[105px] cursor-pointer relative overflow-hidden',
           hasClubInfo && 'ring-2 ring-primary/60 ring-offset-1 ring-offset-background',
           isCurrentlyReading && 'ring-amber-500/80'
         )}
         onClick={onSelect}
-        style={{
-          backgroundImage: `url(${book.coverUrl})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
       >
+        {/* Loading skeleton */}
+        {!imageLoaded && !showPlaceholder && (
+          <Skeleton className="absolute inset-0 w-full h-full rounded-none" />
+        )}
+        
+        {/* Actual cover image */}
+        {!showPlaceholder && (
+          <img
+            src={book.coverUrl}
+            alt={book.title}
+            loading="lazy"
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageError(true)}
+            className={cn(
+              'absolute inset-0 w-full h-full object-cover transition-opacity duration-300',
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            )}
+          />
+        )}
+        
         {/* 3D book edge effect */}
         <div className="book-edge" />
         
@@ -91,8 +110,8 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
           </div>
         )}
         
-        {/* Fallback if no cover */}
-        {book.coverUrl === '/placeholder.svg' && (
+        {/* Fallback if no cover or error */}
+        {showPlaceholder && (
           <div className="absolute inset-0 flex items-center justify-center p-2 bg-gradient-to-br from-secondary to-muted">
             <span className="text-[9px] text-center font-display text-secondary-foreground leading-tight line-clamp-4">
               {book.title}
