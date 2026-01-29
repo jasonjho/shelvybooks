@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.book-recommender]
 verify_jwt = false
+
+[functions.refresh-covers]
+verify_jwt = false

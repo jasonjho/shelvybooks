@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useBookAnimations } from '@/contexts/BookAnimationContext';
+import { useCoverRefresh } from '@/hooks/useCoverRefresh';
 
 const SKIN_KEY = 'bookshelf-skin';
 const SETTINGS_KEY = 'bookshelf-settings';
@@ -222,6 +223,19 @@ export function useBooks() {
     [user]
   );
 
+  // Handle cover updates from the auto-refresh hook
+  const handleCoverUpdated = useCallback((id: string, coverUrl: string) => {
+    setBooks((prev) =>
+      prev.map((book) => (book.id === id ? { ...book, coverUrl } : book))
+    );
+  }, []);
+
+  // Auto-refresh missing covers on load
+  const { missingCoverCount, triggerBatchRefresh } = useCoverRefresh(
+    books,
+    handleCoverUpdated
+  );
+
   const getBooksByStatus = useCallback(
     (status: BookStatus) => {
       return books.filter((book) => book.status === status);
@@ -245,5 +259,7 @@ export function useBooks() {
     moveBook,
     updateBookCover,
     getBooksByStatus,
+    missingCoverCount,
+    triggerBatchRefresh,
   };
 }

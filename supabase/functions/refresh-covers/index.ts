@@ -1,0 +1,196 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.91.1";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+interface BookToRefresh {
+  id: string;
+  title: string;
+  author: string;
+}
+
+// Search Google Books API for a cover
+async function searchGoogleBooksCover(title: string, author: string, apiKey?: string): Promise<string | null> {
+  const query = `${title} ${author}`;
+  let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=3&printType=books`;
+  
+  if (apiKey) {
+    url += `&key=${apiKey}`;
+  }
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    const items = data.items || [];
+    
+    // Find first result with a cover
+    for (const book of items) {
+      const thumbnail = book.volumeInfo?.imageLinks?.thumbnail;
+      if (thumbnail) {
+        // Convert to HTTPS and improve quality
+        return thumbnail.replace('http://', 'https://').replace('zoom=1', 'zoom=2');
+      }
+    }
+  } catch (e) {
+    console.error("Google Books error:", e);
+  }
+  
+  return null;
+}
+
+// Search Open Library for a cover
+async function searchOpenLibraryCover(title: string, author: string): Promise<string | null> {
+  const query = `${title} ${author}`;
+  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=3&fields=cover_i`;
+  
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    const docs = data.docs || [];
+    
+    // Find first result with a cover
+    for (const doc of docs) {
+      if (doc.cover_i) {
+        return `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`;
+      }
+    }
+  } catch (e) {
+    console.error("Open Library error:", e);
+  }
+  
+  return null;
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+        status: 401, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const googleApiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY');
+    
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Verify user is authenticated
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+        status: 401, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+    
+    const userId = claimsData.claims.sub;
+
+    // Get request body for optional parameters
+    let bookIds: string[] | undefined;
+    let limit = 50;
+    
+    if (req.method === 'POST') {
+      const body = await req.json().catch(() => ({}));
+      bookIds = body.bookIds;
+      limit = body.limit || 50;
+    }
+
+    // Find books with missing covers for this user
+    let query = supabase
+      .from('books')
+      .select('id, title, author')
+      .eq('user_id', userId)
+      .or('cover_url.is.null,cover_url.eq.,cover_url.eq./placeholder.svg')
+      .limit(limit);
+
+    // If specific book IDs provided, only check those
+    if (bookIds && bookIds.length > 0) {
+      query = query.in('id', bookIds);
+    }
+
+    const { data: books, error: fetchError } = await query;
+    
+    if (fetchError) {
+      console.error("Error fetching books:", fetchError);
+      return new Response(JSON.stringify({ error: fetchError.message }), { 
+        status: 500, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    const booksToRefresh = books as BookToRefresh[];
+    console.log(`Found ${booksToRefresh.length} books to refresh covers for user ${userId}`);
+
+    const results: { id: string; title: string; coverUrl: string | null; updated: boolean }[] = [];
+
+    // Process books with rate limiting
+    for (const book of booksToRefresh) {
+      console.log(`Searching cover for: ${book.title} by ${book.author}`);
+      
+      // Try Google Books first, then Open Library
+      let coverUrl = await searchGoogleBooksCover(book.title, book.author, googleApiKey);
+      
+      if (!coverUrl) {
+        coverUrl = await searchOpenLibraryCover(book.title, book.author);
+      }
+      
+      if (coverUrl) {
+        // Update the book in the database
+        const { error: updateError } = await supabase
+          .from('books')
+          .update({ cover_url: coverUrl })
+          .eq('id', book.id);
+        
+        if (updateError) {
+          console.error(`Error updating ${book.title}:`, updateError);
+          results.push({ id: book.id, title: book.title, coverUrl: null, updated: false });
+        } else {
+          console.log(`Updated cover for: ${book.title}`);
+          results.push({ id: book.id, title: book.title, coverUrl, updated: true });
+        }
+      } else {
+        console.log(`No cover found for: ${book.title}`);
+        results.push({ id: book.id, title: book.title, coverUrl: null, updated: false });
+      }
+      
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    const updatedCount = results.filter(r => r.updated).length;
+    console.log(`Refreshed ${updatedCount} of ${booksToRefresh.length} books`);
+
+    return new Response(
+      JSON.stringify({ 
+        processed: booksToRefresh.length,
+        updated: updatedCount,
+        results 
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error("Error in refresh-covers function:", errorMessage);
+    return new Response(
+      JSON.stringify({ error: errorMessage }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
