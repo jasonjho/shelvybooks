@@ -106,7 +106,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
     <div 
       ref={ref} 
       className={cn(
-        'book-spine group/book relative',
+        'book-spine group/book relative hover:z-50 focus-within:z-50',
         isGrayed && 'book-grayed',
         isWobbling && 'book-wobble',
         isSparkle && 'book-sparkle'
