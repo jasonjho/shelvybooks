@@ -13,12 +13,14 @@ import { ClubsDropdown } from '@/components/ClubsDropdown';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
+import { NotificationBell } from '@/components/NotificationBell';
 import { Button } from '@/components/ui/button';
 
 import { useBooks } from '@/hooks/useBooks';
 import { useClubBooks } from '@/hooks/useBookClubs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useNotifications } from '@/hooks/useNotifications';
 import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
 import { demoBooks } from '@/data/demoBooks';
 import { Library, Loader2 } from 'lucide-react';
@@ -97,6 +99,9 @@ export default function Index() {
 
   // Get club books for highlighting
   const { getBookClubs } = useClubBooks();
+
+  // Get notifications for like badges
+  const { likesPerBook } = useNotifications();
 
   // Create a function that returns club info in the format BookSpine expects
   const getBookClubInfo = useCallback((title: string, author: string) => {
@@ -188,6 +193,7 @@ export default function Index() {
           </div>
           <div className="flex items-center gap-2">
             {user && <ClubsDropdown />}
+            {user && <NotificationBell />}
             <ThemeToggle />
             <SettingsPanel 
               settings={settings} 
@@ -283,6 +289,7 @@ export default function Index() {
                     onRemoveBook={user ? removeBook : undefined}
                     onUpdateCompletedAt={user ? updateBookCompletedAt : undefined}
                     getBookClubInfo={user ? getBookClubInfo : undefined}
+                    likesPerBook={user ? likesPerBook : undefined}
                   />
                 ) : (
                   <Bookshelf
@@ -294,6 +301,7 @@ export default function Index() {
                     onRemoveBook={user ? removeBook : undefined}
                     onUpdateCompletedAt={user ? updateBookCompletedAt : undefined}
                     getBookClubInfo={user ? getBookClubInfo : undefined}
+                    likesPerBook={user ? likesPerBook : undefined}
                   />
                 )}
               </>

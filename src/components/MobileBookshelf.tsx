@@ -18,6 +18,8 @@ interface MobileBookshelfProps {
   getBookClubInfo?: (title: string, author: string) => ClubInfo[];
   /** External handler for book selection - when set, clicks open this instead of internal dialog */
   onSelectBook?: (book: Book) => void;
+  /** Count of new likes per book ID */
+  likesPerBook?: Record<string, number>;
 }
 
 const BOOK_WIDTH = 55; // Width of mobile book covers
@@ -134,7 +136,8 @@ function MiniShelfRow({
   getBookClubInfo,
   notes,
   onAddNote,
-}: { 
+  likesPerBook,
+}: {
   books: Book[]; 
   skin: ShelfSkin; 
   settings: ShelfSettings;
@@ -147,6 +150,7 @@ function MiniShelfRow({
   getBookClubInfo?: (title: string, author: string) => ClubInfo[];
   notes: Map<string, BookNote>;
   onAddNote: (book: Book) => void;
+  likesPerBook?: Record<string, number>;
 }) {
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
   
@@ -197,6 +201,7 @@ function MiniShelfRow({
             const isGrayed = activeFilters.length > 0 && !activeFilters.includes(item.book.status);
             const clubInfo = getBookClubInfo?.(item.book.title, item.book.author);
             const note = notes.get(item.book.id);
+            const newLikesCount = likesPerBook?.[item.book.id] || 0;
             return (
               <BookSpine
                 key={item.book.id}
@@ -209,6 +214,7 @@ function MiniShelfRow({
                 clubInfo={clubInfo}
                 note={note}
                 onAddNote={() => onAddNote(item.book)}
+                newLikesCount={newLikesCount}
               />
             );
           }
@@ -242,6 +248,7 @@ export function MobileBookshelf({
   onUpdateCompletedAt,
   getBookClubInfo,
   onSelectBook,
+  likesPerBook,
 }: MobileBookshelfProps) {
   const [internalSelectedBook, setInternalSelectedBook] = useState<Book | null>(null);
   const [noteBook, setNoteBook] = useState<Book | null>(null);
@@ -341,6 +348,7 @@ export function MobileBookshelf({
               getBookClubInfo={getBookClubInfo}
               notes={notes}
               onAddNote={setNoteBook}
+              likesPerBook={likesPerBook}
             />
           ))}
         </div>
