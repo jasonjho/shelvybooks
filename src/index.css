@@ -1056,170 +1056,162 @@
 }
 
 /* ============================================
-   SEASONAL DECORATIONS
+   ADDITIONAL BACKGROUND THEMES
    ============================================ */
 
-.seasonal-decorations {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  z-index: 5;
+/* Floral background - LIGHT MODE */
+.bg-theme-floral {
+  background: 
+    linear-gradient(180deg, hsl(340 30% 95%) 0%, hsl(320 25% 90%) 100%);
 }
 
-/* Winter - String lights */
-.string-light {
-  width: 8px;
-  height: 12px;
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-  background: var(--light-color, #ffe66d);
-  box-shadow: 0 0 8px 2px var(--light-color, #ffe66d);
-  animation: glow 1.5s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-  0% { opacity: 0.6; filter: brightness(0.8); }
-  100% { opacity: 1; filter: brightness(1.2); }
-}
-
-.snowflakes-container {
+.bg-theme-floral::before {
+  content: '';
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  background: 
+    /* Soft petal patterns */
+    radial-gradient(ellipse 15% 20% at 10% 20%, hsl(340 60% 85% / 0.4), transparent),
+    radial-gradient(ellipse 12% 15% at 85% 15%, hsl(300 50% 88% / 0.3), transparent),
+    radial-gradient(ellipse 18% 22% at 75% 75%, hsl(350 55% 85% / 0.35), transparent),
+    radial-gradient(ellipse 14% 18% at 20% 80%, hsl(320 45% 87% / 0.3), transparent),
+    /* Delicate vine accents */
+    radial-gradient(ellipse 8% 40% at 5% 50%, hsl(140 30% 75% / 0.2), transparent),
+    radial-gradient(ellipse 8% 35% at 95% 60%, hsl(150 25% 78% / 0.15), transparent);
+  pointer-events: none;
 }
 
-.snowflake {
-  position: absolute;
-  top: -20px;
-  font-size: 14px;
-  opacity: 0.7;
-  animation: fall linear infinite;
+/* Floral background - DARK MODE */
+.dark .bg-theme-floral {
+  background: 
+    linear-gradient(180deg, hsl(320 20% 12%) 0%, hsl(340 15% 8%) 100%);
 }
 
-@keyframes fall {
-  0% { 
-    transform: translateY(-20px) rotate(0deg); 
-    opacity: 0;
-  }
-  10% { opacity: 0.7; }
-  90% { opacity: 0.7; }
-  100% { 
-    transform: translateY(100vh) rotate(360deg); 
-    opacity: 0;
-  }
+.dark .bg-theme-floral::before {
+  background: 
+    radial-gradient(ellipse 15% 20% at 10% 20%, hsl(340 40% 25% / 0.3), transparent),
+    radial-gradient(ellipse 12% 15% at 85% 15%, hsl(300 35% 22% / 0.25), transparent),
+    radial-gradient(ellipse 18% 22% at 75% 75%, hsl(350 40% 28% / 0.3), transparent),
+    radial-gradient(ellipse 14% 18% at 20% 80%, hsl(320 30% 20% / 0.25), transparent),
+    radial-gradient(ellipse 8% 40% at 5% 50%, hsl(140 25% 20% / 0.15), transparent),
+    radial-gradient(ellipse 8% 35% at 95% 60%, hsl(150 20% 18% / 0.1), transparent);
 }
 
-/* Spring - Floating petals */
-.petals-container {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
+/* Forest background - LIGHT MODE */
+.bg-theme-forest {
+  background: 
+    linear-gradient(180deg, hsl(120 20% 92%) 0%, hsl(100 25% 85%) 100%);
 }
 
-.floating-petal {
-  position: absolute;
-  top: -30px;
-  animation: float-down linear infinite;
-}
-
-@keyframes float-down {
-  0% { 
-    transform: translateY(-30px) translateX(0) rotate(0deg); 
-    opacity: 0;
-  }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.8; }
-  100% { 
-    transform: translateY(100vh) translateX(50px) rotate(180deg); 
-    opacity: 0;
-  }
-}
-
-.butterfly {
-  position: absolute;
-  font-size: 20px;
-  animation: flutter 8s ease-in-out infinite;
-}
-
-@keyframes flutter {
-  0%, 100% { transform: translate(0, 0) rotate(-5deg); }
-  25% { transform: translate(30px, -20px) rotate(5deg); }
-  50% { transform: translate(60px, 10px) rotate(-5deg); }
-  75% { transform: translate(30px, 30px) rotate(5deg); }
-}
-
-/* Summer - Sun and fireflies */
-.summer-sun {
-  position: absolute;
-  top: 20px;
-  right: 40px;
-  font-size: 40px;
-}
-
-.sun-core {
-  animation: pulse-sun 3s ease-in-out infinite;
-}
-
-@keyframes pulse-sun {
-  0%, 100% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.1); filter: brightness(1.2); }
-}
-
-.fireflies-container {
+.bg-theme-forest::before {
+  content: '';
   position: absolute;
   inset: 0;
+  background: 
+    /* Tree silhouettes effect */
+    radial-gradient(ellipse 25% 60% at 10% 100%, hsl(130 35% 40% / 0.15), transparent),
+    radial-gradient(ellipse 20% 50% at 30% 100%, hsl(140 30% 45% / 0.12), transparent),
+    radial-gradient(ellipse 30% 70% at 80% 100%, hsl(120 35% 35% / 0.18), transparent),
+    /* Dappled sunlight */
+    radial-gradient(ellipse 40% 30% at 50% 10%, hsl(50 50% 85% / 0.3), transparent),
+    /* Leaf texture */
+    radial-gradient(circle at 2px 2px, hsl(120 25% 75% / 0.2) 1px, transparent 1px);
+  background-size: auto, auto, auto, auto, 24px 24px;
+  pointer-events: none;
 }
 
-.firefly {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: hsl(55 90% 70%);
-  border-radius: 50%;
-  box-shadow: 0 0 8px 4px hsl(55 90% 70% / 0.6);
-  animation: firefly-float 6s ease-in-out infinite;
+/* Forest background - DARK MODE */
+.dark .bg-theme-forest {
+  background: 
+    linear-gradient(180deg, hsl(140 25% 10%) 0%, hsl(130 30% 6%) 100%);
 }
 
-@keyframes firefly-float {
-  0%, 100% { 
-    opacity: 0;
-    transform: translate(0, 0);
-  }
-  20% { opacity: 1; }
-  50% { 
-    opacity: 0.8;
-    transform: translate(20px, -30px);
-  }
-  80% { opacity: 1; }
+.dark .bg-theme-forest::before {
+  background: 
+    radial-gradient(ellipse 25% 60% at 10% 100%, hsl(130 30% 15% / 0.4), transparent),
+    radial-gradient(ellipse 20% 50% at 30% 100%, hsl(140 25% 12% / 0.35), transparent),
+    radial-gradient(ellipse 30% 70% at 80% 100%, hsl(120 30% 10% / 0.45), transparent),
+    radial-gradient(ellipse 30% 20% at 60% 15%, hsl(45 40% 30% / 0.1), transparent),
+    radial-gradient(circle at 2px 2px, hsl(120 20% 20% / 0.15) 1px, transparent 1px);
+  background-size: auto, auto, auto, auto, 24px 24px;
 }
 
-/* Autumn - Falling leaves */
-.leaves-container {
+/* Ocean background - LIGHT MODE */
+.bg-theme-ocean {
+  background: 
+    linear-gradient(180deg, hsl(200 40% 92%) 0%, hsl(195 50% 80%) 50%, hsl(190 45% 75%) 100%);
+}
+
+.bg-theme-ocean::before {
+  content: '';
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  background: 
+    /* Gentle wave patterns */
+    radial-gradient(ellipse 100% 15% at 50% 85%, hsl(195 55% 70% / 0.3), transparent),
+    radial-gradient(ellipse 80% 10% at 40% 90%, hsl(200 50% 75% / 0.25), transparent),
+    radial-gradient(ellipse 90% 12% at 60% 95%, hsl(190 45% 72% / 0.2), transparent),
+    /* Light shimmer */
+    radial-gradient(ellipse 30% 20% at 70% 20%, hsl(45 60% 90% / 0.3), transparent),
+    radial-gradient(ellipse 25% 15% at 30% 25%, hsl(50 50% 92% / 0.25), transparent);
+  pointer-events: none;
 }
 
-.falling-leaf {
+/* Ocean background - DARK MODE */
+.dark .bg-theme-ocean {
+  background: 
+    linear-gradient(180deg, hsl(210 35% 12%) 0%, hsl(200 40% 15%) 50%, hsl(195 45% 10%) 100%);
+}
+
+.dark .bg-theme-ocean::before {
+  background: 
+    radial-gradient(ellipse 100% 15% at 50% 85%, hsl(195 40% 25% / 0.3), transparent),
+    radial-gradient(ellipse 80% 10% at 40% 90%, hsl(200 35% 20% / 0.25), transparent),
+    radial-gradient(ellipse 90% 12% at 60% 95%, hsl(190 40% 18% / 0.2), transparent),
+    radial-gradient(ellipse 20% 15% at 70% 20%, hsl(200 50% 40% / 0.15), transparent),
+    radial-gradient(ellipse 15% 10% at 30% 25%, hsl(195 45% 35% / 0.1), transparent);
+}
+
+/* Mountains background - LIGHT MODE */
+.bg-theme-mountains {
+  background: 
+    linear-gradient(180deg, hsl(210 30% 90%) 0%, hsl(200 25% 85%) 40%, hsl(35 20% 80%) 100%);
+}
+
+.bg-theme-mountains::before {
+  content: '';
   position: absolute;
-  top: -30px;
-  font-size: 18px;
-  animation: leaf-fall linear infinite;
+  inset: 0;
+  background: 
+    /* Distant mountain silhouettes */
+    linear-gradient(165deg, transparent 60%, hsl(220 20% 70% / 0.4) 60%, hsl(220 20% 70% / 0.4) 65%, transparent 65%),
+    linear-gradient(170deg, transparent 55%, hsl(210 25% 65% / 0.35) 55%, hsl(210 25% 65% / 0.35) 62%, transparent 62%),
+    linear-gradient(175deg, transparent 65%, hsl(200 20% 60% / 0.3) 65%, hsl(200 20% 60% / 0.3) 75%, transparent 75%),
+    /* Snow caps hint */
+    radial-gradient(ellipse 8% 4% at 35% 58%, hsl(0 0% 98% / 0.5), transparent),
+    radial-gradient(ellipse 6% 3% at 60% 53%, hsl(0 0% 95% / 0.4), transparent),
+    /* Atmospheric haze */
+    radial-gradient(ellipse 100% 40% at 50% 100%, hsl(30 20% 75% / 0.2), transparent);
+  pointer-events: none;
 }
 
-@keyframes leaf-fall {
-  0% { 
-    transform: translateY(-30px) translateX(0) rotate(var(--initial-rotation, 0deg)); 
-    opacity: 0;
-  }
-  10% { opacity: 0.9; }
-  50% {
-    transform: translateY(50vh) translateX(40px) rotate(calc(var(--initial-rotation, 0deg) + 180deg));
-  }
-  90% { opacity: 0.9; }
-  100% { 
-    transform: translateY(100vh) translateX(-20px) rotate(calc(var(--initial-rotation, 0deg) + 360deg)); 
-    opacity: 0;
-  }
+/* Mountains background - DARK MODE */
+.dark .bg-theme-mountains {
+  background: 
+    linear-gradient(180deg, hsl(220 25% 10%) 0%, hsl(210 20% 12%) 40%, hsl(240 15% 8%) 100%);
+}
+
+.dark .bg-theme-mountains::before {
+  background: 
+    linear-gradient(165deg, transparent 60%, hsl(220 15% 18% / 0.5) 60%, hsl(220 15% 18% / 0.5) 65%, transparent 65%),
+    linear-gradient(170deg, transparent 55%, hsl(210 18% 15% / 0.45) 55%, hsl(210 18% 15% / 0.45) 62%, transparent 62%),
+    linear-gradient(175deg, transparent 65%, hsl(200 15% 12% / 0.4) 65%, hsl(200 15% 12% / 0.4) 75%, transparent 75%),
+    radial-gradient(ellipse 8% 4% at 35% 58%, hsl(0 0% 60% / 0.15), transparent),
+    radial-gradient(ellipse 6% 3% at 60% 53%, hsl(0 0% 55% / 0.1), transparent),
+    /* Starry sky hint */
+    radial-gradient(1px 1px at 20% 15%, hsl(0 0% 90%), transparent),
+    radial-gradient(1px 1px at 80% 20%, hsl(0 0% 85%), transparent),
+    radial-gradient(1px 1px at 50% 10%, hsl(0 0% 90%), transparent);
 }
 
 /* ============================================

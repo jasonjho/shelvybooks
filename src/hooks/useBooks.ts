@@ -15,7 +15,6 @@ const defaultSettings: ShelfSettings = {
   showWoodGrain: true,
   decorDensity: 'balanced',
   backgroundTheme: 'office',
-  seasonalTheme: 'auto',
 };
 
 export function useBooks() {

@@ -6,9 +6,7 @@ export type DecorDensity = 'minimal' | 'balanced' | 'cozy';
 
 export type SortOption = 'random' | 'recent' | 'status-author' | 'author-title';
 
-export type BackgroundTheme = 'office' | 'library' | 'cozy' | 'space';
-
-export type SeasonalTheme = 'auto' | 'none' | 'winter' | 'spring' | 'summer' | 'autumn';
+export type BackgroundTheme = 'office' | 'library' | 'cozy' | 'space' | 'floral' | 'forest' | 'ocean' | 'mountains';
 
 export interface ShelfSettings {
   showPlant: boolean;
@@ -17,7 +15,6 @@ export interface ShelfSettings {
   showWoodGrain: boolean;
   decorDensity: DecorDensity;
   backgroundTheme: BackgroundTheme;
-  seasonalTheme: SeasonalTheme;
 }
 
 export interface Book {

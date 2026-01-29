@@ -26,7 +26,6 @@ const DEFAULT_SETTINGS: ShelfSettingsType = {
   showPlant: true,
   decorDensity: 'balanced',
   backgroundTheme: 'office',
-  seasonalTheme: 'auto',
 };
 
 const STATUS_ORDER: Record<BookStatus, number> = {
