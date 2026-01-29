@@ -927,10 +927,10 @@
    BACKGROUND THEMES
    ============================================ */
 
-/* Library background */
+/* Library background - LIGHT MODE */
 .bg-theme-library {
   background: 
-    linear-gradient(180deg, hsl(24 20% 18%) 0%, hsl(24 15% 12%) 100%);
+    linear-gradient(180deg, hsl(30 25% 88%) 0%, hsl(28 20% 82%) 100%);
 }
 
 .bg-theme-library::before {
@@ -943,15 +943,33 @@
       90deg,
       transparent 0px,
       transparent 120px,
-      hsl(24 25% 15% / 0.5) 120px,
-      hsl(24 25% 15% / 0.5) 122px
+      hsl(28 20% 75% / 0.5) 120px,
+      hsl(28 20% 75% / 0.5) 122px
     ),
     /* Warm ambient glow from above */
-    radial-gradient(ellipse 60% 30% at 50% 0%, hsl(35 60% 50% / 0.15), transparent);
+    radial-gradient(ellipse 60% 30% at 50% 0%, hsl(35 50% 60% / 0.2), transparent);
   pointer-events: none;
 }
 
-/* Cozy room background */
+/* Library background - DARK MODE */
+.dark .bg-theme-library {
+  background: 
+    linear-gradient(180deg, hsl(24 20% 18%) 0%, hsl(24 15% 12%) 100%);
+}
+
+.dark .bg-theme-library::before {
+  background: 
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 120px,
+      hsl(24 25% 15% / 0.5) 120px,
+      hsl(24 25% 15% / 0.5) 122px
+    ),
+    radial-gradient(ellipse 60% 30% at 50% 0%, hsl(35 60% 50% / 0.15), transparent);
+}
+
+/* Cozy room background - LIGHT MODE */
 .bg-theme-cozy {
   background: 
     linear-gradient(180deg, hsl(30 25% 92%) 0%, hsl(25 20% 85%) 100%);
@@ -972,6 +990,7 @@
   pointer-events: none;
 }
 
+/* Cozy room background - DARK MODE */
 .dark .bg-theme-cozy {
   background: 
     linear-gradient(180deg, hsl(25 15% 15%) 0%, hsl(20 12% 10%) 100%);
@@ -985,16 +1004,34 @@
   background-size: 16px 16px, auto, auto;
 }
 
-/* Space station background */
+/* Space station background - LIGHT MODE (futuristic clean lab) */
 .bg-theme-space {
   background: 
-    linear-gradient(180deg, hsl(230 30% 8%) 0%, hsl(240 35% 4%) 100%);
+    linear-gradient(180deg, hsl(210 20% 95%) 0%, hsl(220 15% 88%) 100%);
 }
 
 .bg-theme-space::before {
   content: '';
   position: absolute;
   inset: 0;
+  background: 
+    /* Subtle grid pattern for tech feel */
+    linear-gradient(hsl(210 20% 85% / 0.5) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(210 20% 85% / 0.5) 1px, transparent 1px),
+    /* Soft blue glow accents */
+    radial-gradient(ellipse 30% 20% at 80% 20%, hsl(200 60% 80% / 0.2), transparent),
+    radial-gradient(ellipse 25% 30% at 20% 70%, hsl(260 40% 85% / 0.15), transparent);
+  background-size: 40px 40px, 40px 40px, auto, auto;
+  pointer-events: none;
+}
+
+/* Space station background - DARK MODE (deep space) */
+.dark .bg-theme-space {
+  background: 
+    linear-gradient(180deg, hsl(230 30% 8%) 0%, hsl(240 35% 4%) 100%);
+}
+
+.dark .bg-theme-space::before {
   background: 
     /* Stars */
     radial-gradient(1px 1px at 20% 30%, white, transparent),
@@ -1010,7 +1047,6 @@
     /* Nebula glow */
     radial-gradient(ellipse 40% 30% at 80% 20%, hsl(270 50% 30% / 0.3), transparent),
     radial-gradient(ellipse 30% 40% at 20% 70%, hsl(200 60% 25% / 0.2), transparent);
-  pointer-events: none;
   animation: twinkle 4s ease-in-out infinite alternate;
 }
 
