@@ -287,6 +287,30 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_settings: {
+        Row: {
+          created_at: string
+          id: string
+          last_seen_likes_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_seen_likes_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_seen_likes_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       shelf_settings: {
         Row: {
           created_at: string

@@ -18,6 +18,8 @@ interface BookshelfProps {
   getBookClubInfo?: (title: string, author: string) => ClubInfo[];
   /** External handler for book selection - when set, clicks open this instead of internal dialog */
   onSelectBook?: (book: Book) => void;
+  /** Count of new likes per book ID */
+  likesPerBook?: Record<string, number>;
 }
 
 function Bookend() {
@@ -126,6 +128,7 @@ interface ShelfRowProps {
   getBookClubInfo?: (title: string, author: string) => ClubInfo[];
   notes: Map<string, BookNote>;
   onAddNote: (book: Book) => void;
+  likesPerBook?: Record<string, number>;
 }
 
 function ShelfRow({
@@ -141,6 +144,7 @@ function ShelfRow({
   getBookClubInfo,
   notes,
   onAddNote,
+  likesPerBook,
 }: ShelfRowProps) {
   const hasBooks = books.length > 0;
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
@@ -199,6 +203,7 @@ function ShelfRow({
           if (item.type === 'book') {
             const clubInfo = getBookClubInfo?.(item.book.title, item.book.author);
             const bookNote = notes.get(item.book.id);
+            const newLikesCount = likesPerBook?.[item.book.id] || 0;
             return (
               <BookSpine
                 key={item.book.id}
@@ -211,6 +216,7 @@ function ShelfRow({
                 clubInfo={clubInfo}
                 note={bookNote}
                 onAddNote={() => onAddNote(item.book)}
+                newLikesCount={newLikesCount}
               />
             );
           }
@@ -247,7 +253,7 @@ function ShelfRow({
   );
 }
 
-export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo, onSelectBook }: BookshelfProps) {
+export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo, onSelectBook, likesPerBook }: BookshelfProps) {
   const [internalSelectedBook, setInternalSelectedBook] = useState<Book | null>(null);
   const [noteBook, setNoteBook] = useState<Book | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -361,6 +367,7 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
           getBookClubInfo={getBookClubInfo}
           notes={notes}
           onAddNote={setNoteBook}
+          likesPerBook={likesPerBook}
         />
       ))}
 

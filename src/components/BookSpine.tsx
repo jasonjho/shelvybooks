@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
 import { BookNote, NoteColor } from '@/hooks/useBookNotes';
 import { PostItNote } from '@/components/PostItNote';
+import { BookLikeBadge } from '@/components/BookLikeBadge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -32,6 +33,7 @@ interface BookSpineProps {
   clubInfo?: ClubInfo[];
   note?: BookNote;
   onAddNote?: () => void;
+  newLikesCount?: number;
 }
 
 const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -50,10 +52,11 @@ type BookCoverProps = {
   note?: BookNote;
   onAddNote?: () => void;
   isInteractive?: boolean;
+  newLikesCount?: number;
 };
 
 const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
-  ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo, note, onAddNote, isInteractive = true }, ref) => {
+  ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo, note, onAddNote, isInteractive = true, newLikesCount = 0 }, ref) => {
   const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -209,6 +212,11 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
             <Users className="w-3 h-3" />
           </div>
         )}
+
+        {/* New likes badge */}
+        {!hasClubInfo && newLikesCount > 0 && (
+          <BookLikeBadge count={newLikesCount} />
+        )}
         
         {/* Fallback if no cover or error */}
         {showPlaceholder && (
@@ -267,7 +275,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
 
 BookCover.displayName = 'BookCover';
 
-export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true, isGrayed = false, clubInfo, note, onAddNote }: BookSpineProps) {
+export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true, isGrayed = false, clubInfo, note, onAddNote, newLikesCount }: BookSpineProps) {
   const { recentlyAddedBooks, recentlyCompletedBooks } = useBookAnimations();
   
   const isWobbling = recentlyAddedBooks.has(book.id);
@@ -275,13 +283,13 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
 
   // If not interactive, just render the book without context menu
   if (!isInteractive || !onMove || !onRemove) {
-    return <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} isInteractive={false} />;
+    return <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} isInteractive={false} newLikesCount={newLikesCount} />;
   }
 
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} onAddNote={onAddNote} isInteractive={true} />
+        <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} onAddNote={onAddNote} isInteractive={true} newLikesCount={newLikesCount} />
       </ContextMenuTrigger>
       
       <ContextMenuContent className="w-48 z-50">
