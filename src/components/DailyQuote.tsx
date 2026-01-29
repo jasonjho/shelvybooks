@@ -132,17 +132,26 @@ export function DailyQuote({ onAddBook, existingBooks }: DailyQuoteProps) {
     >
       <div className="flex items-center gap-3">
         {/* Book cover */}
-        <img
-          src={quote.book.coverUrl}
-          alt={quote.book.title}
-          className={cn(
-            "w-10 h-14 object-cover rounded shadow-sm flex-shrink-0 transition-opacity",
-            loading && "opacity-50"
+        <div className="relative w-10 h-14 flex-shrink-0">
+          <img
+            src={quote.book.coverUrl}
+            alt={quote.book.title}
+            className="w-full h-full object-cover rounded shadow-sm"
+            onError={(e) => {
+              e.currentTarget.src = '/placeholder.svg';
+            }}
+          />
+          {loading && (
+            <div 
+              className="absolute inset-0 rounded overflow-hidden"
+              style={{
+                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 1.2s ease-in-out infinite',
+              }}
+            />
           )}
-          onError={(e) => {
-            e.currentTarget.src = '/placeholder.svg';
-          }}
-        />
+        </div>
 
         {/* Quote & book info */}
         <div className="flex-1 min-w-0">
