@@ -110,19 +110,20 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
         isSparkle && 'book-sparkle'
       )}
     >
-      {/* Post-it note decoration - positioned to peek out behind/beside the book */}
+      {/* Post-it note decoration - positioned at bottom-right like a shelf talker */}
       {note && (
         <Popover>
           <PopoverTrigger asChild>
             <button 
-              className="absolute -right-3 -top-2 z-40 cursor-pointer"
+              className="absolute -right-2 -bottom-3 z-40 cursor-pointer"
               onClick={(e) => e.stopPropagation()}
             >
               <PostItNote content={note.content} color={note.color} size="sm" />
             </button>
           </PopoverTrigger>
           <PopoverContent 
-            side="top" 
+            side="right" 
+            align="end"
             className="w-64 p-0 border-none bg-transparent shadow-none"
             onClick={(e) => e.stopPropagation()}
           >
