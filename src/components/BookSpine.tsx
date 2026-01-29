@@ -51,6 +51,24 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
   const isCurrentlyReading = clubInfo?.some(c => c.status === 'reading');
   const showPlaceholder = !book.coverUrl || book.coverUrl === '/placeholder.svg' || imageError;
 
+  // Handle image load - check if it's a valid cover or a placeholder image
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    const { naturalWidth, naturalHeight } = img;
+    
+    // Detect placeholder images:
+    // 1. Very small images (1x1 or similar) - Open Library pattern
+    // 2. Small square images - often placeholders (but not too aggressive)
+    const isVerySmall = naturalWidth <= 1 || naturalHeight <= 1;
+    
+    if (isVerySmall) {
+      setImageError(true);
+      return;
+    }
+    
+    setImageLoaded(true);
+  };
+
   return (
     <div 
       ref={ref} 
@@ -80,7 +98,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
             src={book.coverUrl}
             alt={book.title}
             loading="lazy"
-            onLoad={() => setImageLoaded(true)}
+            onLoad={handleImageLoad}
             onError={() => setImageError(true)}
             className={cn(
               'absolute inset-0 w-full h-full object-cover transition-opacity duration-300',
