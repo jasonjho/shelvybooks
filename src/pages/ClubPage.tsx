@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClubDetails } from '@/hooks/useBookClubs';
 import { useBookSearch, getCoverUrl } from '@/hooks/useBookSearch';
+import { useBooks } from '@/hooks/useBooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +36,8 @@ import {
   MoreVertical,
   Trash2,
   Play,
-  Library
+  Library,
+  BookMarked
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GoogleBook } from '@/types/book';
@@ -58,8 +60,30 @@ export default function ClubPage() {
     removeSuggestion,
   } = useClubDetails(clubId);
 
+  const { addBook, books } = useBooks();
   const [copied, setCopied] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+
+  // Check if a book is already on the user's shelf
+  const isOnShelf = (title: string, author: string) => {
+    return books.some(
+      (b) => b.title.toLowerCase() === title.toLowerCase() && 
+             b.author.toLowerCase() === author.toLowerCase()
+    );
+  };
+
+  const handleAddToShelf = async (title: string, author: string, coverUrl?: string | null) => {
+    if (isOnShelf(title, author)) {
+      toast({ title: 'Already on your shelf', description: `"${title}" is already in your library.` });
+      return;
+    }
+    await addBook({
+      title,
+      author,
+      coverUrl: coverUrl || '',
+      status: 'want-to-read',
+    });
+  };
 
   // Redirect if not logged in
   useEffect(() => {
@@ -162,17 +186,27 @@ export default function ClubPage() {
                       {currentlyReading.voteCount} votes
                     </span>
                   </div>
-                  {isOwner && (
+                  <div className="flex items-center gap-2 mt-3">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="mt-3"
-                      onClick={() => updateSuggestionStatus(currentlyReading.id, 'read')}
+                      onClick={() => handleAddToShelf(currentlyReading.title, currentlyReading.author, currentlyReading.coverUrl)}
+                      disabled={isOnShelf(currentlyReading.title, currentlyReading.author)}
                     >
-                      <CheckCircle className="w-4 h-4 mr-1.5" />
-                      Mark as Read
+                      <BookMarked className="w-4 h-4 mr-1.5" />
+                      {isOnShelf(currentlyReading.title, currentlyReading.author) ? 'On Shelf' : 'Add to Shelf'}
                     </Button>
-                  )}
+                    {isOwner && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateSuggestionStatus(currentlyReading.id, 'read')}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1.5" />
+                        Mark as Read
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -211,9 +245,11 @@ export default function ClubPage() {
                   suggestion={suggestion}
                   isOwner={isOwner}
                   currentUserId={user?.id}
+                  isOnShelf={isOnShelf(suggestion.title, suggestion.author)}
                   onVote={() => vote(suggestion.id)}
                   onSetReading={() => updateSuggestionStatus(suggestion.id, 'reading')}
                   onRemove={() => removeSuggestion(suggestion.id)}
+                  onAddToShelf={() => handleAddToShelf(suggestion.title, suggestion.author, suggestion.coverUrl)}
                 />
               ))}
             </div>
@@ -276,18 +312,22 @@ interface SuggestionCardProps {
   };
   isOwner: boolean;
   currentUserId?: string;
+  isOnShelf: boolean;
   onVote: () => void;
   onSetReading: () => void;
   onRemove: () => void;
+  onAddToShelf: () => void;
 }
 
 function SuggestionCard({
   suggestion,
   isOwner,
   currentUserId,
+  isOnShelf,
   onVote,
   onSetReading,
   onRemove,
+  onAddToShelf,
 }: SuggestionCardProps) {
   const canRemove = isOwner || suggestion.suggestedBy === currentUserId;
 
@@ -316,6 +356,16 @@ function SuggestionCard({
       >
         <ThumbsUp className={cn('w-4 h-4', suggestion.hasVoted && 'fill-current')} />
         {suggestion.voteCount || 0}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onAddToShelf}
+        disabled={isOnShelf}
+        className="gap-1.5 shrink-0"
+        title={isOnShelf ? 'Already on your shelf' : 'Add to your shelf'}
+      >
+        <BookMarked className={cn('w-4 h-4', isOnShelf && 'fill-current text-primary')} />
       </Button>
       {(isOwner || canRemove) && (
         <DropdownMenu>
