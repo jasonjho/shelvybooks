@@ -122,18 +122,7 @@ export function useBookClubs() {
         return null;
       }
 
-      // Add creator as owner member
-      const { error: memberError } = await supabase
-        .from('book_club_members')
-        .insert({
-          club_id: clubData.id,
-          user_id: user.id,
-          role: 'owner',
-        });
-
-      if (memberError) {
-        console.error('Error adding owner as member:', memberError);
-      }
+      // Note: Owner is automatically added as member via database trigger (on_club_created_add_owner)
 
       const newClub: BookClub = {
         id: clubData.id,
