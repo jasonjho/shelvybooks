@@ -64,10 +64,17 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
     const img = e.currentTarget;
     const { naturalWidth, naturalHeight } = img;
     
-    // Detect 1x1 placeholders (common when a cover is missing)
+    // Detect placeholder images:
+    // 1. 1x1 placeholders (common when a cover is missing)
+    // 2. Google's "image not available" placeholders (various sizes: 120x192, 128x188, etc.)
     const isOneByOne = naturalWidth <= 1 && naturalHeight <= 1;
+    const isGooglePlaceholder = 
+      (naturalWidth === 120 && naturalHeight === 192) ||
+      (naturalWidth === 128 && naturalHeight === 188) ||
+      (naturalWidth === 128 && naturalHeight === 196) ||
+      (naturalWidth === 128 && naturalHeight === 197);
 
-    if (isOneByOne) {
+    if (isOneByOne || isGooglePlaceholder) {
       setImageError(true);
       setImageLoaded(true);
       return;
