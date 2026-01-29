@@ -116,10 +116,10 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
       {note && (
         <Popover>
           <PopoverTrigger asChild>
-            <button 
-              className="absolute -right-2 -bottom-3 z-40 cursor-pointer"
-              onClick={(e) => e.stopPropagation()}
-            >
+          <button 
+            className="absolute left-1/2 -translate-x-1/2 -bottom-3 z-40 cursor-pointer"
+            onClick={(e) => e.stopPropagation()}
+          >
               <PostItNote content={note.content} color={note.color} size="sm" />
             </button>
           </PopoverTrigger>
