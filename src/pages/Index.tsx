@@ -113,7 +113,7 @@ export default function Index() {
   }, []);
 
   return (
-    <div className="min-h-screen office-wall overflow-x-hidden">
+    <div className="min-h-screen office-wall">
       {/* Ambient top light */}
       {settings.showAmbientLight && (
         <div 
