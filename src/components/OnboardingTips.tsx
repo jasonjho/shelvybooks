@@ -26,11 +26,12 @@ export function OnboardingTips() {
         exit={{ opacity: 0, y: 20, scale: 0.95 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
         className={cn(
-          'fixed left-1/2 -translate-x-1/2 z-50',
+          'fixed z-50',
           'bottom-2 sm:bottom-6',
-          'w-[95vw] max-w-md',
+          'left-2 right-2 sm:left-1/2 sm:right-auto sm:-translate-x-1/2',
+          'sm:w-full sm:max-w-md',
           'bg-card border border-border rounded-xl shadow-2xl',
-          'overflow-hidden max-h-[85vh] overflow-y-auto'
+          'overflow-hidden max-h-[80vh] overflow-y-auto'
         )}
       >
         {/* Header */}
