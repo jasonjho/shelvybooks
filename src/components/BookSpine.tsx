@@ -15,6 +15,7 @@ import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
 import { BookNote, NoteColor } from '@/hooks/useBookNotes';
 import { PostItNote } from '@/components/PostItNote';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export interface ClubInfo {
   clubName: string;
@@ -53,6 +54,7 @@ type BookCoverProps = {
 
 const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
   ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo, note, onAddNote, isInteractive = true }, ref) => {
+  const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author)}`;
@@ -122,8 +124,8 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
             </button>
           </PopoverTrigger>
           <PopoverContent 
-            side="right" 
-            align="end"
+            side={isMobile ? "top" : "right"}
+            align={isMobile ? "center" : "end"}
             className="w-64 p-0 border-none bg-transparent shadow-none"
             onClick={(e) => e.stopPropagation()}
           >
