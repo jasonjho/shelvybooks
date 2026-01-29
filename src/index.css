@@ -540,6 +540,9 @@
     @apply relative transition-all duration-300 ease-out cursor-pointer border-0;
     transform-style: preserve-3d;
     z-index: 1;
+    /* Fixed dimensions to prevent tooltip from expanding hit area */
+    width: 70px;
+    height: 105px;
   }
 
   .book-spine:hover {
@@ -593,8 +596,10 @@
   .books-grid > div {
     flex: 0 0 auto;
     width: 70px;
+    height: 105px;
     display: flex;
     justify-content: center;
+    align-items: flex-end;
   }
 
   /* Wood grain shelf surface */
@@ -850,6 +855,11 @@
   }
 
   /* Scale down books on mobile */
+  .mini-shelf .book-spine {
+    width: 55px;
+    height: 82px;
+  }
+
   .mini-shelf .book-cover {
     width: 55px;
     height: 82px;
