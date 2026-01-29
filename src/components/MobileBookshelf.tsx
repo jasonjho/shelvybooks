@@ -45,7 +45,7 @@ function generateMobileDecorPositions(
   
   const decorations: { position: number; type: DecorationType; seed: number }[] = [];
   const usedPositions = new Set<number>();
-  const usedTypes = new Set<DecorationType>(); // Track used types to avoid duplicates
+  const usedTypes = new Set<DecorationType>();
   
   // Seeded random for consistent placement
   const seededRandom = (i: number) => {
@@ -53,17 +53,37 @@ function generateMobileDecorPositions(
     return x - Math.floor(x);
   };
 
-  const avgSpacing = Math.max(config.minSpacing, Math.floor(bookCount / (decorationCount + 1)));
+  // For variety across rows, use different placement strategies based on row index
+  // This prevents the "always at end" pattern
+  const placementSeed = seededRandom(rowIndex * 7);
   
   for (let i = 0; i < decorationCount; i++) {
-    const basePos = Math.floor((i + 1) * avgSpacing) + 1;
-    const jitter = Math.floor((seededRandom(i * 3 + rowIndex) - 0.5) * 2);
-    let pos = Math.max(2, Math.min(bookCount + 1, basePos + jitter));
+    let pos: number;
     
+    if (decorationCount === 1) {
+      // Single decoration: vary position based on row to avoid repetitive patterns
+      // Use 3 zones: start (pos 1), middle, end
+      const zone = Math.floor(placementSeed * 3);
+      if (zone === 0) {
+        pos = 1; // Before first book
+      } else if (zone === 1) {
+        pos = Math.max(1, Math.floor(bookCount / 2) + 1); // Middle-ish
+      } else {
+        pos = bookCount + 1; // After last book
+      }
+    } else {
+      // Multiple decorations: spread them out
+      const avgSpacing = Math.max(config.minSpacing, Math.floor(bookCount / (decorationCount + 1)));
+      const basePos = Math.floor((i + 1) * avgSpacing) + 1;
+      const jitter = Math.floor((seededRandom(i * 3 + rowIndex) - 0.5) * 2);
+      pos = Math.max(1, Math.min(bookCount + 1, basePos + jitter));
+    }
+    
+    // Find available position
     let found = false;
-    for (let d = 0; d <= bookCount && !found; d++) {
+    for (let d = 0; d <= bookCount + 1 && !found; d++) {
       for (const candidate of [pos + d, pos - d]) {
-        if (candidate < 2 || candidate > bookCount + 1) continue;
+        if (candidate < 1 || candidate > bookCount + 1) continue;
         if (usedPositions.has(candidate)) continue;
         
         const tooClose = [...usedPositions].some(p => Math.abs(p - candidate) < config.minSpacing);
@@ -80,7 +100,6 @@ function generateMobileDecorPositions(
           }
         }
         
-        // If all types are used, skip adding more decorations
         if (!decorType) break;
         
         usedPositions.add(candidate);
@@ -133,8 +152,23 @@ function MiniShelfRow({
   const items: Array<{ type: 'book'; book: Book } | { type: 'decoration'; decorationType: DecorationType; seed: number }> = [];
   
   let decorIndex = 0;
+  
+  // Add decorations that go before the first book (position 1)
+  while (decorIndex < decorPositions.length && decorPositions[decorIndex].position === 1) {
+    const dec = decorPositions[decorIndex];
+    items.push({ 
+      type: 'decoration', 
+      decorationType: dec.type, 
+      seed: dec.seed 
+    });
+    decorIndex++;
+  }
+  
   books.forEach((book, bookIndex) => {
-    while (decorIndex < decorPositions.length && decorPositions[decorIndex].position === bookIndex + 1) {
+    items.push({ type: 'book', book });
+    
+    // Add decorations that go after this book (position = bookIndex + 2)
+    while (decorIndex < decorPositions.length && decorPositions[decorIndex].position === bookIndex + 2) {
       const dec = decorPositions[decorIndex];
       items.push({ 
         type: 'decoration', 
@@ -143,10 +177,9 @@ function MiniShelfRow({
       });
       decorIndex++;
     }
-    items.push({ type: 'book', book });
   });
   
-  // Add remaining decorations at the end
+  // Add any remaining decorations at the end
   while (decorIndex < decorPositions.length) {
     const dec = decorPositions[decorIndex];
     items.push({ 
