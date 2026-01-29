@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
 import { BookNote, NoteColor } from '@/hooks/useBookNotes';
 import { PostItNote } from '@/components/PostItNote';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export interface ClubInfo {
   clubName: string;
@@ -46,10 +47,12 @@ type BookCoverProps = {
   isSparkle?: boolean;
   clubInfo?: ClubInfo[];
   note?: BookNote;
+  onAddNote?: () => void;
+  isInteractive?: boolean;
 };
 
 const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
-  ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo, note }, ref) => {
+  ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo, note, onAddNote, isInteractive = true }, ref) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author)}`;
@@ -109,9 +112,47 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
     >
       {/* Post-it note decoration - positioned to peek out behind/beside the book */}
       {note && (
-        <div className="absolute -right-3 -top-2 z-0 pointer-events-none">
-          <PostItNote content={note.content} color={note.color} size="sm" />
-        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button 
+              className="absolute -right-3 -top-2 z-40 cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <PostItNote content={note.content} color={note.color} size="sm" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent 
+            side="top" 
+            className="w-64 p-0 border-none bg-transparent shadow-none"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div 
+              className={cn(
+                'p-4 rounded shadow-lg',
+                note.color === 'yellow' && 'bg-yellow-200',
+                note.color === 'pink' && 'bg-pink-200',
+                note.color === 'blue' && 'bg-sky-200',
+                note.color === 'green' && 'bg-lime-200',
+              )}
+              style={{ fontFamily: "'Caveat', cursive" }}
+            >
+              <p className="text-gray-700 text-lg leading-snug whitespace-pre-wrap">
+                {note.content}
+              </p>
+              {isInteractive && onAddNote && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddNote();
+                  }}
+                  className="mt-3 text-sm text-gray-600 hover:text-gray-900 underline"
+                >
+                  Edit note
+                </button>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
       )}
       <div
         className={cn(
@@ -231,13 +272,13 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
 
   // If not interactive, just render the book without context menu
   if (!isInteractive || !onMove || !onRemove) {
-    return <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} />;
+    return <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} isInteractive={false} />;
   }
 
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} />
+        <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} onAddNote={onAddNote} isInteractive={true} />
       </ContextMenuTrigger>
       
       <ContextMenuContent className="w-48 z-50">
