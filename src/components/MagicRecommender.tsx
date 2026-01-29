@@ -234,7 +234,7 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
       >
         <Sparkles className="h-4 w-4 mr-1.5 flex-shrink-0 text-violet-500 group-hover:animate-pulse" />
         <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent font-medium whitespace-nowrap">
-          Magic Recommender
+          Find me a book
         </span>
         <span className="absolute top-1 right-2 w-1 h-1 bg-violet-400 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping" />
         <span className="absolute bottom-2 right-4 w-0.5 h-0.5 bg-fuchsia-400 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping animation-delay-150" />
@@ -246,7 +246,7 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
             <DialogTitle className="flex items-center gap-2 text-xl font-sans">
               <Wand2 className="h-5 w-5 text-violet-500" />
               <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-                Magic Book Recommender
+                Find me a book
               </span>
               <Sparkles className="h-4 w-4 text-fuchsia-500" />
             </DialogTitle>
