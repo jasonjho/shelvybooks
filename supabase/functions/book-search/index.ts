@@ -21,9 +21,9 @@ serve(async (req) => {
     }
 
     const apiKey = Deno.env.get("GOOGLE_BOOKS_API_KEY");
-    const searchQuery = `intitle:${query}`;
-    
-    let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}&maxResults=12&printType=books`;
+    // Use general search without intitle: prefix for better results with common phrases
+    // and non-English titles. Google Books still prioritizes title matches naturally.
+    let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=12&printType=books`;
     
     if (apiKey) {
       url += `&key=${apiKey}`;
