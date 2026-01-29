@@ -61,10 +61,8 @@ const backgroundOptions: { value: BackgroundTheme; label: string; emoji: string 
   { value: 'office', label: 'Office', emoji: '🏢' },
   { value: 'library', label: 'Library', emoji: '📚' },
   { value: 'cozy', label: 'Cozy', emoji: '🏠' },
-  { value: 'floral', label: 'Floral', emoji: '🌸' },
   { value: 'forest', label: 'Forest', emoji: '🌲' },
   { value: 'ocean', label: 'Ocean', emoji: '🌊' },
-  { value: 'mountains', label: 'Mountains', emoji: '🏔️' },
   { value: 'space', label: 'Space', emoji: '🚀' },
 ];
 

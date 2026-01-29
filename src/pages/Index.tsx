@@ -120,10 +120,8 @@ export default function Index() {
       case 'library': return 'bg-theme-library';
       case 'cozy': return 'bg-theme-cozy';
       case 'space': return 'bg-theme-space';
-      case 'floral': return 'bg-theme-floral';
       case 'forest': return 'bg-theme-forest';
       case 'ocean': return 'bg-theme-ocean';
-      case 'mountains': return 'bg-theme-mountains';
       default: return 'office-wall';
     }
   };
