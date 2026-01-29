@@ -377,7 +377,7 @@ export default function ClubPage() {
 
         {/* Suggestions Section */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <ThumbsUp className="w-5 h-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold font-sans">Suggestions</h2>
