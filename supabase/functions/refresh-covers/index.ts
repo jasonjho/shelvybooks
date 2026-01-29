@@ -33,7 +33,23 @@ async function searchGoogleBooksCover(title: string, author: string, apiKey?: st
       const thumbnail = book.volumeInfo?.imageLinks?.thumbnail;
       if (thumbnail) {
         // Convert to HTTPS and improve quality
-        return thumbnail.replace('http://', 'https://').replace('zoom=1', 'zoom=2');
+        const httpsThumb = thumbnail.replace('http://', 'https://').replace('zoom=1', 'zoom=2');
+
+        // Google Books can sometimes serve an "image not available" placeholder unless
+        // we request the curl edge variant.
+        try {
+          const u = new URL(httpsThumb);
+          if (u.hostname === 'books.google.com' && u.pathname.startsWith('/books/content')) {
+            if (!u.searchParams.get('edge')) u.searchParams.set('edge', 'curl');
+            const zoom = u.searchParams.get('zoom');
+            if (!zoom || zoom === '1') u.searchParams.set('zoom', '2');
+            return u.toString();
+          }
+        } catch {
+          // ignore
+        }
+
+        return httpsThumb;
       }
     }
   } catch (e) {
@@ -112,20 +128,34 @@ serve(async (req) => {
       limit = body.limit || 50;
     }
 
-    // Find books with missing covers for this user
-    let query = supabase
+    // Find books that need cover refresh for this user.
+    // We do this as two explicit queries (simpler + more reliable than a complex PostgREST `or(...)`).
+    let missingQuery = supabase
       .from('books')
       .select('id, title, author')
       .eq('user_id', userId)
       .or('cover_url.is.null,cover_url.eq.,cover_url.eq./placeholder.svg')
       .limit(limit);
 
+    let googleEdgeMissingQuery = supabase
+      .from('books')
+      .select('id, title, author')
+      .eq('user_id', userId)
+      .like('cover_url', '%books.google.com/books/content%')
+      .not('cover_url', 'like', '%edge=curl%')
+      .limit(limit);
+
     // If specific book IDs provided, only check those
     if (bookIds && bookIds.length > 0) {
-      query = query.in('id', bookIds);
+      missingQuery = missingQuery.in('id', bookIds);
+      googleEdgeMissingQuery = googleEdgeMissingQuery.in('id', bookIds);
     }
 
-    const { data: books, error: fetchError } = await query;
+    const [{ data: missingBooks, error: missingError }, { data: googleEdgeMissingBooks, error: googleError }] =
+      await Promise.all([missingQuery, googleEdgeMissingQuery]);
+
+    const fetchError = missingError || googleError;
+    const books = ([...(missingBooks || []), ...(googleEdgeMissingBooks || [])] as BookToRefresh[]);
     
     if (fetchError) {
       console.error("Error fetching books:", fetchError);
@@ -135,7 +165,15 @@ serve(async (req) => {
       });
     }
 
-    const booksToRefresh = books as BookToRefresh[];
+    // Deduplicate by book id
+    const seenIds = new Set<string>();
+    const booksToRefresh: BookToRefresh[] = [];
+    for (const b of books) {
+      if (!b?.id || seenIds.has(b.id)) continue;
+      seenIds.add(b.id);
+      booksToRefresh.push(b);
+      if (booksToRefresh.length >= limit) break;
+    }
     console.log(`Found ${booksToRefresh.length} books to refresh covers for user ${userId}`);
 
     const results: { id: string; title: string; coverUrl: string | null; updated: boolean }[] = [];
