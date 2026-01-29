@@ -8,6 +8,8 @@ import {
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { BookOpen, BookMarked, CheckCircle, Trash2 } from 'lucide-react';
+import { useBookAnimations } from '@/contexts/BookAnimationContext';
+import { cn } from '@/lib/utils';
 
 interface BookSpineProps {
   book: Book;
@@ -28,15 +30,25 @@ type BookCoverProps = {
   book: Book;
   onSelect?: () => void;
   isGrayed?: boolean;
+  isWobbling?: boolean;
+  isSparkle?: boolean;
 };
 
 const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
-  ({ book, onSelect, isGrayed }, ref) => {
+  ({ book, onSelect, isGrayed, isWobbling, isSparkle }, ref) => {
   // Link to Amazon search for the book
   const amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author)}`;
 
   return (
-    <div ref={ref} className={`book-spine group/book relative ${isGrayed ? 'book-grayed' : ''}`}>
+    <div 
+      ref={ref} 
+      className={cn(
+        'book-spine group/book relative',
+        isGrayed && 'book-grayed',
+        isWobbling && 'book-wobble',
+        isSparkle && 'book-sparkle'
+      )}
+    >
       <div
         className="book-cover w-[70px] h-[105px] cursor-pointer"
         onClick={onSelect}
@@ -59,6 +71,15 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
               {book.title}
             </span>
           </div>
+        )}
+
+        {/* Sparkle particles for completed books */}
+        {isSparkle && (
+          <>
+            <div className="sparkle-particle" style={{ top: '-5px', left: '20%', animationDelay: '0s' }} />
+            <div className="sparkle-particle" style={{ top: '-8px', left: '50%', animationDelay: '0.15s' }} />
+            <div className="sparkle-particle" style={{ top: '-3px', left: '75%', animationDelay: '0.3s' }} />
+          </>
         )}
       </div>
       
@@ -87,15 +108,20 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
 BookCover.displayName = 'BookCover';
 
 export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true, isGrayed = false }: BookSpineProps) {
+  const { recentlyAddedBooks, recentlyCompletedBooks } = useBookAnimations();
+  
+  const isWobbling = recentlyAddedBooks.has(book.id);
+  const isSparkle = recentlyCompletedBooks.has(book.id);
+
   // If not interactive, just render the book without context menu
   if (!isInteractive || !onMove || !onRemove) {
-    return <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} />;
+    return <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} />;
   }
 
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} />
+        <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} />
       </ContextMenuTrigger>
       
       <ContextMenuContent className="w-48 z-50">
