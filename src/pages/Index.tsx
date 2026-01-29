@@ -10,6 +10,7 @@ import { ShareShelfDialog } from '@/components/ShareShelfDialog';
 import { AuthButton } from '@/components/AuthButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MagicRecommender } from '@/components/MagicRecommender';
+import { ClubsDropdown } from '@/components/ClubsDropdown';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
 
 import { useBooks } from '@/hooks/useBooks';
@@ -170,6 +171,7 @@ export default function Index() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {user && <ClubsDropdown />}
             <ThemeToggle />
             <SettingsPanel 
               settings={settings} 
