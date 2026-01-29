@@ -34,9 +34,9 @@ export function OnboardingTips() {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-amber-500/10 to-amber-600/10 border-b border-border">
-          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-500">
+        <div className="flex items-center gap-2 text-amber-700 dark:text-amber-500">
             <Lightbulb className="w-4 h-4" />
-            <span className="text-xs font-medium uppercase tracking-wide">Quick Tip</span>
+            <span className="font-sans text-xs font-medium uppercase tracking-wide">Quick Tip</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">
@@ -54,8 +54,8 @@ export function OnboardingTips() {
 
         {/* Content */}
         <div className="px-4 py-4">
-          <h3 className="font-semibold text-foreground mb-1">{currentTip.title}</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <h3 className="font-sans font-semibold text-foreground mb-1">{currentTip.title}</h3>
+          <p className="font-sans text-sm text-muted-foreground leading-relaxed">
             {currentTip.description}
           </p>
         </div>
