@@ -113,9 +113,9 @@ export default function ClubPage() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-semibold">{club.name}</h1>
+              <h1 className="text-xl font-semibold font-sans">{club.name}</h1>
               {club.description && (
-                <p className="text-sm text-muted-foreground">{club.description}</p>
+                <p className="text-sm text-muted-foreground font-sans">{club.description}</p>
               )}
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function ClubPage() {
           <section className="space-y-4">
             <div className="flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold">Currently Reading</h2>
+              <h2 className="text-lg font-semibold font-sans">Currently Reading</h2>
             </div>
             <div className="p-4 rounded-lg border bg-primary/5 border-primary/20">
               <div className="flex gap-4">
@@ -184,7 +184,7 @@ export default function ClubPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ThumbsUp className="w-5 h-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Suggestions</h2>
+              <h2 className="text-lg font-semibold font-sans">Suggestions</h2>
               <Badge variant="outline">{suggestedBooks.length}</Badge>
             </div>
             <AddSuggestionDialog
@@ -225,7 +225,7 @@ export default function ClubPage() {
           <section className="space-y-4">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-600" />
-              <h2 className="text-lg font-semibold">Past Reads</h2>
+              <h2 className="text-lg font-semibold font-sans">Past Reads</h2>
               <Badge variant="outline">{pastReads.length}</Badge>
             </div>
             <div className="grid gap-3">
