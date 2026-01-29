@@ -1,24 +1,39 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useClubDetails } from '@/hooks/useBookClubs';
+import { useClubDetails, useBookClubs } from '@/hooks/useBookClubs';
 import { useBookSearch, getCoverUrl } from '@/hooks/useBookSearch';
 import { useBooks } from '@/hooks/useBooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
   DialogTrigger,
-  DialogDescription 
+  DialogDescription,
+  DialogFooter 
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { 
@@ -37,7 +52,9 @@ import {
   Trash2,
   Play,
   Library,
-  BookMarked
+  BookMarked,
+  Settings,
+  Pencil
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GoogleBook } from '@/types/book';
@@ -48,6 +65,7 @@ export default function ClubPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { updateClub, deleteClub } = useBookClubs();
   const {
     club,
     members,
@@ -58,11 +76,16 @@ export default function ClubPage() {
     vote,
     updateSuggestionStatus,
     removeSuggestion,
+    updateClubDetails,
   } = useClubDetails(clubId);
 
   const { addBook, books } = useBooks();
   const [copied, setCopied] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Check if a book is already on the user's shelf
   const isOnShelf = (title: string, author: string) => {
@@ -121,6 +144,29 @@ export default function ClubPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleOpenEditDialog = () => {
+    setEditName(club.name);
+    setEditDescription(club.description || '');
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateClub = async () => {
+    if (!clubId || !editName.trim()) return;
+    setIsUpdating(true);
+    const success = await updateClub(clubId, editName.trim(), editDescription.trim() || undefined);
+    setIsUpdating(false);
+    if (success) {
+      updateClubDetails(editName.trim(), editDescription.trim() || null);
+      setEditDialogOpen(false);
+    }
+  };
+
+  const handleDeleteClub = async () => {
+    if (!clubId) return;
+    await deleteClub(clubId);
+    navigate('/');
+  };
+
   const currentlyReading = suggestions.find((s) => s.status === 'reading');
   const suggestedBooks = suggestions
     .filter((s) => s.status === 'suggested')
@@ -152,9 +198,87 @@ export default function ClubPage() {
               {copied ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
               {copied ? 'Copied!' : 'Invite'}
             </Button>
+            {isOwner && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-popover">
+                  <DropdownMenuItem onClick={handleOpenEditDialog}>
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Edit Club
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Club
+                      </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete "{club.name}"?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete the club, all suggestions, and votes. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteClub} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </header>
+
+      {/* Edit Club Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-sans text-lg font-semibold">Edit Club</DialogTitle>
+            <DialogDescription>Update your club's name and description</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Club Name *</Label>
+              <Input
+                id="edit-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                maxLength={50}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description (optional)</Label>
+              <Textarea
+                id="edit-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                maxLength={200}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleUpdateClub} disabled={!editName.trim() || isUpdating}>
+              {isUpdating ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <main className="container py-8 space-y-8">
         {/* Currently Reading Section */}

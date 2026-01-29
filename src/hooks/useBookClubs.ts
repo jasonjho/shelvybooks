@@ -270,6 +270,44 @@ export function useBookClubs() {
     [user, clubs, toast]
   );
 
+  const updateClub = useCallback(
+    async (clubId: string, name: string, description?: string): Promise<boolean> => {
+      if (!user) return false;
+
+      const { error } = await supabase
+        .from('book_clubs')
+        .update({
+          name,
+          description: description || null,
+        })
+        .eq('id', clubId);
+
+      if (error) {
+        console.error('Error updating club:', error);
+        toast({
+          title: 'Error updating club',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return false;
+      }
+
+      setClubs((prev) =>
+        prev.map((c) =>
+          c.id === clubId ? { ...c, name, description: description || null } : c
+        )
+      );
+
+      toast({
+        title: 'Club updated',
+        description: `"${name}" has been updated.`,
+      });
+
+      return true;
+    },
+    [user, toast]
+  );
+
   const deleteClub = useCallback(
     async (clubId: string) => {
       if (!user) return;
@@ -307,6 +345,7 @@ export function useBookClubs() {
     createClub,
     joinClub,
     leaveClub,
+    updateClub,
     deleteClub,
   };
 }
@@ -580,6 +619,15 @@ export function useClubDetails(clubId: string | undefined) {
     [user, toast]
   );
 
+  const updateClubDetails = useCallback(
+    (name: string, description: string | null) => {
+      setClub((prev) =>
+        prev ? { ...prev, name, description } : prev
+      );
+    },
+    []
+  );
+
   return {
     club,
     members,
@@ -590,6 +638,7 @@ export function useClubDetails(clubId: string | undefined) {
     vote,
     updateSuggestionStatus,
     removeSuggestion,
+    updateClubDetails,
     refetch: fetchClubData,
   };
 }
