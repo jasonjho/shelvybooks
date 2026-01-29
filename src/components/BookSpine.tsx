@@ -62,8 +62,8 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
         )}
       </div>
       
-      {/* Hover tooltip - now interactive */}
-      <div className="absolute -top-28 left-1/2 -translate-x-1/2 opacity-0 group-hover/book:opacity-100 transition-opacity duration-200 z-30 pb-4">
+      {/* Hover tooltip - hidden on mobile (tap opens detail dialog instead), visible on desktop */}
+      <div className="absolute -top-24 sm:-top-28 left-1/2 -translate-x-1/2 opacity-0 group-hover/book:opacity-100 transition-opacity duration-200 z-30 pb-4 hidden sm:block pointer-events-none sm:pointer-events-auto">
         <div className="bg-popover text-popover-foreground px-4 py-3 rounded-lg text-sm min-w-[200px] max-w-[280px] shadow-xl border border-border">
           <p className="font-medium leading-snug">{book.title}</p>
           <p className="text-muted-foreground mt-1.5 text-xs">{book.author}</p>

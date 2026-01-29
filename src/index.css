@@ -807,6 +807,7 @@
   /* Mobile bookshelf styles */
   .mobile-bookcase {
     @apply p-4;
+    overflow: visible;
   }
 
   .mobile-shelf-list {
@@ -838,7 +839,8 @@
   .mini-shelf-content {
     @apply absolute bottom-6 left-0 right-0 flex items-end justify-center gap-1;
     z-index: 2;
-   padding: 0 3rem;
+    padding: 0 3rem;
+    overflow: visible;
   }
 
   /* Scale down books on mobile */
