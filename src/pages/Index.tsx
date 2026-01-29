@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Bookshelf } from '@/components/Bookshelf';
 import { MobileBookshelf } from '@/components/MobileBookshelf';
-import { SkinPicker } from '@/components/SkinPicker';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { ShelfControls } from '@/components/ShelfControls';
 import { AddBookDialog } from '@/components/AddBookDialog';
@@ -260,9 +259,6 @@ export default function Index() {
                   <DiscoverCollections onAddBook={addBook} />
                 )}
 
-                <div className="hidden sm:flex items-center justify-end mb-6">
-                  <SkinPicker currentSkin={shelfSkin} onSkinChange={setShelfSkin} />
-                </div>
 
                 {isMobile ? (
                   <MobileBookshelf
