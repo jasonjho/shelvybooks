@@ -14,6 +14,7 @@ interface BookshelfProps {
   activeFilters: BookStatus[];
   onMoveBook?: (id: string, status: BookStatus) => void;
   onRemoveBook?: (id: string) => void;
+  onUpdateCompletedAt?: (id: string, completedAt: string | null) => void;
   getBookClubInfo?: (title: string, author: string) => ClubInfo[];
 }
 
@@ -244,7 +245,7 @@ function ShelfRow({
   );
 }
 
-export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, getBookClubInfo }: BookshelfProps) {
+export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo }: BookshelfProps) {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [noteBook, setNoteBook] = useState<Book | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -362,6 +363,7 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
         book={selectedBook}
         open={!!selectedBook}
         onOpenChange={(open) => !open && setSelectedBook(null)}
+        onUpdateCompletedAt={onUpdateCompletedAt}
       />
 
       {/* Book note dialog */}

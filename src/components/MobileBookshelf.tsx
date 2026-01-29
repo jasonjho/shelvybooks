@@ -12,6 +12,7 @@ interface MobileBookshelfProps {
   activeFilters: BookStatus[];
   onMoveBook?: (id: string, status: BookStatus) => void;
   onRemoveBook?: (id: string) => void;
+  onUpdateCompletedAt?: (id: string, completedAt: string | null) => void;
   getBookClubInfo?: (title: string, author: string) => ClubInfo[];
 }
 
@@ -227,6 +228,7 @@ export function MobileBookshelf({
   activeFilters, 
   onMoveBook, 
   onRemoveBook,
+  onUpdateCompletedAt,
   getBookClubInfo,
 }: MobileBookshelfProps) {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -311,6 +313,7 @@ export function MobileBookshelf({
         book={selectedBook}
         open={!!selectedBook}
         onOpenChange={(open) => !open && setSelectedBook(null)}
+        onUpdateCompletedAt={onUpdateCompletedAt}
       />
     </div>
   );

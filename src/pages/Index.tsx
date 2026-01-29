@@ -90,6 +90,7 @@ export default function Index() {
     addBook, 
     removeBook, 
     moveBook,
+    updateBookCompletedAt,
   } = useBooks();
 
   // Get club books for highlighting
@@ -275,6 +276,7 @@ export default function Index() {
                     activeFilters={activeFilters}
                     onMoveBook={user ? moveBook : undefined}
                     onRemoveBook={user ? removeBook : undefined}
+                    onUpdateCompletedAt={user ? updateBookCompletedAt : undefined}
                     getBookClubInfo={user ? getBookClubInfo : undefined}
                   />
                 ) : (
@@ -285,6 +287,7 @@ export default function Index() {
                     activeFilters={activeFilters}
                     onMoveBook={user ? moveBook : undefined}
                     onRemoveBook={user ? removeBook : undefined}
+                    onUpdateCompletedAt={user ? updateBookCompletedAt : undefined}
                     getBookClubInfo={user ? getBookClubInfo : undefined}
                   />
                 )}
