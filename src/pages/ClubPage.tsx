@@ -394,8 +394,8 @@ function AddSuggestionDialog({ open, onOpenChange, onAddSuggestion }: AddSuggest
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Suggest a Book</DialogTitle>
-          <DialogDescription>Search for a book to suggest to the club</DialogDescription>
+          <DialogTitle className="font-sans text-lg font-semibold">Suggest a Book</DialogTitle>
+          <DialogDescription className="sr-only">Search for a book to suggest to the club</DialogDescription>
         </DialogHeader>
 
         <div className="relative">
