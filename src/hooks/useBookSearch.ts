@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { GoogleBook } from '@/types/book';
 
 export function useBookSearch() {
@@ -6,7 +6,7 @@ export function useBookSearch() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const searchBooks = async (query: string) => {
+  const searchBooks = useCallback(async (query: string) => {
     if (!query.trim()) {
       setResults([]);
       return;
@@ -34,12 +34,12 @@ export function useBookSearch() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const clearResults = () => {
+  const clearResults = useCallback(() => {
     setResults([]);
     setError(null);
-  };
+  }, []);
 
   return {
     results,

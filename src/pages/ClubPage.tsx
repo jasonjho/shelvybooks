@@ -356,16 +356,17 @@ function AddSuggestionDialog({ open, onOpenChange, onAddSuggestion }: AddSuggest
   const { results, isLoading, searchBooks, clearResults } = useBookSearch();
 
   useEffect(() => {
+    if (query.length < 2) {
+      clearResults();
+      return;
+    }
+    
     const timer = setTimeout(() => {
-      if (query.length >= 2) {
-        searchBooks(query);
-      } else {
-        clearResults();
-      }
+      searchBooks(query);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, searchBooks, clearResults]);
 
   const handleSelect = (book: GoogleBook) => {
     onAddSuggestion(
