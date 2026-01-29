@@ -252,6 +252,7 @@ export type Database = {
         Row: {
           author: string
           color: string
+          completed_at: string | null
           cover_url: string | null
           created_at: string
           id: string
@@ -263,6 +264,7 @@ export type Database = {
         Insert: {
           author: string
           color?: string
+          completed_at?: string | null
           cover_url?: string | null
           created_at?: string
           id?: string
@@ -274,6 +276,7 @@ export type Database = {
         Update: {
           author?: string
           color?: string
+          completed_at?: string | null
           cover_url?: string | null
           created_at?: string
           id?: string

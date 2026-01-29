@@ -67,6 +67,7 @@ export function useBooks() {
             coverUrl: row.cover_url || '',
             status: row.status as BookStatus,
             openLibraryKey: undefined,
+            completedAt: row.completed_at || undefined,
           }))
         );
       }
@@ -174,10 +175,17 @@ export function useBooks() {
       if (!user) return;
 
       const previousStatus = books.find(b => b.id === id)?.status;
+      const isNewlyCompleted = status === 'read' && previousStatus !== 'read';
+      const completedAt = isNewlyCompleted ? new Date().toISOString() : undefined;
+
+      const updateData: { status: BookStatus; completed_at?: string } = { status };
+      if (isNewlyCompleted) {
+        updateData.completed_at = completedAt;
+      }
 
       const { error } = await supabase
         .from('books')
-        .update({ status })
+        .update(updateData)
         .eq('id', id);
 
       if (error) {
@@ -191,11 +199,11 @@ export function useBooks() {
       }
 
       setBooks((prev) =>
-        prev.map((book) => (book.id === id ? { ...book, status } : book))
+        prev.map((book) => (book.id === id ? { ...book, status, completedAt: isNewlyCompleted ? completedAt : book.completedAt } : book))
       );
 
       // Trigger sparkle animation when marked as read
-      if (status === 'read' && previousStatus !== 'read') {
+      if (isNewlyCompleted) {
         markAsCompleted(id);
       }
     },
