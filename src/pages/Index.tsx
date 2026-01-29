@@ -11,12 +11,14 @@ import { AuthButton } from '@/components/AuthButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MagicRecommender } from '@/components/MagicRecommender';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
+import { SeasonalDecorations } from '@/components/SeasonalDecorations';
 import { useBooks } from '@/hooks/useBooks';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { BookStatus, SortOption, Book } from '@/types/book';
+import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
 import { demoBooks } from '@/data/demoBooks';
 import { Library, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Seeded random for consistent shuffle per session
 function seededShuffle<T>(array: T[], seed: number): T[] {
@@ -112,10 +114,23 @@ export default function Index() {
     setSortOption('random');
   }, []);
 
+  // Get background class based on theme
+  const getBackgroundClass = (theme: BackgroundTheme) => {
+    switch (theme) {
+      case 'library': return 'bg-theme-library';
+      case 'cozy': return 'bg-theme-cozy';
+      case 'space': return 'bg-theme-space';
+      default: return 'office-wall';
+    }
+  };
+
   return (
-    <div className="min-h-screen office-wall">
+    <div className={cn("min-h-screen", getBackgroundClass(settings.backgroundTheme))}>
+      {/* Seasonal decorations */}
+      <SeasonalDecorations theme={settings.seasonalTheme} />
+
       {/* Ambient top light */}
-      {settings.showAmbientLight && (
+      {settings.showAmbientLight && settings.backgroundTheme === 'office' && (
         <div 
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] pointer-events-none transition-opacity duration-500"
           style={{

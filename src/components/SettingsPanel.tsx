@@ -1,4 +1,4 @@
-import { ShelfSettings, DecorDensity, ShelfSkin } from '@/types/book';
+import { ShelfSettings, DecorDensity, ShelfSkin, BackgroundTheme, SeasonalTheme } from '@/types/book';
 import {
   Popover,
   PopoverContent,
@@ -7,7 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Settings, Lamp, Trees, BookmarkMinus, Sparkles, Check } from 'lucide-react';
+import { Settings, Lamp, Trees, BookmarkMinus, Sparkles, Check, Image, Snowflake } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SettingsPanelProps {
@@ -57,6 +57,22 @@ const densityOptions: { value: DecorDensity; label: string; description: string 
   { value: 'cozy', label: 'Cozy', description: 'Lush, lived-in feel' },
 ];
 
+const backgroundOptions: { value: BackgroundTheme; label: string; emoji: string }[] = [
+  { value: 'office', label: 'Office', emoji: '🏢' },
+  { value: 'library', label: 'Library', emoji: '📚' },
+  { value: 'cozy', label: 'Cozy Room', emoji: '🏠' },
+  { value: 'space', label: 'Space', emoji: '🚀' },
+];
+
+const seasonalOptions: { value: SeasonalTheme; label: string; emoji: string }[] = [
+  { value: 'auto', label: 'Auto', emoji: '🔄' },
+  { value: 'none', label: 'None', emoji: '❌' },
+  { value: 'winter', label: 'Winter', emoji: '❄️' },
+  { value: 'spring', label: 'Spring', emoji: '🌸' },
+  { value: 'summer', label: 'Summer', emoji: '☀️' },
+  { value: 'autumn', label: 'Autumn', emoji: '🍂' },
+];
+
 export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinChange }: SettingsPanelProps) {
   return (
     <Popover>
@@ -69,7 +85,7 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
           <Settings className="w-4 h-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="end">
+      <PopoverContent className="w-80 max-h-[80vh] overflow-y-auto" align="end">
         <div className="space-y-4">
           <div className="space-y-1">
             <h4 className="font-display font-medium text-sm">Shelf Customization</h4>
@@ -136,6 +152,58 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
               </div>
             </div>
           )}
+
+          {/* Background Theme */}
+          <div className="space-y-2 pt-2 border-t border-border">
+            <div className="flex items-center gap-2">
+              <Image className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Background</span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {backgroundOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => onSettingsChange({ backgroundTheme: option.value })}
+                  className={cn(
+                    "flex flex-col items-center gap-1 p-2 rounded-md text-xs transition-colors",
+                    settings.backgroundTheme === option.value
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary/50 hover:bg-secondary text-secondary-foreground"
+                  )}
+                  title={option.label}
+                >
+                  <span className="text-base">{option.emoji}</span>
+                  <span className="font-medium text-[10px]">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Seasonal Decorations */}
+          <div className="space-y-2 pt-2 border-t border-border">
+            <div className="flex items-center gap-2">
+              <Snowflake className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Seasonal Flair</span>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {seasonalOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => onSettingsChange({ seasonalTheme: option.value })}
+                  className={cn(
+                    "flex flex-col items-center gap-1 p-2 rounded-md text-xs transition-colors",
+                    settings.seasonalTheme === option.value
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary/50 hover:bg-secondary text-secondary-foreground"
+                  )}
+                  title={option.label}
+                >
+                  <span className="text-base">{option.emoji}</span>
+                  <span className="font-medium text-[10px]">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Wood Finish - for mobile users */}
           {currentSkin && onSkinChange && (

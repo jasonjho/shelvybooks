@@ -3,6 +3,7 @@ import { Book, BookStatus, ShelfSkin, ShelfSettings } from '@/types/book';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useBookAnimations } from '@/contexts/BookAnimationContext';
 
 const SKIN_KEY = 'bookshelf-skin';
 const SETTINGS_KEY = 'bookshelf-settings';
@@ -13,11 +14,14 @@ const defaultSettings: ShelfSettings = {
   showAmbientLight: true,
   showWoodGrain: true,
   decorDensity: 'balanced',
+  backgroundTheme: 'office',
+  seasonalTheme: 'auto',
 };
 
 export function useBooks() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { markAsAdded, markAsCompleted } = useBookAnimations();
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -125,12 +129,15 @@ export function useBooks() {
         },
       ]);
 
+      // Trigger wobble animation
+      markAsAdded(data.id);
+
       toast({
         title: 'Book added',
         description: `"${book.title}" has been added to your shelf.`,
       });
     },
-    [user, toast]
+    [user, toast, markAsAdded]
   );
 
   const removeBook = useCallback(
@@ -166,6 +173,8 @@ export function useBooks() {
     async (id: string, status: BookStatus) => {
       if (!user) return;
 
+      const previousStatus = books.find(b => b.id === id)?.status;
+
       const { error } = await supabase
         .from('books')
         .update({ status })
@@ -184,8 +193,13 @@ export function useBooks() {
       setBooks((prev) =>
         prev.map((book) => (book.id === id ? { ...book, status } : book))
       );
+
+      // Trigger sparkle animation when marked as read
+      if (status === 'read' && previousStatus !== 'read') {
+        markAsCompleted(id);
+      }
     },
-    [user, toast]
+    [user, toast, books, markAsCompleted]
   );
 
   const updateBookCover = useCallback(
