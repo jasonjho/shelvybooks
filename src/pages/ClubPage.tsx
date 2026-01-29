@@ -310,7 +310,7 @@ export default function ClubPage() {
                       {currentlyReading.voteCount} votes
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 mt-3">
+                  <div className="flex items-center gap-2 mt-3 flex-wrap">
                     <Button
                       variant="outline"
                       size="sm"
@@ -321,14 +321,37 @@ export default function ClubPage() {
                       {isOnShelf(currentlyReading.title, currentlyReading.author) ? 'On Shelf' : 'Add to Shelf'}
                     </Button>
                     {isOwner && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateSuggestionStatus(currentlyReading.id, 'read')}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1.5" />
-                        Mark as Read
-                      </Button>
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => updateSuggestionStatus(currentlyReading.id, 'read')}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1.5" />
+                          Mark as Read
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="bg-popover">
+                            <DropdownMenuItem onClick={() => updateSuggestionStatus(currentlyReading.id, 'suggested')}>
+                              <ThumbsUp className="w-4 h-4 mr-2" />
+                              Back to Suggestions
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => removeSuggestion(currentlyReading.id)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Remove
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </>
                     )}
                   </div>
                 </div>
