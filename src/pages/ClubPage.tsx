@@ -220,7 +220,7 @@ export default function ClubPage() {
                     <Settings className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-popover">
+                <DropdownMenuContent align="end" className="bg-popover font-sans">
                   <DropdownMenuItem onClick={handleOpenEditDialog}>
                     <Pencil className="w-4 h-4 mr-2" />
                     Edit Club
