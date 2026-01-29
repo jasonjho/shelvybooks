@@ -167,14 +167,11 @@ export function useBookClubs() {
         return null;
       }
 
-      // Find club by invite code
+      // Use secure RPC function to lookup club by invite code
       const { data: clubData, error: clubError } = await supabase
-        .from('book_clubs')
-        .select('*')
-        .eq('invite_code', inviteCode)
-        .maybeSingle();
+        .rpc('lookup_club_by_invite_code', { _invite_code: inviteCode });
 
-      if (clubError || !clubData) {
+      if (clubError || !clubData || clubData.length === 0) {
         toast({
           title: 'Club not found',
           description: 'Check the invite code and try again.',
@@ -183,26 +180,29 @@ export function useBookClubs() {
         return null;
       }
 
+      const foundClub = clubData[0];
+
       // Check if already a member
       const { data: existingMember } = await supabase
         .from('book_club_members')
         .select('id')
-        .eq('club_id', clubData.id)
+        .eq('club_id', foundClub.id)
         .eq('user_id', user.id)
         .maybeSingle();
 
       if (existingMember) {
         toast({
           title: 'Already a member',
-          description: `You're already in "${clubData.name}"!`,
+          description: `You're already in "${foundClub.name}"!`,
         });
+        // Return minimal info since we don't have full club data from the secure lookup
         return {
-          id: clubData.id,
-          name: clubData.name,
-          description: clubData.description,
-          inviteCode: clubData.invite_code,
-          ownerId: clubData.owner_id,
-          createdAt: clubData.created_at,
+          id: foundClub.id,
+          name: foundClub.name,
+          description: null,
+          inviteCode: inviteCode,
+          ownerId: '', // Not exposed by secure lookup
+          createdAt: '',
         };
       }
 
@@ -210,7 +210,7 @@ export function useBookClubs() {
       const { error: joinError } = await supabase
         .from('book_club_members')
         .insert({
-          club_id: clubData.id,
+          club_id: foundClub.id,
           user_id: user.id,
           role: 'member',
         });
@@ -225,20 +225,27 @@ export function useBookClubs() {
         return null;
       }
 
+      // Now that we're a member, we can fetch full club details
+      const { data: fullClubData } = await supabase
+        .from('book_clubs')
+        .select('*')
+        .eq('id', foundClub.id)
+        .single();
+
       const newClub: BookClub = {
-        id: clubData.id,
-        name: clubData.name,
-        description: clubData.description,
-        inviteCode: clubData.invite_code,
-        ownerId: clubData.owner_id,
-        createdAt: clubData.created_at,
+        id: foundClub.id,
+        name: foundClub.name,
+        description: fullClubData?.description || null,
+        inviteCode: fullClubData?.invite_code || inviteCode,
+        ownerId: fullClubData?.owner_id || '',
+        createdAt: fullClubData?.created_at || '',
       };
 
       setClubs((prev) => [newClub, ...prev]);
 
       toast({
         title: 'Joined club!',
-        description: `Welcome to "${clubData.name}"!`,
+        description: `Welcome to "${foundClub.name}"!`,
       });
 
       return newClub;
