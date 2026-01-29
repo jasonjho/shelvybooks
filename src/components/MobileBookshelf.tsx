@@ -62,28 +62,26 @@ function generateMobileDecorPositions(
     
     if (decorationCount === 1) {
       // Single decoration: vary position based on row to avoid repetitive patterns
-      // Use 3 zones: start (pos 1), middle, end
-      const zone = Math.floor(placementSeed * 3);
+      // Use 2 zones: middle or end (never position 1 - shelves should start with books)
+      const zone = Math.floor(placementSeed * 2);
       if (zone === 0) {
-        pos = 1; // Before first book
-      } else if (zone === 1) {
-        pos = Math.max(1, Math.floor(bookCount / 2) + 1); // Middle-ish
+        pos = Math.max(2, Math.floor(bookCount / 2) + 1); // Middle-ish
       } else {
         pos = bookCount + 1; // After last book
       }
     } else {
-      // Multiple decorations: spread them out
+      // Multiple decorations: spread them out (never before first book)
       const avgSpacing = Math.max(config.minSpacing, Math.floor(bookCount / (decorationCount + 1)));
       const basePos = Math.floor((i + 1) * avgSpacing) + 1;
       const jitter = Math.floor((seededRandom(i * 3 + rowIndex) - 0.5) * 2);
-      pos = Math.max(1, Math.min(bookCount + 1, basePos + jitter));
+      pos = Math.max(2, Math.min(bookCount + 1, basePos + jitter)); // min 2, never before first book
     }
     
-    // Find available position
+    // Find available position (never position 1)
     let found = false;
     for (let d = 0; d <= bookCount + 1 && !found; d++) {
       for (const candidate of [pos + d, pos - d]) {
-        if (candidate < 1 || candidate > bookCount + 1) continue;
+        if (candidate < 2 || candidate > bookCount + 1) continue; // min 2 to never start shelf
         if (usedPositions.has(candidate)) continue;
         
         const tooClose = [...usedPositions].some(p => Math.abs(p - candidate) < config.minSpacing);
@@ -153,16 +151,7 @@ function MiniShelfRow({
   
   let decorIndex = 0;
   
-  // Add decorations that go before the first book (position 1)
-  while (decorIndex < decorPositions.length && decorPositions[decorIndex].position === 1) {
-    const dec = decorPositions[decorIndex];
-    items.push({ 
-      type: 'decoration', 
-      decorationType: dec.type, 
-      seed: dec.seed 
-    });
-    decorIndex++;
-  }
+  // Note: decorations never go at position 1 (shelves always start with books)
   
   books.forEach((book, bookIndex) => {
     items.push({ type: 'book', book });
