@@ -12,6 +12,7 @@ import { MagicRecommender } from '@/components/MagicRecommender';
 import { ClubsDropdown } from '@/components/ClubsDropdown';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { OnboardingTips } from '@/components/OnboardingTips';
+import { DailyQuote } from '@/components/DailyQuote';
 import { Button } from '@/components/ui/button';
 
 import { useBooks } from '@/hooks/useBooks';
@@ -243,6 +244,9 @@ export default function Index() {
               </div>
             ) : (
               <>
+                {/* Daily Quote */}
+                {user && <DailyQuote onAddBook={addBook} existingBooks={allBooks} />}
+
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                   <ShelfControls
                     activeFilters={activeFilters}
