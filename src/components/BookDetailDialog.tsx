@@ -9,6 +9,8 @@ import { BookInteractions } from '@/components/BookInteractions';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
+import { format } from 'date-fns';
+import { CalendarCheck } from 'lucide-react';
 
 interface BookDetailDialogProps {
   book: Book | null;
@@ -51,6 +53,15 @@ export function BookDetailDialog({ book, open, onOpenChange }: BookDetailDialogP
           {/* Book info */}
           <div className="flex-1 min-w-0">
             <p className="text-muted-foreground text-sm">{book.author}</p>
+            
+            {/* Completed date */}
+            {book.status === 'read' && book.completedAt && (
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                <CalendarCheck className="w-3.5 h-3.5" />
+                <span>Finished {format(new Date(book.completedAt), 'MMM d, yyyy')}</span>
+              </div>
+            )}
+            
             <a
               href={amazonUrl}
               target="_blank"

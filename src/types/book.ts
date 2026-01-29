@@ -25,6 +25,7 @@ export interface Book {
   status: BookStatus;
   openLibraryKey?: string;
   createdAt?: string;
+  completedAt?: string;
 }
 
 export interface GoogleBook {
