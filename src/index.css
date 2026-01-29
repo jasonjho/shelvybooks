@@ -810,7 +810,8 @@
   }
 
   .mobile-shelf-list {
-    @apply flex flex-col gap-4;
+    @apply flex flex-col gap-4 pt-24;
+    overflow: visible;
   }
 
   .mini-shelf {
@@ -821,6 +822,7 @@
       transparent 30%
     );
     border-radius: 4px;
+    overflow: visible;
   }
 
   .mini-shelf-back {
