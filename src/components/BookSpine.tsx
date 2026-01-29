@@ -70,14 +70,18 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
     // Detect placeholder images:
     // 1. 1x1 placeholders (common when a cover is missing)
     // 2. Google's "image not available" placeholders (various sizes: 120x192, 128x188, etc.)
+    // 3. Google Books URLs without edge=curl often return "no cover" images
     const isOneByOne = naturalWidth <= 1 && naturalHeight <= 1;
     const isGooglePlaceholder = 
       (naturalWidth === 120 && naturalHeight === 192) ||
       (naturalWidth === 128 && naturalHeight === 188) ||
       (naturalWidth === 128 && naturalHeight === 196) ||
       (naturalWidth === 128 && naturalHeight === 197);
+    const isGoogleNoCover = 
+      img.src.includes('books.google.com') && 
+      !img.src.includes('edge=curl');
 
-    if (isOneByOne || isGooglePlaceholder) {
+    if (isOneByOne || isGooglePlaceholder || isGoogleNoCover) {
       setImageError(true);
       setImageLoaded(true);
       return;
