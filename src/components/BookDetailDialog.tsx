@@ -16,7 +16,7 @@ interface BookDetailDialogProps {
 }
 
 export function BookDetailDialog({ book, open, onOpenChange }: BookDetailDialogProps) {
-  const { user } = useAuth();
+  const { setAuthDialogOpen } = useAuth();
   
   if (!book) return null;
 
@@ -64,7 +64,13 @@ export function BookDetailDialog({ book, open, onOpenChange }: BookDetailDialogP
         {isDemoBook ? (
           <div className="text-center py-4 border-t border-border">
             <p className="text-muted-foreground text-sm">
-              Sign in to like books and leave comments
+              <button
+                onClick={() => setAuthDialogOpen(true)}
+                className="text-primary hover:underline font-medium"
+              >
+                Sign in
+              </button>
+              {' '}to like books and leave comments
             </p>
           </div>
         ) : (
