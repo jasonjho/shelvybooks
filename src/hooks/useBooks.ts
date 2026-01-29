@@ -231,6 +231,37 @@ export function useBooks() {
     [user]
   );
 
+  const updateBookCompletedAt = useCallback(
+    async (id: string, completedAt: string | null) => {
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('books')
+        .update({ completed_at: completedAt })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating completed date:', error);
+        toast({
+          title: 'Error updating date',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      setBooks((prev) =>
+        prev.map((book) => (book.id === id ? { ...book, completedAt: completedAt || undefined } : book))
+      );
+
+      toast({
+        title: 'Date updated',
+        description: 'Completion date has been updated.',
+      });
+    },
+    [user, toast]
+  );
+
   // Handle cover updates from the auto-refresh hook
   const handleCoverUpdated = useCallback((id: string, coverUrl: string) => {
     setBooks((prev) =>
@@ -266,6 +297,7 @@ export function useBooks() {
     removeBook,
     moveBook,
     updateBookCover,
+    updateBookCompletedAt,
     getBooksByStatus,
     missingCoverCount,
     triggerBatchRefresh,
