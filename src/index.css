@@ -813,6 +813,7 @@
   .mobile-shelf-list {
     @apply flex flex-col gap-3;
     overflow: visible;
+    position: relative;
   }
 
   .mobile-shelf-list > .mini-shelf:first-child {
@@ -828,6 +829,13 @@
     );
     border-radius: 4px;
     overflow: visible;
+    z-index: 0;
+  }
+
+  /* Ensure a lifted book isn't visually "tucked under" adjacent shelves */
+  .mini-shelf:hover,
+  .mini-shelf:focus-within {
+    z-index: 40;
   }
 
   .mini-shelf-back {
@@ -855,7 +863,7 @@
 
   /* Reduce hover lift on mobile to prevent clipping */
   .mini-shelf .book-spine:hover {
-    transform: translateY(-4px) rotateY(-3deg) rotateX(1deg);
+    transform: translateY(-6px);
   }
 
   /* Scale down decorations on mobile */
