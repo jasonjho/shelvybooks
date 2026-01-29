@@ -302,8 +302,8 @@ export default function ClubPage() {
                   </div>
                 )}
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{currentlyReading.title}</h3>
-                  <p className="text-muted-foreground">{currentlyReading.author}</p>
+                  <h3 className="font-semibold text-lg font-sans">{currentlyReading.title}</h3>
+                  <p className="text-muted-foreground font-sans">{currentlyReading.author}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <ThumbsUp className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
@@ -406,8 +406,8 @@ export default function ClubPage() {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{book.title}</p>
-                    <p className="text-sm text-muted-foreground truncate">{book.author}</p>
+                    <p className="font-medium truncate font-sans">{book.title}</p>
+                    <p className="text-sm text-muted-foreground truncate font-sans">{book.author}</p>
                   </div>
                   <Badge variant="secondary" className="shrink-0">
                     <CheckCircle className="w-3 h-3 mr-1" />
@@ -469,8 +469,8 @@ function SuggestionCard({
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <p className="font-medium truncate">{suggestion.title}</p>
-        <p className="text-sm text-muted-foreground truncate">{suggestion.author}</p>
+        <p className="font-medium truncate font-sans">{suggestion.title}</p>
+        <p className="text-sm text-muted-foreground truncate font-sans">{suggestion.author}</p>
       </div>
       <Button
         variant={suggestion.hasVoted ? 'default' : 'outline'}
