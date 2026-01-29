@@ -814,6 +814,7 @@
     @apply flex flex-col gap-3;
     overflow: visible;
     position: relative;
+    isolation: isolate;
   }
 
   .mobile-shelf-list > .mini-shelf:first-child {
@@ -829,13 +830,31 @@
     );
     border-radius: 4px;
     overflow: visible;
-    z-index: 0;
   }
 
-  /* Ensure a lifted book isn't visually "tucked under" adjacent shelves */
-  .mini-shelf:hover,
-  .mini-shelf:focus-within {
-    z-index: 40;
+  /* Stacking: upper shelves should be above lower shelves, otherwise lifted books look "tucked under" the next row */
+  .mobile-shelf-list > .mini-shelf {
+    position: relative;
+  }
+  .mobile-shelf-list > .mini-shelf:nth-child(1) { z-index: 30; }
+  .mobile-shelf-list > .mini-shelf:nth-child(2) { z-index: 29; }
+  .mobile-shelf-list > .mini-shelf:nth-child(3) { z-index: 28; }
+  .mobile-shelf-list > .mini-shelf:nth-child(4) { z-index: 27; }
+  .mobile-shelf-list > .mini-shelf:nth-child(5) { z-index: 26; }
+  .mobile-shelf-list > .mini-shelf:nth-child(6) { z-index: 25; }
+  .mobile-shelf-list > .mini-shelf:nth-child(7) { z-index: 24; }
+  .mobile-shelf-list > .mini-shelf:nth-child(8) { z-index: 23; }
+  .mobile-shelf-list > .mini-shelf:nth-child(9) { z-index: 22; }
+  .mobile-shelf-list > .mini-shelf:nth-child(10) { z-index: 21; }
+  .mobile-shelf-list > .mini-shelf:nth-child(11) { z-index: 20; }
+  .mobile-shelf-list > .mini-shelf:nth-child(12) { z-index: 19; }
+  .mobile-shelf-list > .mini-shelf:nth-child(13) { z-index: 18; }
+  .mobile-shelf-list > .mini-shelf:nth-child(14) { z-index: 17; }
+  .mobile-shelf-list > .mini-shelf:nth-child(15) { z-index: 16; }
+
+  .mobile-shelf-list > .mini-shelf:hover,
+  .mobile-shelf-list > .mini-shelf:focus-within {
+    z-index: 50;
   }
 
   .mini-shelf-back {
