@@ -11,6 +11,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { MagicRecommender } from '@/components/MagicRecommender';
 import { ClubsDropdown } from '@/components/ClubsDropdown';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
+import { Button } from '@/components/ui/button';
 
 import { useBooks } from '@/hooks/useBooks';
 import { useClubBooks } from '@/hooks/useBookClubs';
@@ -207,10 +208,19 @@ export default function Index() {
 
         {/* Not signed in message */}
         {!authLoading && !user && (
-          <div className="py-4 mb-4">
+          <div className="py-4 mb-4 space-y-3">
             <p className="text-foreground/80 text-base">
-              <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites, and <span className="text-amber-700 dark:text-amber-500 font-medium">join Book Clubs</span> with friends. <button onClick={() => setAuthDialogOpen(true)} className="text-primary font-medium cursor-pointer hover:underline">Sign in</button> to build your own shelf — here's a preview:
+              <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites, and <span className="text-amber-700 dark:text-amber-500 font-medium">join Book Clubs</span> with friends.
             </p>
+            <div className="flex items-center gap-3">
+              <Button 
+                onClick={() => setAuthDialogOpen(true)}
+                className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md"
+              >
+                Sign in to start your shelf
+              </Button>
+              <span className="text-muted-foreground text-sm">Here's a preview below:</span>
+            </div>
           </div>
         )}
 
