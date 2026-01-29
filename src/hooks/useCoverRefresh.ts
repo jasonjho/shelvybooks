@@ -13,14 +13,15 @@ export function useCoverRefresh(
   onCoverUpdated: (id: string, coverUrl: string) => void
 ) {
   const { user } = useAuth();
-  const refreshedIds = useRef<Set<string>>(new Set());
+  const refreshedIds = useRef(new Set<string>());
 
   // Find books with missing covers that haven't been attempted yet
   const getMissingCoverBooks = useCallback(() => {
+    const attempted = refreshedIds.current;
     return books.filter(
       (book) =>
         (!book.coverUrl || book.coverUrl === '' || book.coverUrl === '/placeholder.svg') &&
-        !refreshedIds.current.has(book.id)
+        !attempted.has(book.id)
     );
   }, [books]);
 
