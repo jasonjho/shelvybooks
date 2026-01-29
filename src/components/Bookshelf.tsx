@@ -16,6 +16,8 @@ interface BookshelfProps {
   onRemoveBook?: (id: string) => void;
   onUpdateCompletedAt?: (id: string, completedAt: string | null) => void;
   getBookClubInfo?: (title: string, author: string) => ClubInfo[];
+  /** External handler for book selection - when set, clicks open this instead of internal dialog */
+  onSelectBook?: (book: Book) => void;
 }
 
 function Bookend() {
@@ -245,11 +247,15 @@ function ShelfRow({
   );
 }
 
-export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo }: BookshelfProps) {
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo, onSelectBook }: BookshelfProps) {
+  const [internalSelectedBook, setInternalSelectedBook] = useState<Book | null>(null);
   const [noteBook, setNoteBook] = useState<Book | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [booksPerRow, setBooksPerRow] = useState(8);
+
+  // Use external handler if provided, otherwise use internal state
+  const handleSelectBook = onSelectBook || setInternalSelectedBook;
+  const selectedBook = onSelectBook ? null : internalSelectedBook;
 
   // Get all book IDs for fetching notes
   const bookIds = useMemo(() => books.map((b) => b.id), [books]);
@@ -351,20 +357,22 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
           activeFilters={activeFilters}
           onMoveBook={onMoveBook}
           onRemoveBook={onRemoveBook}
-          onSelectBook={setSelectedBook}
+          onSelectBook={handleSelectBook}
           getBookClubInfo={getBookClubInfo}
           notes={notes}
           onAddNote={setNoteBook}
         />
       ))}
 
-      {/* Book detail dialog */}
-      <BookDetailDialog
-        book={selectedBook}
-        open={!!selectedBook}
-        onOpenChange={(open) => !open && setSelectedBook(null)}
-        onUpdateCompletedAt={onUpdateCompletedAt}
-      />
+      {/* Book detail dialog - only render if using internal state */}
+      {!onSelectBook && (
+        <BookDetailDialog
+          book={selectedBook}
+          open={!!selectedBook}
+          onOpenChange={(open) => !open && setInternalSelectedBook(null)}
+          onUpdateCompletedAt={onUpdateCompletedAt}
+        />
+      )}
 
       {/* Book note dialog */}
       <BookNoteDialog
