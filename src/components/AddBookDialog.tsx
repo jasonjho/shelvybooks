@@ -125,6 +125,9 @@ export function AddBookDialog({ onAddBook, defaultStatus }: AddBookDialogProps) 
               {!isLoading && !error && results.length === 0 && query.length >= 2 && (
                 <div className="text-center py-8 space-y-3">
                   <p className="text-muted-foreground text-sm">No books found</p>
+                  <p className="text-xs text-muted-foreground/70">
+                    Tip: Try adding the author name for better results
+                  </p>
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -138,6 +141,12 @@ export function AddBookDialog({ onAddBook, defaultStatus }: AddBookDialogProps) 
                     Add manually
                   </Button>
                 </div>
+              )}
+
+              {!isLoading && !error && results.length > 0 && results.length < 4 && (
+                <p className="text-xs text-muted-foreground/70 text-center mb-3">
+                  Can't find your book? Try adding the author name
+                </p>
               )}
 
               {!isLoading && !error && query.length < 2 && (
