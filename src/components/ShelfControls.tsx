@@ -1,19 +1,13 @@
 import { BookStatus, SortOption } from '@/types/book';
-import { BookOpen, BookMarked, CheckCircle, Shuffle, ArrowDownAZ, Clock, Layers, Users } from 'lucide-react';
+import { BookOpen, BookMarked, CheckCircle, Shuffle, ArrowDownAZ, Clock, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-
-interface ClubFilterOption {
-  id: string;
-  name: string;
-}
 
 interface ShelfControlsProps {
   activeFilters: BookStatus[];
@@ -22,11 +16,6 @@ interface ShelfControlsProps {
   onSortChange: (sort: SortOption) => void;
   onShuffle: () => void;
   bookCounts: Record<BookStatus, number>;
-  // Optional club filter
-  clubFilter?: string | null;
-  onClubFilterChange?: (clubId: string | null) => void;
-  availableClubs?: ClubFilterOption[];
-  clubBookCount?: number;
 }
 
 const statusFilters: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -49,23 +38,14 @@ export function ShelfControls({
   onSortChange,
   onShuffle,
   bookCounts,
-  clubFilter,
-  onClubFilterChange,
-  availableClubs = [],
-  clubBookCount = 0,
 }: ShelfControlsProps) {
   const toggleFilter = (status: BookStatus) => {
     if (activeFilters.includes(status)) {
-      // Remove filter
       onFilterChange(activeFilters.filter((f) => f !== status));
     } else {
-      // Add filter
       onFilterChange([...activeFilters, status]);
     }
   };
-
-  const hasClubFilter = availableClubs.length > 0 && onClubFilterChange;
-  const activeClub = availableClubs.find((c) => c.id === clubFilter);
 
   const isAllSelected = activeFilters.length === 0;
   const totalBooks = bookCounts.reading + bookCounts['want-to-read'] + bookCounts.read;
@@ -104,45 +84,6 @@ export function ShelfControls({
           );
         })}
       </div>
-
-      {/* Club Filter Dropdown */}
-      {hasClubFilter && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant={clubFilter ? 'default' : 'outline'}
-              size="sm"
-              className="gap-2"
-            >
-              <Users className="w-4 h-4" />
-              <span className="hidden sm:inline">
-                {activeClub ? activeClub.name : 'Book Clubs'}
-              </span>
-              {clubFilter && (
-                <span className="text-xs opacity-70">({clubBookCount})</span>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="bg-popover min-w-[160px]">
-            <DropdownMenuItem
-              onClick={() => onClubFilterChange?.(null)}
-              className={cn('gap-2', !clubFilter && 'bg-accent')}
-            >
-              All Books
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            {availableClubs.map((club) => (
-              <DropdownMenuItem
-                key={club.id}
-                onClick={() => onClubFilterChange?.(club.id)}
-                className={cn('gap-2', clubFilter === club.id && 'bg-accent')}
-              >
-                {club.name}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
 
       {/* Sort Dropdown */}
       <DropdownMenu>

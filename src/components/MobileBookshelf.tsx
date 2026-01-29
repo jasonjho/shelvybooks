@@ -1,5 +1,5 @@
 import { Book, BookStatus, ShelfSkin, ShelfSettings, DecorDensity } from '@/types/book';
-import { BookSpine } from './BookSpine';
+import { BookSpine, ClubInfo } from './BookSpine';
 import { BookDetailDialog } from './BookDetailDialog';
 import { ShelfDecoration, DECORATION_TYPES, DecorationType } from './ShelfDecorations';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ interface MobileBookshelfProps {
   activeFilters: BookStatus[];
   onMoveBook?: (id: string, status: BookStatus) => void;
   onRemoveBook?: (id: string) => void;
+  getBookClubInfo?: (title: string, author: string) => ClubInfo[];
 }
 
 const BOOK_WIDTH = 55; // Width of mobile book covers
@@ -108,6 +109,7 @@ function MiniShelfRow({
   onMoveBook,
   onRemoveBook,
   onSelectBook,
+  getBookClubInfo,
 }: { 
   books: Book[]; 
   skin: ShelfSkin; 
@@ -118,6 +120,7 @@ function MiniShelfRow({
   onMoveBook?: (id: string, status: BookStatus) => void;
   onRemoveBook?: (id: string) => void;
   onSelectBook: (book: Book) => void;
+  getBookClubInfo?: (title: string, author: string) => ClubInfo[];
 }) {
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
   
@@ -161,6 +164,7 @@ function MiniShelfRow({
         {items.map((item, index) => {
           if (item.type === 'book') {
             const isGrayed = activeFilters.length > 0 && !activeFilters.includes(item.book.status);
+            const clubInfo = getBookClubInfo?.(item.book.title, item.book.author);
             return (
               <BookSpine
                 key={item.book.id}
@@ -170,6 +174,7 @@ function MiniShelfRow({
                 onSelect={() => onSelectBook(item.book)}
                 isInteractive={!!onMoveBook && !!onRemoveBook}
                 isGrayed={isGrayed}
+                clubInfo={clubInfo}
               />
             );
           }
@@ -199,7 +204,8 @@ export function MobileBookshelf({
   settings, 
   activeFilters, 
   onMoveBook, 
-  onRemoveBook 
+  onRemoveBook,
+  getBookClubInfo,
 }: MobileBookshelfProps) {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -273,6 +279,7 @@ export function MobileBookshelf({
               onMoveBook={onMoveBook}
               onRemoveBook={onRemoveBook}
               onSelectBook={setSelectedBook}
+              getBookClubInfo={getBookClubInfo}
             />
           ))}
         </div>

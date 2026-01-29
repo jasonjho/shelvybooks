@@ -78,7 +78,6 @@ export default function Index() {
   const [activeFilters, setActiveFilters] = useState<BookStatus[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
-  const [clubFilter, setClubFilter] = useState<string | null>(null);
   
   const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
   const { 
@@ -93,32 +92,29 @@ export default function Index() {
     moveBook,
   } = useBooks();
 
-  // Get club books for filtering
-  const { clubBooks, clubsWithBooks, isBookInClub } = useClubBooks();
+  // Get club books for highlighting
+  const { getBookClubs } = useClubBooks();
+
+  // Create a function that returns club info in the format BookSpine expects
+  const getBookClubInfo = useCallback((title: string, author: string) => {
+    const clubs = getBookClubs(title, author);
+    return clubs.map(c => ({
+      clubName: c.clubName,
+      status: c.status,
+    }));
+  }, [getBookClubs]);
 
   // Get all books - demo for guests, real for authenticated users
   const allBooks = useMemo(() => {
     return user ? books : demoBooks;
   }, [user, books]);
 
-  // Filter books by club if a club filter is active
-  const clubFilteredBooks = useMemo(() => {
-    if (!clubFilter) return allBooks;
-    return allBooks.filter((book) => isBookInClub(book.title, book.author, clubFilter));
-  }, [allBooks, clubFilter, isBookInClub]);
-
-  // Count of books matching current club filter
-  const clubBookCount = useMemo(() => {
-    if (!clubFilter) return 0;
-    return allBooks.filter((book) => isBookInClub(book.title, book.author, clubFilter)).length;
-  }, [allBooks, clubFilter, isBookInClub]);
-
-  // Sort books (use club-filtered books)
+  // Sort books
   const sortedBooks = useMemo(() => {
-    return sortBooks(clubFilteredBooks, sortOption, shuffleSeed);
-  }, [clubFilteredBooks, sortOption, shuffleSeed]);
+    return sortBooks(allBooks, sortOption, shuffleSeed);
+  }, [allBooks, sortOption, shuffleSeed]);
 
-  // Calculate book counts by status (from all books, not filtered)
+  // Calculate book counts by status
   const bookCounts = useMemo(() => {
     return {
       reading: allBooks.filter(b => b.status === 'reading').length,
@@ -247,10 +243,6 @@ export default function Index() {
                     onSortChange={setSortOption}
                     onShuffle={handleShuffle}
                     bookCounts={bookCounts}
-                    clubFilter={clubFilter}
-                    onClubFilterChange={user ? setClubFilter : undefined}
-                    availableClubs={user ? clubsWithBooks : []}
-                    clubBookCount={clubBookCount}
                   />
                   
                   {user && (
@@ -280,6 +272,7 @@ export default function Index() {
                     activeFilters={activeFilters}
                     onMoveBook={user ? moveBook : undefined}
                     onRemoveBook={user ? removeBook : undefined}
+                    getBookClubInfo={user ? getBookClubInfo : undefined}
                   />
                 ) : (
                   <Bookshelf
@@ -289,6 +282,7 @@ export default function Index() {
                     activeFilters={activeFilters}
                     onMoveBook={user ? moveBook : undefined}
                     onRemoveBook={user ? removeBook : undefined}
+                    getBookClubInfo={user ? getBookClubInfo : undefined}
                   />
                 )}
               </>
