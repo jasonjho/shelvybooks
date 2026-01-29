@@ -175,9 +175,9 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
           </div>
 
 
-          {/* Wood Finish - for mobile users */}
+          {/* Wood Finish */}
           {currentSkin && onSkinChange && (
-            <div className="space-y-2 pt-2 border-t border-border sm:hidden">
+            <div className="space-y-2 pt-2 border-t border-border">
               <span className="text-sm font-medium">Wood Finish</span>
               <div className="flex gap-2">
                 {skins.map((skin) => (
