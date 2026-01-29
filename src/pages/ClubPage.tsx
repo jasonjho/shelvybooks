@@ -356,13 +356,12 @@ function AddSuggestionDialog({ open, onOpenChange, onAddSuggestion }: AddSuggest
   const { results, isLoading, searchBooks, clearResults } = useBookSearch();
 
   useEffect(() => {
-    if (query.length < 2) {
-      clearResults();
-      return;
-    }
-    
     const timer = setTimeout(() => {
-      searchBooks(query);
+      if (query.length >= 2) {
+        searchBooks(query);
+      } else {
+        clearResults();
+      }
     }, 300);
 
     return () => clearTimeout(timer);
