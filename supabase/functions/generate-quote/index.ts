@@ -17,6 +17,16 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
+    // Add randomization to get different quotes each time
+    const genres = [
+      'literary fiction', 'fantasy', 'science fiction', 'romance', 
+      'philosophy', 'memoir', 'contemporary fiction', 'classic literature',
+      'dystopian', 'historical fiction', 'magical realism', 'adventure',
+      'mystery', 'poetry', 'drama', 'satire'
+    ];
+    const randomGenre = genres[Math.floor(Math.random() * genres.length)];
+    const randomSeed = Math.random().toString(36).substring(7);
+
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -33,10 +43,10 @@ serve(async (req) => {
           },
           {
             role: 'user',
-            content: 'Give me a memorable, inspiring quote from a classic or popular book. Choose something different and unexpected - not the most famous quotes everyone knows. Focus on books from various genres: literary fiction, fantasy, sci-fi, romance, philosophy, memoirs, or contemporary fiction. Make sure the quote is real and actually from the book you cite.'
+            content: `Give me a memorable quote from a ${randomGenre} book. Pick something unexpected and lesser-known - avoid the most famous quotes. Make sure the quote is real and actually from the book you cite. Random seed: ${randomSeed}`
           }
         ],
-        temperature: 1.0,
+        temperature: 1.2,
         max_tokens: 200,
       }),
     });
