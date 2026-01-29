@@ -413,21 +413,39 @@ export function useClubDetails(clubId: string | undefined) {
       .eq('club_id', clubId);
 
     if (memberData) {
-      // Get shelf settings for all members
-      const memberIds = memberData.map(m => m.user_id);
-      const { data: shelfData } = await supabase
+      const shelfMap = new Map<string, { displayName: string | null; shareId: string | null; isPublic: boolean }>();
+      
+      // For the current user, we can get their shelf settings directly (RLS allows this)
+      const { data: currentUserShelf } = await supabase
         .from('shelf_settings')
         .select('user_id, display_name, share_id, is_public')
-        .in('user_id', memberIds);
-
-      const shelfMap = new Map<string, { displayName: string | null; shareId: string | null; isPublic: boolean }>();
-      shelfData?.forEach(s => {
-        shelfMap.set(s.user_id, {
-          displayName: s.display_name,
-          shareId: s.share_id,
-          isPublic: s.is_public,
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (currentUserShelf) {
+        shelfMap.set(currentUserShelf.user_id, {
+          displayName: currentUserShelf.display_name,
+          shareId: currentUserShelf.share_id,
+          isPublic: currentUserShelf.is_public,
         });
-      });
+      }
+
+      // For other members' public shelves, use the secure RPC function
+      const memberIds = memberData.map(m => m.user_id);
+      const { data: publicShelfData } = await supabase
+        .rpc('get_public_shelf_info_for_users' as 'get_public_shelf_books', { _user_ids: memberIds } as unknown as { _share_id: string });
+      
+      if (publicShelfData && Array.isArray(publicShelfData)) {
+        (publicShelfData as unknown as Array<{ user_id: string; display_name: string | null; share_id: string | null; is_public: boolean }>).forEach((s) => {
+          if (!shelfMap.has(s.user_id)) {
+            shelfMap.set(s.user_id, {
+              displayName: s.display_name,
+              shareId: s.share_id,
+              isPublic: s.is_public,
+            });
+          }
+        });
+      }
 
       setMembers(
         memberData.map((m) => {
@@ -494,21 +512,43 @@ export function useClubDetails(clubId: string | undefined) {
         .in('suggestion_id', suggestionIds);
 
       if (allVotes && allVotes.length > 0) {
-        // Get shelf settings for all voters
+        // Get shelf settings for all voters using the secure RPC
         const voterIds = [...new Set(allVotes.map(v => v.user_id))];
-        const { data: voterShelfData } = await supabase
-          .from('shelf_settings')
-          .select('user_id, display_name, share_id, is_public')
-          .in('user_id', voterIds);
-
+        
         const voterShelfMap = new Map<string, { displayName: string | null; shareId: string | null; isPublic: boolean }>();
-        voterShelfData?.forEach(s => {
-          voterShelfMap.set(s.user_id, {
-            displayName: s.display_name,
-            shareId: s.share_id,
-            isPublic: s.is_public,
+        
+        // Get current user's shelf first (RLS allows this)
+        if (voterIds.includes(user.id)) {
+          const { data: currentUserShelf } = await supabase
+            .from('shelf_settings')
+            .select('user_id, display_name, share_id, is_public')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          
+          if (currentUserShelf) {
+            voterShelfMap.set(currentUserShelf.user_id, {
+              displayName: currentUserShelf.display_name,
+              shareId: currentUserShelf.share_id,
+              isPublic: currentUserShelf.is_public,
+            });
+          }
+        }
+        
+        // Get other voters' public shelf info
+        const { data: voterShelfData } = await supabase
+          .rpc('get_public_shelf_info_for_users' as 'get_public_shelf_books', { _user_ids: voterIds } as unknown as { _share_id: string });
+
+        if (voterShelfData && Array.isArray(voterShelfData)) {
+          (voterShelfData as unknown as Array<{ user_id: string; display_name: string | null; share_id: string | null; is_public: boolean }>).forEach((s) => {
+            if (!voterShelfMap.has(s.user_id)) {
+              voterShelfMap.set(s.user_id, {
+                displayName: s.display_name,
+                shareId: s.share_id,
+                isPublic: s.is_public,
+              });
+            }
           });
-        });
+        }
 
         setVotes(
           allVotes.map(v => {
