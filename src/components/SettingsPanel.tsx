@@ -63,6 +63,8 @@ const backgroundOptions: { value: BackgroundTheme; label: string; emoji: string 
   { value: 'cozy', label: 'Cozy', emoji: '🏠' },
   { value: 'forest', label: 'Forest', emoji: '🌲' },
   { value: 'ocean', label: 'Ocean', emoji: '🌊' },
+  { value: 'sunset', label: 'Sunset', emoji: '🌅' },
+  { value: 'lavender', label: 'Lavender', emoji: '💜' },
   { value: 'space', label: 'Space', emoji: '🚀' },
 ];
 

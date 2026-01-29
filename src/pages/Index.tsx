@@ -122,6 +122,8 @@ export default function Index() {
       case 'space': return 'bg-theme-space';
       case 'forest': return 'bg-theme-forest';
       case 'ocean': return 'bg-theme-ocean';
+      case 'sunset': return 'bg-theme-sunset';
+      case 'lavender': return 'bg-theme-lavender';
       default: return 'office-wall';
     }
   };
