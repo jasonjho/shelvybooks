@@ -128,16 +128,30 @@ export default function Index() {
     }
   };
 
+  // Get ambient light gradient based on theme
+  const getAmbientGradient = (theme: BackgroundTheme) => {
+    switch (theme) {
+      case 'library': return 'radial-gradient(ellipse at center top, hsla(35, 60%, 65%, 0.25) 0%, hsla(30, 50%, 50%, 0.08) 40%, transparent 70%)';
+      case 'cozy': return 'radial-gradient(ellipse at center top, hsla(30, 70%, 70%, 0.3) 0%, hsla(25, 60%, 55%, 0.1) 40%, transparent 70%)';
+      case 'forest': return 'radial-gradient(ellipse at center top, hsla(50, 60%, 70%, 0.25) 0%, hsla(80, 40%, 50%, 0.08) 40%, transparent 70%)';
+      case 'ocean': return 'radial-gradient(ellipse at center top, hsla(195, 50%, 75%, 0.2) 0%, hsla(200, 40%, 60%, 0.08) 40%, transparent 70%)';
+      case 'sunset': return 'radial-gradient(ellipse at center top, hsla(35, 80%, 75%, 0.35) 0%, hsla(20, 70%, 60%, 0.12) 40%, transparent 70%)';
+      case 'lavender': return 'radial-gradient(ellipse at center top, hsla(270, 50%, 80%, 0.25) 0%, hsla(260, 40%, 65%, 0.08) 40%, transparent 70%)';
+      case 'space': return null; // No ambient light for space
+      default: return 'radial-gradient(ellipse at center top, hsla(45, 70%, 75%, 0.3) 0%, hsla(35, 60%, 60%, 0.1) 40%, transparent 70%)';
+    }
+  };
+
+  const ambientGradient = getAmbientGradient(settings.backgroundTheme);
+
   return (
     <div className={cn("min-h-screen", getBackgroundClass(settings.backgroundTheme))}>
 
       {/* Ambient top light */}
-      {settings.showAmbientLight && settings.backgroundTheme === 'office' && (
+      {settings.showAmbientLight && ambientGradient && (
         <div 
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] pointer-events-none transition-opacity duration-500"
-          style={{
-            background: 'radial-gradient(ellipse at center top, hsla(45, 70%, 75%, 0.3) 0%, hsla(35, 60%, 60%, 0.1) 40%, transparent 70%)',
-          }}
+          style={{ background: ambientGradient }}
         />
       )}
       
