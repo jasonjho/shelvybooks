@@ -19,7 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
 import { demoBooks } from '@/data/demoBooks';
-import { Library, Loader2 } from 'lucide-react';
+import { Library, Loader2, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Seeded random for consistent shuffle per session
@@ -208,18 +208,20 @@ export default function Index() {
 
         {/* Not signed in message */}
         {!authLoading && !user && (
-          <div className="py-4 mb-4 space-y-3">
+          <div className="py-4 mb-6 space-y-4">
             <p className="text-foreground/80 text-base">
               <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites, and <span className="text-amber-700 dark:text-amber-500 font-medium">join Book Clubs</span> with friends.
             </p>
-            <div className="flex items-center gap-3">
-              <Button 
-                onClick={() => setAuthDialogOpen(true)}
-                className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md"
-              >
-                Sign in to start your shelf
-              </Button>
-              <span className="text-muted-foreground text-sm">Here's a preview below:</span>
+            <Button 
+              onClick={() => setAuthDialogOpen(true)}
+              className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md"
+            >
+              Sign in to start your shelf
+            </Button>
+            <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm pt-2">
+              <ChevronDown className="w-4 h-4 animate-bounce" />
+              <span>Preview</span>
+              <ChevronDown className="w-4 h-4 animate-bounce" />
             </div>
           </div>
         )}
