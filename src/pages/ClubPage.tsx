@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useClubDetails, useBookClubs } from '@/hooks/useBookClubs';
+import { useClubDetails, useBookClubs, VoteWithUser, ClubMemberWithProfile } from '@/hooks/useBookClubs';
 import { useBookSearch, getCoverUrl } from '@/hooks/useBookSearch';
 import { useBooks } from '@/hooks/useBooks';
 import { Button } from '@/components/ui/button';
@@ -36,6 +36,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
 import { 
   ArrowLeft, 
   Users, 
@@ -54,7 +60,9 @@ import {
   Library,
   BookMarked,
   Settings,
-  Pencil
+  Pencil,
+  Crown,
+  ExternalLink
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GoogleBook } from '@/types/book';
@@ -70,6 +78,7 @@ export default function ClubPage() {
     club,
     members,
     suggestions,
+    votes,
     loading,
     isOwner,
     addSuggestion,
@@ -78,6 +87,11 @@ export default function ClubPage() {
     removeSuggestion,
     updateClubDetails,
   } = useClubDetails(clubId);
+
+  // Get votes for a specific suggestion
+  const getVotesForSuggestion = (suggestionId: string) => {
+    return votes.filter(v => v.suggestionId === suggestionId);
+  };
 
   const { addBook, books } = useBooks();
   const [copied, setCopied] = useState(false);
@@ -393,6 +407,7 @@ export default function ClubPage() {
                   isOwner={isOwner}
                   currentUserId={user?.id}
                   isOnShelf={isOnShelf(suggestion.title, suggestion.author)}
+                  voters={getVotesForSuggestion(suggestion.id)}
                   onVote={() => vote(suggestion.id)}
                   onSetReading={() => updateSuggestionStatus(suggestion.id, 'reading')}
                   onRemove={() => removeSuggestion(suggestion.id)}
@@ -441,9 +456,69 @@ export default function ClubPage() {
             </div>
           </section>
         )}
+
+        {/* Members Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5 text-muted-foreground" />
+            <h2 className="text-lg font-semibold font-sans">Members</h2>
+            <Badge variant="outline">{members.length}</Badge>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {members.map((member) => (
+              <MemberCard key={member.id} member={member} ownerId={club.ownerId} />
+            ))}
+          </div>
+        </section>
       </main>
     </div>
   );
+}
+
+// Member Card Component
+interface MemberCardProps {
+  member: ClubMemberWithProfile;
+  ownerId: string;
+}
+
+function MemberCard({ member, ownerId }: MemberCardProps) {
+  const isOwner = member.userId === ownerId;
+  const displayName = member.displayName || 'Anonymous';
+  const initials = displayName.slice(0, 2).toUpperCase();
+  
+  const content = (
+    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
+      <Avatar className="h-9 w-9">
+        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="font-medium truncate font-sans text-sm">{displayName}</p>
+          {isOwner && (
+            <Crown className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+          )}
+        </div>
+        {member.isPublic && member.shareId && (
+          <p className="text-xs text-muted-foreground">Has public shelf</p>
+        )}
+      </div>
+      {member.isPublic && member.shareId && (
+        <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
+      )}
+    </div>
+  );
+
+  if (member.isPublic && member.shareId) {
+    return (
+      <Link to={`/shelf/${member.shareId}`} className="block">
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 }
 
 // Suggestion Card Component
@@ -460,6 +535,7 @@ interface SuggestionCardProps {
   isOwner: boolean;
   currentUserId?: string;
   isOnShelf: boolean;
+  voters: VoteWithUser[];
   onVote: () => void;
   onSetReading: () => void;
   onRemove: () => void;
@@ -471,6 +547,7 @@ function SuggestionCard({
   isOwner,
   currentUserId,
   isOnShelf,
+  voters,
   onVote,
   onSetReading,
   onRemove,
@@ -479,64 +556,113 @@ function SuggestionCard({
   const canRemove = isOwner || suggestion.suggestedBy === currentUserId;
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-colors">
+    <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-colors">
       {suggestion.coverUrl ? (
         <img
           src={suggestion.coverUrl}
           alt={suggestion.title}
-          className="w-12 h-16 object-cover rounded"
+          className="w-12 h-16 object-cover rounded shrink-0"
         />
       ) : (
-        <div className="w-12 h-16 bg-muted rounded flex items-center justify-center">
+        <div className="w-12 h-16 bg-muted rounded flex items-center justify-center shrink-0">
           <Library className="w-5 h-5 text-muted-foreground" />
         </div>
       )}
       <div className="flex-1 min-w-0">
         <p className="font-medium truncate font-sans">{suggestion.title}</p>
         <p className="text-sm text-muted-foreground truncate font-sans">{suggestion.author}</p>
+        {voters.length > 0 && (
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <button className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                <div className="flex -space-x-1.5">
+                  {voters.slice(0, 3).map((voter, idx) => (
+                    <Avatar key={voter.id} className="h-5 w-5 border-2 border-background">
+                      <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
+                        {(voter.displayName || 'A').slice(0, 1).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
+                </div>
+                <span>
+                  {voters.length === 1 
+                    ? `${voters[0].displayName || 'Someone'} voted`
+                    : `${voters.length} votes`}
+                </span>
+              </button>
+            </HoverCardTrigger>
+            <HoverCardContent className="w-48 p-2" align="start">
+              <p className="text-xs font-medium mb-2">Voted by:</p>
+              <div className="space-y-1.5">
+                {voters.map((voter) => (
+                  <div key={voter.id} className="flex items-center gap-2">
+                    <Avatar className="h-5 w-5">
+                      <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
+                        {(voter.displayName || 'A').slice(0, 1).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {voter.isPublic && voter.shareId ? (
+                      <Link 
+                        to={`/shelf/${voter.shareId}`} 
+                        className="text-xs hover:underline truncate flex-1"
+                      >
+                        {voter.displayName || 'Anonymous'}
+                      </Link>
+                    ) : (
+                      <span className="text-xs text-muted-foreground truncate flex-1">
+                        {voter.displayName || 'Anonymous'}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </HoverCardContent>
+          </HoverCard>
+        )}
       </div>
-      <Button
-        variant={suggestion.hasVoted ? 'default' : 'outline'}
-        size="sm"
-        onClick={onVote}
-        className="gap-1.5 shrink-0"
-      >
-        <ThumbsUp className={cn('w-4 h-4', suggestion.hasVoted && 'fill-current')} />
-        {suggestion.voteCount || 0}
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onAddToShelf}
-        disabled={isOnShelf}
-        className="gap-1.5 shrink-0"
-        title={isOnShelf ? 'Already on your shelf' : 'Add to your shelf'}
-      >
-        <BookMarked className={cn('w-4 h-4', isOnShelf && 'fill-current text-primary')} />
-      </Button>
-      {(isOwner || canRemove) && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="shrink-0">
-              <MoreVertical className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-popover">
-            {isOwner && (
-              <DropdownMenuItem onClick={onSetReading}>
-                <Play className="w-4 h-4 mr-2" />
-                Set as Currently Reading
-              </DropdownMenuItem>
-            )}
-            {canRemove && (
-              <DropdownMenuItem onClick={onRemove} className="text-destructive">
-                <Trash2 className="w-4 h-4 mr-2" />
-                Remove
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+      <div className="flex items-center gap-1 shrink-0">
+        <Button
+          variant={suggestion.hasVoted ? 'default' : 'outline'}
+          size="sm"
+          onClick={onVote}
+          className="gap-1.5"
+        >
+          <ThumbsUp className={cn('w-4 h-4', suggestion.hasVoted && 'fill-current')} />
+          {suggestion.voteCount || 0}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onAddToShelf}
+          disabled={isOnShelf}
+          title={isOnShelf ? 'Already on your shelf' : 'Add to your shelf'}
+        >
+          <BookMarked className={cn('w-4 h-4', isOnShelf && 'fill-current text-primary')} />
+        </Button>
+        {(isOwner || canRemove) && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="shrink-0">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-popover">
+              {isOwner && (
+                <DropdownMenuItem onClick={onSetReading}>
+                  <Play className="w-4 h-4 mr-2" />
+                  Set as Currently Reading
+                </DropdownMenuItem>
+              )}
+              {canRemove && (
+                <DropdownMenuItem onClick={onRemove} className="text-destructive">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Remove
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
     </div>
   );
 }

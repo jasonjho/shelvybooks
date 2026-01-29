@@ -4,6 +4,23 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { BookClub, BookClubMember, BookClubSuggestion } from '@/types/bookClub';
 
+// Extended member type with profile info
+export interface ClubMemberWithProfile extends BookClubMember {
+  displayName: string | null;
+  shareId: string | null;
+  isPublic: boolean;
+}
+
+// Vote with user info
+export interface VoteWithUser {
+  id: string;
+  suggestionId: string;
+  userId: string;
+  displayName: string | null;
+  shareId: string | null;
+  isPublic: boolean;
+}
+
 export function useBookClubs() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -355,8 +372,9 @@ export function useClubDetails(clubId: string | undefined) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [club, setClub] = useState<BookClub | null>(null);
-  const [members, setMembers] = useState<BookClubMember[]>([]);
+  const [members, setMembers] = useState<ClubMemberWithProfile[]>([]);
   const [suggestions, setSuggestions] = useState<BookClubSuggestion[]>([]);
+  const [votes, setVotes] = useState<VoteWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
 
@@ -392,21 +410,43 @@ export function useClubDetails(clubId: string | undefined) {
 
     setIsOwner(clubData.owner_id === user.id);
 
-    // Fetch members
+    // Fetch members with their shelf settings
     const { data: memberData } = await supabase
       .from('book_club_members')
       .select('*')
       .eq('club_id', clubId);
 
     if (memberData) {
+      // Get shelf settings for all members
+      const memberIds = memberData.map(m => m.user_id);
+      const { data: shelfData } = await supabase
+        .from('shelf_settings')
+        .select('user_id, display_name, share_id, is_public')
+        .in('user_id', memberIds);
+
+      const shelfMap = new Map<string, { displayName: string | null; shareId: string | null; isPublic: boolean }>();
+      shelfData?.forEach(s => {
+        shelfMap.set(s.user_id, {
+          displayName: s.display_name,
+          shareId: s.share_id,
+          isPublic: s.is_public,
+        });
+      });
+
       setMembers(
-        memberData.map((m) => ({
-          id: m.id,
-          clubId: m.club_id,
-          userId: m.user_id,
-          role: m.role as 'owner' | 'member',
-          joinedAt: m.joined_at,
-        }))
+        memberData.map((m) => {
+          const shelf = shelfMap.get(m.user_id);
+          return {
+            id: m.id,
+            clubId: m.club_id,
+            userId: m.user_id,
+            role: m.role as 'owner' | 'member',
+            joinedAt: m.joined_at,
+            displayName: shelf?.displayName || null,
+            shareId: shelf?.shareId || null,
+            isPublic: shelf?.isPublic || false,
+          };
+        })
       );
     }
 
@@ -449,6 +489,47 @@ export function useClubDetails(clubId: string | undefined) {
       );
 
       setSuggestions(suggestionsWithVotes);
+
+      // Fetch all votes with user info
+      const suggestionIds = suggestionData.map(s => s.id);
+      const { data: allVotes } = await supabase
+        .from('book_club_votes')
+        .select('*')
+        .in('suggestion_id', suggestionIds);
+
+      if (allVotes && allVotes.length > 0) {
+        // Get shelf settings for all voters
+        const voterIds = [...new Set(allVotes.map(v => v.user_id))];
+        const { data: voterShelfData } = await supabase
+          .from('shelf_settings')
+          .select('user_id, display_name, share_id, is_public')
+          .in('user_id', voterIds);
+
+        const voterShelfMap = new Map<string, { displayName: string | null; shareId: string | null; isPublic: boolean }>();
+        voterShelfData?.forEach(s => {
+          voterShelfMap.set(s.user_id, {
+            displayName: s.display_name,
+            shareId: s.share_id,
+            isPublic: s.is_public,
+          });
+        });
+
+        setVotes(
+          allVotes.map(v => {
+            const shelf = voterShelfMap.get(v.user_id);
+            return {
+              id: v.id,
+              suggestionId: v.suggestion_id,
+              userId: v.user_id,
+              displayName: shelf?.displayName || null,
+              shareId: shelf?.shareId || null,
+              isPublic: shelf?.isPublic || false,
+            };
+          })
+        );
+      } else {
+        setVotes([]);
+      }
     }
 
     setLoading(false);
@@ -632,6 +713,7 @@ export function useClubDetails(clubId: string | undefined) {
     club,
     members,
     suggestions,
+    votes,
     loading,
     isOwner,
     addSuggestion,
