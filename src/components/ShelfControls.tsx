@@ -51,39 +51,37 @@ export function ShelfControls({
   const totalBooks = bookCounts.reading + bookCounts['want-to-read'] + bookCounts.read;
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-2">
       {/* Status Filters */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant={isAllSelected ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => onFilterChange([])}
-          className="gap-1.5"
-        >
-          All
-          <span className="text-xs opacity-70">({totalBooks})</span>
-        </Button>
-        
-        {statusFilters.map((filter) => {
-          const isActive = activeFilters.includes(filter.status);
-          return (
-            <Button
-              key={filter.status}
-              variant={isActive ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => toggleFilter(filter.status)}
-              className={cn(
-                'gap-1.5 transition-all',
-                !isActive && !isAllSelected && 'opacity-60'
-              )}
-            >
-              {filter.icon}
-              <span className="hidden sm:inline">{filter.label}</span>
-              <span className="text-xs opacity-70">({bookCounts[filter.status]})</span>
-            </Button>
-          );
-        })}
-      </div>
+      <Button
+        variant={isAllSelected ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => onFilterChange([])}
+        className="gap-1.5"
+      >
+        All
+        <span className="text-xs opacity-70">({totalBooks})</span>
+      </Button>
+      
+      {statusFilters.map((filter) => {
+        const isActive = activeFilters.includes(filter.status);
+        return (
+          <Button
+            key={filter.status}
+            variant={isActive ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => toggleFilter(filter.status)}
+            className={cn(
+              'gap-1.5 transition-all',
+              !isActive && !isAllSelected && 'opacity-60'
+            )}
+          >
+            {filter.icon}
+            <span className="hidden sm:inline">{filter.label}</span>
+            <span className="text-xs opacity-70">({bookCounts[filter.status]})</span>
+          </Button>
+        );
+      })}
 
       {/* Sort Dropdown */}
       <DropdownMenu>
