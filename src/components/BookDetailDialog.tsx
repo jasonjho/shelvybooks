@@ -8,6 +8,7 @@ import {
 import { BookInteractions } from '@/components/BookInteractions';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
 
 interface BookDetailDialogProps {
   book: Book | null;
@@ -25,6 +26,7 @@ export function BookDetailDialog({ book, open, onOpenChange }: BookDetailDialogP
 
   // Link to Amazon search for the book
   const amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author)}`;
+  const coverSrc = normalizeCoverUrl(book.coverUrl);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -39,7 +41,7 @@ export function BookDetailDialog({ book, open, onOpenChange }: BookDetailDialogP
             <div
               className="w-24 h-36 rounded-md shadow-lg bg-muted"
               style={{
-                backgroundImage: `url(${book.coverUrl})`,
+                backgroundImage: `url(${coverSrc})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}

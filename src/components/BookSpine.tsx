@@ -11,6 +11,7 @@ import { BookOpen, BookMarked, CheckCircle, Trash2, Users } from 'lucide-react';
 import { useBookAnimations } from '@/contexts/BookAnimationContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
 
 export interface ClubInfo {
   clubName: string;
@@ -50,6 +51,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
   const hasClubInfo = clubInfo && clubInfo.length > 0;
   const isCurrentlyReading = clubInfo?.some(c => c.status === 'reading');
   const showPlaceholder = !book.coverUrl || book.coverUrl === '/placeholder.svg' || imageError;
+  const coverSrc = normalizeCoverUrl(book.coverUrl);
 
   // Reset image state when we render a different book / URL
   useEffect(() => {
@@ -101,7 +103,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
         {/* Actual cover image */}
         {!showPlaceholder && (
           <img
-            src={book.coverUrl}
+            src={coverSrc}
             alt={book.title}
             loading="lazy"
             onLoad={handleImageLoad}
@@ -113,6 +115,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
               'absolute inset-0 w-full h-full object-cover transition-opacity duration-300',
               imageLoaded ? 'opacity-100' : 'opacity-0'
             )}
+            referrerPolicy="no-referrer"
           />
         )}
         

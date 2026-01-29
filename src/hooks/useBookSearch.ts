@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { GoogleBook } from '@/types/book';
 import { supabase } from '@/integrations/supabase/client';
+import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
 
 export function useBookSearch() {
   const [results, setResults] = useState<GoogleBook[]>([]);
@@ -62,7 +63,9 @@ export function getCoverUrl(book: GoogleBook): string {
   }
   
   // Replace HTTP with HTTPS and increase zoom for better quality
-  return thumbnail.replace('http://', 'https://').replace('zoom=1', 'zoom=2');
+  return normalizeCoverUrl(
+    thumbnail.replace('http://', 'https://').replace('zoom=1', 'zoom=2')
+  );
 }
 
 // Fetch cover URL for a book by title and author
