@@ -19,7 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
 import { demoBooks } from '@/data/demoBooks';
-import { Library, Loader2, ChevronDown } from 'lucide-react';
+import { Library, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Seeded random for consistent shuffle per session
@@ -218,11 +218,6 @@ export default function Index() {
             >
               Sign in to start your shelf
             </Button>
-            <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm pt-2">
-              <ChevronDown className="w-4 h-4 animate-bounce" />
-              <span>Preview</span>
-              <ChevronDown className="w-4 h-4 animate-bounce" />
-            </div>
           </div>
         )}
 
