@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
-import { getDailyQuote, BookQuote } from '@/data/bookQuotes';
+import { useState, useEffect, useCallback } from 'react';
+import { getDailyQuote, bookQuotes, BookQuote } from '@/data/bookQuotes';
 import { Button } from '@/components/ui/button';
-import { Book, Plus, X, Quote, EyeOff } from 'lucide-react';
+import { Book, Plus, X, Quote, EyeOff, Shuffle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { BookStatus } from '@/types/book';
+import { supabase } from '@/integrations/supabase/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,8 @@ export function DailyQuote({ onAddBook, existingBooks }: DailyQuoteProps) {
   const [quote, setQuote] = useState<BookQuote | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [added, setAdded] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [localIndex, setLocalIndex] = useState(0);
 
   useEffect(() => {
     // Check if permanently disabled
@@ -42,15 +45,57 @@ export function DailyQuote({ onAddBook, existingBooks }: DailyQuoteProps) {
     if (dismissedDate === today) {
       setDismissed(true);
     }
+  }, []);
 
-    // Check if book is already on shelf
+  // Check if current quote's book is on shelf
+  useEffect(() => {
+    if (!quote) return;
     const isOnShelf = existingBooks.some(
       (b) =>
-        b.title.toLowerCase() === dailyQuote.book.title.toLowerCase() &&
-        b.author.toLowerCase() === dailyQuote.book.author.toLowerCase()
+        b.title.toLowerCase() === quote.book.title.toLowerCase() &&
+        b.author.toLowerCase() === quote.book.author.toLowerCase()
     );
     setAdded(isOnShelf);
-  }, [existingBooks]);
+  }, [quote, existingBooks]);
+
+  const fetchDynamicQuote = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-quote');
+      
+      if (error) throw error;
+      
+      if (data?.quote && data?.book) {
+        setQuote({
+          quote: data.quote,
+          book: {
+            title: data.book.title,
+            author: data.book.author,
+            coverUrl: data.book.coverUrl || '/placeholder.svg',
+          },
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch dynamic quote, using local:', err);
+      // Fallback to next local quote
+      const nextIndex = (localIndex + 1) % bookQuotes.length;
+      setLocalIndex(nextIndex);
+      setQuote(bookQuotes[nextIndex]);
+    } finally {
+      setLoading(false);
+    }
+  }, [localIndex]);
+
+  const handleNextQuote = () => {
+    // Alternate between local and dynamic quotes
+    if (user && Math.random() > 0.5) {
+      fetchDynamicQuote();
+    } else {
+      const nextIndex = (localIndex + 1) % bookQuotes.length;
+      setLocalIndex(nextIndex);
+      setQuote(bookQuotes[nextIndex]);
+    }
+  };
 
   const handleDismissToday = () => {
     setDismissed(true);
@@ -90,7 +135,10 @@ export function DailyQuote({ onAddBook, existingBooks }: DailyQuoteProps) {
         <img
           src={quote.book.coverUrl}
           alt={quote.book.title}
-          className="w-10 h-14 object-cover rounded shadow-sm flex-shrink-0"
+          className={cn(
+            "w-10 h-14 object-cover rounded shadow-sm flex-shrink-0 transition-opacity",
+            loading && "opacity-50"
+          )}
           onError={(e) => {
             e.currentTarget.src = '/placeholder.svg';
           }}
@@ -98,23 +146,44 @@ export function DailyQuote({ onAddBook, existingBooks }: DailyQuoteProps) {
 
         {/* Quote & book info */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-serif italic text-foreground/85 line-clamp-2 leading-snug">
+          <p className={cn(
+            "text-sm font-serif italic text-foreground/85 line-clamp-2 leading-snug transition-opacity",
+            loading && "opacity-50"
+          )}>
             <Quote className="inline w-3 h-3 text-amber-400/60 mr-1 -mt-0.5" />
             {quote.quote}
           </p>
-          <p className="text-xs text-muted-foreground mt-1 truncate">
+          <p className={cn(
+            "text-xs text-muted-foreground mt-1 truncate transition-opacity",
+            loading && "opacity-50"
+          )}>
             — <span className="font-medium">{quote.book.title}</span> by {quote.book.author}
           </p>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Next quote button */}
+          <button
+            onClick={handleNextQuote}
+            disabled={loading}
+            className="p-1.5 rounded text-amber-600/70 hover:text-amber-700 hover:bg-amber-100/50 dark:text-amber-400/70 dark:hover:text-amber-300 dark:hover:bg-amber-900/30 transition-colors disabled:opacity-50"
+            aria-label="Next quote"
+            title="Next quote"
+          >
+            {loading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Shuffle className="w-4 h-4" />
+            )}
+          </button>
+
           {user && (
             <Button
               size="sm"
               variant={added ? 'secondary' : 'default'}
               onClick={handleAddBook}
-              disabled={added}
+              disabled={added || loading}
               className={cn(
                 'h-7 text-xs gap-1 px-2',
                 !added && 'bg-amber-600 hover:bg-amber-700 text-white'
