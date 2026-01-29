@@ -1,4 +1,4 @@
-import { Bell, Heart } from 'lucide-react';
+import { Bell, Heart, Check } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -13,15 +13,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 export function NotificationBell() {
   const { newLikesCount, newLikes, markAsSeen, isLoading } = useNotifications();
 
-  const handleOpenChange = (open: boolean) => {
-    if (open && newLikesCount > 0) {
-      // Mark as seen when opening the popover
-      markAsSeen();
-    }
-  };
-
   return (
-    <Popover onOpenChange={handleOpenChange}>
+    <Popover>
       <PopoverTrigger asChild>
         <Button 
           variant="ghost" 
@@ -45,8 +38,19 @@ export function NotificationBell() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
-        <div className="p-3 border-b">
+        <div className="p-3 border-b flex items-center justify-between">
           <h3 className="font-semibold text-sm">Notifications</h3>
+          {newLikesCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={markAsSeen}
+              className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground"
+            >
+              <Check className="h-3 w-3" />
+              Mark all read
+            </Button>
+          )}
         </div>
         <ScrollArea className="max-h-[300px]">
           {isLoading ? (
