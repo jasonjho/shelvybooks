@@ -64,6 +64,11 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
     const img = e.currentTarget;
     const { naturalWidth, naturalHeight } = img;
     
+    // Log dimensions for debugging placeholder detection
+    if (naturalWidth < 200 || naturalHeight < 250) {
+      console.log(`[Cover Debug] "${book.title}" dimensions: ${naturalWidth}x${naturalHeight}, src: ${img.src.substring(0, 80)}...`);
+    }
+    
     // Detect placeholder images:
     // 1. 1x1 placeholders (common when a cover is missing)
     // 2. Google's "image not available" placeholders (various sizes: 120x192, 128x188, etc.)
