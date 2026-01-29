@@ -1,5 +1,5 @@
 import { Book, BookStatus } from '@/types/book';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -51,21 +51,27 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
   const isCurrentlyReading = clubInfo?.some(c => c.status === 'reading');
   const showPlaceholder = !book.coverUrl || book.coverUrl === '/placeholder.svg' || imageError;
 
+  // Reset image state when we render a different book / URL
+  useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+  }, [book.id, book.coverUrl]);
+
   // Handle image load - check if it's a valid cover or a placeholder image
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
     const { naturalWidth, naturalHeight } = img;
     
-    // Detect placeholder images:
-    // 1. Very small images (1x1 or similar) - Open Library pattern
-    // 2. Small square images - often placeholders (but not too aggressive)
-    const isVerySmall = naturalWidth <= 1 || naturalHeight <= 1;
-    
-    if (isVerySmall) {
+    // Detect 1x1 placeholders (common when a cover is missing)
+    const isOneByOne = naturalWidth <= 1 && naturalHeight <= 1;
+
+    if (isOneByOne) {
       setImageError(true);
+      setImageLoaded(true);
       return;
     }
-    
+
+    setImageError(false);
     setImageLoaded(true);
   };
 
@@ -99,7 +105,10 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
             alt={book.title}
             loading="lazy"
             onLoad={handleImageLoad}
-            onError={() => setImageError(true)}
+            onError={() => {
+              setImageError(true);
+              setImageLoaded(true);
+            }}
             className={cn(
               'absolute inset-0 w-full h-full object-cover transition-opacity duration-300',
               imageLoaded ? 'opacity-100' : 'opacity-0'
