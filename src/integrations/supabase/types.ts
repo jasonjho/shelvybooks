@@ -278,9 +278,47 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      shelf_settings_public: {
+        Row: {
+          created_at: string | null
+          display_name: string | null
+          id: string | null
+          is_public: boolean | null
+          share_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          is_public?: boolean | null
+          share_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          is_public?: boolean | null
+          share_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_public_shelf_books: {
+        Args: { _share_id: string }
+        Returns: {
+          author: string
+          color: string
+          cover_url: string
+          created_at: string
+          id: string
+          status: string
+          title: string
+        }[]
+      }
       is_club_member: {
         Args: { _club_id: string; _user_id: string }
         Returns: boolean
