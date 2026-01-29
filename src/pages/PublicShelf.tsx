@@ -14,7 +14,6 @@ import { Library, Loader2, ArrowLeft, Lock, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ShelfOwner {
-  user_id: string;
   display_name: string | null;
   share_id: string;
 }
@@ -101,10 +100,11 @@ export default function PublicShelf() {
       }
 
       try {
-        // Fetch shelf settings by share_id
+        // Fetch shelf settings using secure public view (excludes user_id)
+        // Using raw query since the view isn't in generated types
         const { data: shelfData, error: shelfError } = await supabase
-          .from('shelf_settings')
-          .select('user_id, display_name, share_id, is_public')
+          .from('shelf_settings_public' as 'shelf_settings')
+          .select('display_name, share_id, is_public')
           .eq('share_id', shareId)
           .maybeSingle();
 
@@ -116,6 +116,7 @@ export default function PublicShelf() {
           return;
         }
 
+        // View already filters to is_public = true, but double-check
         if (!shelfData.is_public) {
           setError('This shelf is private');
           setLoading(false);
@@ -123,17 +124,13 @@ export default function PublicShelf() {
         }
 
         setShelfOwner({
-          user_id: shelfData.user_id,
           display_name: shelfData.display_name,
-          share_id: shelfData.share_id,
+          share_id: shelfData.share_id ?? shareId,
         });
 
-        // Fetch books for this user
+        // Fetch books using secure RPC function (avoids exposing user_id)
         const { data: booksData, error: booksError } = await supabase
-          .from('books')
-          .select('*')
-          .eq('user_id', shelfData.user_id)
-          .order('created_at', { ascending: true });
+          .rpc('get_public_shelf_books', { _share_id: shareId });
 
         if (booksError) throw booksError;
 
