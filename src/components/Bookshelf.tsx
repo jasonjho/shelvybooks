@@ -2,8 +2,10 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { Book, BookStatus, ShelfSkin, ShelfSettings, DecorDensity } from '@/types/book';
 import { BookSpine, ClubInfo } from './BookSpine';
 import { BookDetailDialog } from './BookDetailDialog';
+import { BookNoteDialog } from './BookNoteDialog';
 import { ShelfDecoration, DECORATION_TYPES, DecorationType } from './ShelfDecorations';
 import { cn } from '@/lib/utils';
+import { useBookNotes, BookNote, NoteColor } from '@/hooks/useBookNotes';
 
 interface BookshelfProps {
   books: Book[];
@@ -119,6 +121,8 @@ interface ShelfRowProps {
   onRemoveBook?: (id: string) => void;
   onSelectBook: (book: Book) => void;
   getBookClubInfo?: (title: string, author: string) => ClubInfo[];
+  notes: Map<string, BookNote>;
+  onAddNote: (book: Book) => void;
 }
 
 function ShelfRow({
@@ -132,6 +136,8 @@ function ShelfRow({
   onRemoveBook,
   onSelectBook,
   getBookClubInfo,
+  notes,
+  onAddNote,
 }: ShelfRowProps) {
   const hasBooks = books.length > 0;
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
@@ -189,6 +195,7 @@ function ShelfRow({
           
           if (item.type === 'book') {
             const clubInfo = getBookClubInfo?.(item.book.title, item.book.author);
+            const bookNote = notes.get(item.book.id);
             return (
               <BookSpine
                 key={item.book.id}
@@ -199,6 +206,8 @@ function ShelfRow({
                 isInteractive={!!onMoveBook && !!onRemoveBook}
                 isGrayed={isGrayed}
                 clubInfo={clubInfo}
+                note={bookNote}
+                onAddNote={() => onAddNote(item.book)}
               />
             );
           }
@@ -237,8 +246,13 @@ function ShelfRow({
 
 export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, getBookClubInfo }: BookshelfProps) {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [noteBook, setNoteBook] = useState<Book | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [booksPerRow, setBooksPerRow] = useState(8);
+
+  // Get all book IDs for fetching notes
+  const bookIds = useMemo(() => books.map((b) => b.id), [books]);
+  const { notes, saveNote, deleteNote, getNote } = useBookNotes(bookIds);
 
   // Calculate decoration slots needed per row based on density
   const decorSlotsPerRow = useMemo(() => {
@@ -302,6 +316,16 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
   const skinClass = `skin-${skin}`;
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
 
+  const handleSaveNote = async (content: string, color: NoteColor) => {
+    if (!noteBook) return false;
+    return saveNote(noteBook.id, content, color);
+  };
+
+  const handleDeleteNote = async () => {
+    if (!noteBook) return false;
+    return deleteNote(noteBook.id);
+  };
+
   return (
     <div ref={containerRef} className={cn('bookcase p-4 pt-6 pb-8 flex flex-col gap-0', skinClass, grainClass)}>
       {/* Decorative trim elements */}
@@ -328,6 +352,8 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
           onRemoveBook={onRemoveBook}
           onSelectBook={setSelectedBook}
           getBookClubInfo={getBookClubInfo}
+          notes={notes}
+          onAddNote={setNoteBook}
         />
       ))}
 
@@ -336,6 +362,16 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
         book={selectedBook}
         open={!!selectedBook}
         onOpenChange={(open) => !open && setSelectedBook(null)}
+      />
+
+      {/* Book note dialog */}
+      <BookNoteDialog
+        open={!!noteBook}
+        onOpenChange={(open) => !open && setNoteBook(null)}
+        bookTitle={noteBook?.title || ''}
+        existingNote={noteBook ? getNote(noteBook.id) : undefined}
+        onSave={handleSaveNote}
+        onDelete={noteBook && getNote(noteBook.id) ? handleDeleteNote : undefined}
       />
     </div>
   );

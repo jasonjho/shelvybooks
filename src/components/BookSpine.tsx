@@ -7,11 +7,13 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
-import { BookOpen, BookMarked, CheckCircle, Trash2, Users } from 'lucide-react';
+import { BookOpen, BookMarked, CheckCircle, Trash2, Users, StickyNote } from 'lucide-react';
 import { useBookAnimations } from '@/contexts/BookAnimationContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
+import { BookNote, NoteColor } from '@/hooks/useBookNotes';
+import { PostItNote } from '@/components/PostItNote';
 
 export interface ClubInfo {
   clubName: string;
@@ -26,6 +28,8 @@ interface BookSpineProps {
   isInteractive?: boolean;
   isGrayed?: boolean;
   clubInfo?: ClubInfo[];
+  note?: BookNote;
+  onAddNote?: () => void;
 }
 
 const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -41,10 +45,11 @@ type BookCoverProps = {
   isWobbling?: boolean;
   isSparkle?: boolean;
   clubInfo?: ClubInfo[];
+  note?: BookNote;
 };
 
 const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
-  ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo }, ref) => {
+  ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo, note }, ref) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author)}`;
@@ -102,6 +107,12 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
         isSparkle && 'book-sparkle'
       )}
     >
+      {/* Post-it note decoration - positioned to peek out behind/beside the book */}
+      {note && (
+        <div className="absolute -right-3 -top-2 z-0 pointer-events-none">
+          <PostItNote content={note.content} color={note.color} size="sm" />
+        </div>
+      )}
       <div
         className={cn(
           'book-cover w-[70px] h-[105px] cursor-pointer relative overflow-hidden',
@@ -212,7 +223,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
 
 BookCover.displayName = 'BookCover';
 
-export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true, isGrayed = false, clubInfo }: BookSpineProps) {
+export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true, isGrayed = false, clubInfo, note, onAddNote }: BookSpineProps) {
   const { recentlyAddedBooks, recentlyCompletedBooks } = useBookAnimations();
   
   const isWobbling = recentlyAddedBooks.has(book.id);
@@ -220,13 +231,13 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
 
   // If not interactive, just render the book without context menu
   if (!isInteractive || !onMove || !onRemove) {
-    return <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} />;
+    return <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} />;
   }
 
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} />
+        <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} />
       </ContextMenuTrigger>
       
       <ContextMenuContent className="w-48 z-50">
@@ -243,6 +254,15 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
             </ContextMenuItem>
           ))}
         <ContextMenuSeparator />
+        {onAddNote && (
+          <ContextMenuItem
+            onClick={onAddNote}
+            className="gap-2 cursor-pointer"
+          >
+            <StickyNote className="w-4 h-4" />
+            {note ? 'Edit note' : 'Add note'}
+          </ContextMenuItem>
+        )}
         <ContextMenuItem
           onClick={() => onRemove(book.id)}
           className="gap-2 text-destructive focus:text-destructive cursor-pointer"
