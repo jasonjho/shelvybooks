@@ -209,7 +209,7 @@ export default function Index() {
         {!authLoading && !user && (
           <div className="py-4 mb-4">
             <p className="text-foreground/80 text-base">
-              <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, and <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites. <button onClick={() => setAuthDialogOpen(true)} className="text-primary font-medium cursor-pointer hover:underline">Sign in</button> to build your own shelf — here's a preview:
+              <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites, and <span className="text-amber-700 dark:text-amber-500 font-medium">join Book Clubs</span> with friends. <button onClick={() => setAuthDialogOpen(true)} className="text-primary font-medium cursor-pointer hover:underline">Sign in</button> to build your own shelf — here's a preview:
             </p>
           </div>
         )}
