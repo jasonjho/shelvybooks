@@ -1,5 +1,5 @@
 import { BookStatus, SortOption } from '@/types/book';
-import { BookOpen, BookMarked, CheckCircle, Shuffle, ArrowDownAZ, Clock, Layers } from 'lucide-react';
+import { BookOpen, BookMarked, CheckCircle, Shuffle, ArrowDownAZ, Clock, Layers, Filter, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -7,7 +7,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 interface ShelfControlsProps {
   activeFilters: BookStatus[];
@@ -39,6 +45,8 @@ export function ShelfControls({
   onShuffle,
   bookCounts,
 }: ShelfControlsProps) {
+  const [filterOpen, setFilterOpen] = useState(false);
+
   const toggleFilter = (status: BookStatus) => {
     if (activeFilters.includes(status)) {
       onFilterChange(activeFilters.filter((f) => f !== status));
@@ -50,38 +58,74 @@ export function ShelfControls({
   const isAllSelected = activeFilters.length === 0;
   const totalBooks = bookCounts.reading + bookCounts['want-to-read'] + bookCounts.read;
 
+  // Get label for filter button
+  const getFilterLabel = () => {
+    if (isAllSelected) return 'All';
+    if (activeFilters.length === 1) {
+      return statusFilters.find(f => f.status === activeFilters[0])?.label || 'Filter';
+    }
+    return `${activeFilters.length} filters`;
+  };
+
+  // Get count for filter button
+  const getFilterCount = () => {
+    if (isAllSelected) return totalBooks;
+    return activeFilters.reduce((sum, status) => sum + bookCounts[status], 0);
+  };
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {/* Status Filters */}
-      <Button
-        variant={isAllSelected ? 'default' : 'outline'}
-        size="sm"
-        onClick={() => onFilterChange([])}
-        className="gap-1.5"
-      >
-        All
-        <span className="text-xs opacity-70">({totalBooks})</span>
-      </Button>
-      
-      {statusFilters.map((filter) => {
-        const isActive = activeFilters.includes(filter.status);
-        return (
-          <Button
-            key={filter.status}
-            variant={isActive ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => toggleFilter(filter.status)}
+      {/* Filter Popover */}
+      <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+        <PopoverTrigger asChild>
+          <Button 
+            variant="outline" 
+            size="sm" 
             className={cn(
-              'gap-1.5 transition-all',
-              !isActive && !isAllSelected && 'opacity-60'
+              "gap-2",
+              !isAllSelected && "border-primary/50 bg-primary/5"
             )}
           >
-            {filter.icon}
-            <span className="hidden sm:inline">{filter.label}</span>
-            <span className="text-xs opacity-70">({bookCounts[filter.status]})</span>
+            <Filter className="w-4 h-4" />
+            <span>{getFilterLabel()}</span>
+            <span className="text-xs opacity-70">({getFilterCount()})</span>
+            <ChevronDown className={cn(
+              "w-3 h-3 transition-transform",
+              filterOpen && "rotate-180"
+            )} />
           </Button>
-        );
-      })}
+        </PopoverTrigger>
+        <PopoverContent className="w-56 p-2 bg-popover" align="start">
+          <div className="flex flex-col gap-1">
+            <Button
+              variant={isAllSelected ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onFilterChange([])}
+              className="justify-start gap-2"
+            >
+              All
+              <span className="text-xs opacity-70 ml-auto">({totalBooks})</span>
+            </Button>
+            
+            {statusFilters.map((filter) => {
+              const isActive = activeFilters.includes(filter.status);
+              return (
+                <Button
+                  key={filter.status}
+                  variant={isActive ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => toggleFilter(filter.status)}
+                  className="justify-start gap-2"
+                >
+                  {filter.icon}
+                  {filter.label}
+                  <span className="text-xs opacity-70 ml-auto">({bookCounts[filter.status]})</span>
+                </Button>
+              );
+            })}
+          </div>
+        </PopoverContent>
+      </Popover>
 
       {/* Sort Dropdown */}
       <DropdownMenu>
