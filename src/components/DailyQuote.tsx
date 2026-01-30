@@ -219,6 +219,9 @@ export function DailyQuote({ onAddBook, existingBooks }: DailyQuoteProps) {
         'border border-amber-200/40 dark:border-amber-800/20'
       )}
     >
+      <span className="absolute -top-2.5 left-3 px-1.5 text-[10px] font-medium uppercase tracking-wider text-amber-600/70 dark:text-amber-400/50 bg-background rounded">
+        Daily Inspiration
+      </span>
       <div className="flex items-center gap-3">
         {/* Book cover with text fallback */}
         <div className="relative w-10 h-14 flex-shrink-0">
