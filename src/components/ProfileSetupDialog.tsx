@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -27,7 +27,13 @@ export function ProfileSetupDialog({ open, onComplete }: ProfileSetupDialogProps
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync internal state with prop
+  useEffect(() => {
+    setDialogOpen(open);
+  }, [open]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -76,6 +82,9 @@ export function ProfileSetupDialog({ open, onComplete }: ProfileSetupDialogProps
       return;
     }
 
+    // Close dialog immediately
+    setDialogOpen(false);
+
     toast({
       title: 'Profile created!',
       description: 'Welcome to your bookshelf.',
@@ -85,11 +94,11 @@ export function ProfileSetupDialog({ open, onComplete }: ProfileSetupDialogProps
   };
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog open={dialogOpen} onOpenChange={() => {}}>
       <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Set up your profile</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-lg font-semibold">Set up your profile</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
             Choose a username and optional avatar to get started.
           </DialogDescription>
         </DialogHeader>
@@ -124,7 +133,7 @@ export function ProfileSetupDialog({ open, onComplete }: ProfileSetupDialogProps
 
           {/* Username */}
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username" className="text-sm font-medium">Username</Label>
             <Input
               id="username"
               type="text"
