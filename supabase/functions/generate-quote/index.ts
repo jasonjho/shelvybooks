@@ -17,6 +17,17 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
+    // Parse request body for excluded titles
+    let excludeTitles: string[] = [];
+    try {
+      const body = await req.json();
+      if (Array.isArray(body?.excludeTitles)) {
+        excludeTitles = body.excludeTitles;
+      }
+    } catch {
+      // No body or invalid JSON, proceed without exclusions
+    }
+
     // Add randomization to get different quotes each time
     const genres = [
       'literary fiction', 'fantasy', 'science fiction', 'romance', 
@@ -26,6 +37,11 @@ serve(async (req) => {
     ];
     const randomGenre = genres[Math.floor(Math.random() * genres.length)];
     const randomSeed = Math.random().toString(36).substring(7);
+
+    // Build exclusion instruction if there are books to avoid
+    const exclusionNote = excludeTitles.length > 0
+      ? `\n\nIMPORTANT: Do NOT choose quotes from any of these books (the user already has them): ${excludeTitles.slice(0, 50).join(', ')}.`
+      : '';
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -43,7 +59,7 @@ serve(async (req) => {
           },
           {
             role: 'user',
-            content: `Give me a memorable quote from a ${randomGenre} book. Pick something unexpected and lesser-known - avoid the most famous quotes. Make sure the quote is real and actually from the book you cite. Random seed: ${randomSeed}`
+            content: `Give me a memorable quote from a ${randomGenre} book. Pick something unexpected and lesser-known - avoid the most famous quotes. Make sure the quote is real and actually from the book you cite. Random seed: ${randomSeed}${exclusionNote}`
           }
         ],
         temperature: 1.2,
