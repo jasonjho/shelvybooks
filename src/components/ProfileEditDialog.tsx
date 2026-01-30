@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -22,23 +22,22 @@ interface ProfileEditDialogProps {
 export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps) {
   const { profile, updateProfile } = useProfile();
   const { toast } = useToast();
-  const [username, setUsername] = useState(profile?.username || '');
+  const [username, setUsername] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync username when dialog opens
-  const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen && profile) {
+  // Sync form state when dialog opens
+  useEffect(() => {
+    if (open && profile) {
       setUsername(profile.username);
       setAvatarPreview(null);
       setAvatarFile(null);
       setError(null);
     }
-    onOpenChange(newOpen);
-  };
+  }, [open, profile]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -99,7 +98,7 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
   const initials = (profile?.username || 'U').slice(0, 2).toUpperCase();
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
