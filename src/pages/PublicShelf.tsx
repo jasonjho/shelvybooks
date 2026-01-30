@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 interface ShelfOwner {
   display_name: string | null;
   share_id: string;
+  username: string | null;
 }
 
 const DEFAULT_SETTINGS: ShelfSettingsType = {
@@ -149,9 +150,14 @@ export default function PublicShelf() {
           return;
         }
 
+        // Fetch owner username using secure RPC function
+        const { data: ownerUsername } = await supabase
+          .rpc('get_public_shelf_owner_username', { _share_id: shareId });
+
         setShelfOwner({
           display_name: shelfData.display_name,
           share_id: shelfData.share_id ?? shareId,
+          username: ownerUsername || null,
         });
 
         // Fetch books using secure RPC function (avoids exposing user_id)
@@ -202,7 +208,9 @@ export default function PublicShelf() {
     setSortOption('random');
   }, []);
 
-  const shelfTitle = shelfOwner?.display_name || "Someone's Bookshelf";
+  // Build shelf title: prefer display_name, then username, then fallback
+  const shelfTitle = shelfOwner?.display_name 
+    || (shelfOwner?.username ? `${shelfOwner.username}'s Bookshelf` : "Someone's Bookshelf");
 
   if (loading) {
     return (
