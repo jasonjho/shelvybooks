@@ -15,14 +15,15 @@ import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 import { useBooks } from '@/hooks/useBooks';
 import { useClubBooks } from '@/hooks/useBookClubs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useIsbndbDemoBooks } from '@/hooks/useIsbndbDemoBooks';
 import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
-import { demoBooks } from '@/data/demoBooks';
 import { Library, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -104,6 +105,9 @@ export default function Index() {
   // Get notifications for like badges (use totalLikesPerBook for persistent heart stickers)
   const { totalLikesPerBook } = useNotifications();
 
+  // Get ISBNdb-powered demo books for guests
+  const { books: isbndbDemoBooks, loading: demoLoading, source: demoSource } = useIsbndbDemoBooks();
+
   // Create a function that returns club info in the format BookSpine expects
   const getBookClubInfo = useCallback((title: string, author: string) => {
     const clubs = getBookClubs(title, author);
@@ -113,10 +117,10 @@ export default function Index() {
     }));
   }, [getBookClubs]);
 
-  // Get all books - demo for guests, real for authenticated users
+  // Get all books - ISBNdb demo for guests, real for authenticated users
   const allBooks = useMemo(() => {
-    return user ? books : demoBooks;
-  }, [user, books]);
+    return user ? books : isbndbDemoBooks;
+  }, [user, books, isbndbDemoBooks]);
 
   // Sort books
   const sortedBooks = useMemo(() => {
@@ -210,18 +214,25 @@ export default function Index() {
       {/* Main Content */}
       <main className="container py-8 relative z-10">
         {/* Loading state */}
-        {(authLoading || booksLoading) && (
+        {(authLoading || booksLoading || (!user && demoLoading)) && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
         )}
 
         {/* Not signed in message */}
-        {!authLoading && !user && (
+        {!authLoading && !user && !demoLoading && (
           <div className="py-4 mb-6 space-y-4">
-            <p className="text-foreground/80 text-base">
-              <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites, and <span className="text-amber-700 dark:text-amber-500 font-medium">join Book Clubs</span> with friends.
-            </p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-foreground/80 text-base">
+                <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites, and <span className="text-amber-700 dark:text-amber-500 font-medium">join Book Clubs</span> with friends.
+              </p>
+              {demoSource === 'isbndb' && (
+                <Badge variant="outline" className="text-xs bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30">
+                  Powered by ISBNdb
+                </Badge>
+              )}
+            </div>
             <Button 
               onClick={() => setAuthDialogOpen(true)}
               className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md"
