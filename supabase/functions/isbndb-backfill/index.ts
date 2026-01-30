@@ -110,16 +110,21 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '') || '';
     
+    console.log(`Auth header present: ${!!authHeader}`);
+    
     let isCronCall = false;
     try {
       const payloadBase64 = token.split('.')[1];
       if (payloadBase64) {
         const payload = JSON.parse(atob(payloadBase64));
+        console.log(`JWT payload: role=${payload.role}, ref=${payload.ref}`);
         isCronCall = payload.role === 'anon' && payload.ref === 'gzzkaxivhqqoezfqtpsd';
       }
-    } catch {
-      // Not a valid JWT
+    } catch (e) {
+      console.log(`JWT decode error: ${e}`);
     }
+    
+    console.log(`isCronCall: ${isCronCall}`);
     
     if (!isCronCall) {
       if (!authHeader?.startsWith('Bearer ')) {
