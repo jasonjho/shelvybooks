@@ -111,11 +111,11 @@ export function AdminBackfillControls() {
         supabase
           .from("books")
           .select("id", { count: "exact", head: true })
-          .not("metadata_attempted_at", "is", null),
+          .not("isbndb_attempted_at", "is", null),
         supabase
           .from("books")
           .select("id", { count: "exact", head: true })
-          .is("metadata_attempted_at", null)
+          .is("isbndb_attempted_at", null)
           .or("description.is.null,page_count.is.null,categories.is.null"),
       ]);
 
@@ -129,16 +129,44 @@ export function AdminBackfillControls() {
       const attempted = attemptedResult.count ?? 0;
       const pending = pendingResult.count ?? 0;
 
+      // Fetch all pending books to calculate unique title/author combinations
+      const allPendingBooks: { title: string; author: string }[] = [];
+      let offset = 0;
+      const batchSize = 1000;
+      
+      while (true) {
+        const { data: books, error } = await supabase
+          .from("books")
+          .select("title, author")
+          .is("isbndb_attempted_at", null)
+          .or("description.is.null,page_count.is.null,categories.is.null")
+          .range(offset, offset + batchSize - 1);
+        
+        if (error) throw error;
+        if (!books || books.length === 0) break;
+        
+        allPendingBooks.push(...books);
+        if (books.length < batchSize) break;
+        offset += batchSize;
+      }
+
+      // Calculate unique title/author combinations
+      const uniqueKeys = new Set(
+        allPendingBooks.map(b => `${b.title.toLowerCase().trim()}|${b.author.toLowerCase().trim()}`)
+      );
+      const uniquePending = uniqueKeys.size;
+
       return {
         total,
         withMetadata,
         attempted,
         pending,
+        uniquePending,
         isComplete: pending === 0,
         percentage: total > 0 ? Math.round((withMetadata / total) * 100) : 0,
       };
     },
-    refetchInterval: isRunning ? 5000 : false,
+    refetchInterval: isRunning || isRunningAll ? 5000 : false,
   });
 
   const triggerBackfill = useMutation({
@@ -246,7 +274,7 @@ export function AdminBackfillControls() {
             </div>
           )}
 
-          <div className="grid grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-5 gap-4 text-center">
             <div className="p-4 rounded-lg bg-muted/50">
               <p className="text-2xl font-bold">{stats?.total.toLocaleString()}</p>
               <p className="text-sm text-muted-foreground">Total Books</p>
@@ -273,7 +301,13 @@ export function AdminBackfillControls() {
                   {stats?.pending.toLocaleString()}
                 </p>
               </div>
-              <p className="text-sm text-muted-foreground">Pending</p>
+              <p className="text-sm text-muted-foreground">Pending (Total)</p>
+            </div>
+            <div className="p-4 rounded-lg bg-purple-500/10">
+              <p className="text-2xl font-bold text-purple-600">
+                {stats?.uniquePending.toLocaleString()}
+              </p>
+              <p className="text-sm text-muted-foreground">Pending (Unique)</p>
             </div>
           </div>
         </CardContent>
@@ -303,7 +337,7 @@ export function AdminBackfillControls() {
             ) : (
               <>
                 <Zap className="h-4 w-4" />
-                Backfill All Users ({stats?.pending ?? 0} pending)
+                Backfill All ({stats?.uniquePending ?? 0} unique pending)
               </>
             )}
           </Button>
