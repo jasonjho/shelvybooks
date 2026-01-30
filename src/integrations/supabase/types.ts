@@ -259,6 +259,7 @@ export type Database = {
           description: string | null
           id: string
           isbn: string | null
+          metadata_attempted_at: string | null
           page_count: number | null
           status: string
           title: string
@@ -275,6 +276,7 @@ export type Database = {
           description?: string | null
           id?: string
           isbn?: string | null
+          metadata_attempted_at?: string | null
           page_count?: number | null
           status?: string
           title: string
@@ -291,6 +293,7 @@ export type Database = {
           description?: string | null
           id?: string
           isbn?: string | null
+          metadata_attempted_at?: string | null
           page_count?: number | null
           status?: string
           title?: string
