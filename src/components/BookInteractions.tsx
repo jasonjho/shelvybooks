@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { Heart, MessageCircle, Trash2, Send } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Heart, MessageCircle, Trash2, Send, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useBookInteractions } from '@/hooks/useBookInteractions';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -14,7 +17,7 @@ interface BookInteractionsProps {
 
 export function BookInteractions({ bookId, bookTitle }: BookInteractionsProps) {
   const { user } = useAuth();
-  const { likeCount, hasLiked, toggleLike, comments, addComment, deleteComment, loading } =
+  const { likes, likeCount, hasLiked, toggleLike, comments, addComment, deleteComment, loading } =
     useBookInteractions(bookId);
   const [newComment, setNewComment] = useState('');
   const [showComments, setShowComments] = useState(false);
@@ -30,18 +33,63 @@ export function BookInteractions({ bookId, bookTitle }: BookInteractionsProps) {
     <div className="space-y-3">
       {/* Like button and comment toggle */}
       <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleLike}
-          className={cn(
-            'gap-1.5 transition-colors',
-            hasLiked && 'text-red-500 hover:text-red-600'
+        <div className="flex items-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleLike}
+            className={cn(
+              'gap-1.5 transition-colors',
+              hasLiked && 'text-red-500 hover:text-red-600'
+            )}
+          >
+            <Heart className={cn('w-4 h-4', hasLiked && 'fill-current')} />
+            <span className="text-xs">{likeCount}</span>
+          </Button>
+
+          {/* Show who liked - popover with list */}
+          {likeCount > 0 && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-1 px-2 h-8">
+                  <Users className="w-3.5 h-3.5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-0" align="start">
+                <div className="px-3 py-2 border-b border-border">
+                  <p className="text-sm font-medium">Liked by</p>
+                </div>
+                <div className="max-h-48 overflow-y-auto">
+                  {likes.map((like) => (
+                    <div key={like.userId} className="px-3 py-2 hover:bg-muted/50 transition-colors">
+                      {like.username ? (
+                        <Link 
+                          to={`/u/${like.username}`} 
+                          className="flex items-center gap-2 group"
+                        >
+                          <Avatar className="w-6 h-6">
+                            <AvatarImage src={like.avatarUrl || undefined} alt={like.username} />
+                            <AvatarFallback className="text-xs">
+                              {like.username.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm group-hover:underline">{like.username}</span>
+                        </Link>
+                      ) : (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Avatar className="w-6 h-6">
+                            <AvatarFallback className="text-xs">?</AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm italic">Anonymous</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
           )}
-        >
-          <Heart className={cn('w-4 h-4', hasLiked && 'fill-current')} />
-          <span className="text-xs">{likeCount}</span>
-        </Button>
+        </div>
 
         <Button
           variant="ghost"
@@ -66,7 +114,26 @@ export function BookInteractions({ bookId, bookTitle }: BookInteractionsProps) {
                   className="bg-muted/50 rounded-lg px-3 py-2 text-sm group"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-foreground leading-relaxed">{comment.content}</p>
+                    <div className="flex-1 min-w-0">
+                      {/* Username */}
+                      {comment.username ? (
+                        <Link 
+                          to={`/u/${comment.username}`}
+                          className="inline-flex items-center gap-1.5 mb-1"
+                        >
+                          <Avatar className="w-4 h-4">
+                            <AvatarImage src={comment.avatarUrl || undefined} alt={comment.username} />
+                            <AvatarFallback className="text-[10px]">
+                              {comment.username.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs font-medium hover:underline">{comment.username}</span>
+                        </Link>
+                      ) : (
+                        <span className="text-xs text-muted-foreground mb-1 block">Anonymous</span>
+                      )}
+                      <p className="text-foreground leading-relaxed">{comment.content}</p>
+                    </div>
                     {user?.id === comment.userId && (
                       <Button
                         variant="ghost"

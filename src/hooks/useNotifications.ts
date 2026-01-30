@@ -7,6 +7,8 @@ interface NewLike {
   bookId: string;
   bookTitle: string;
   likedAt: string;
+  username?: string;
+  avatarUrl?: string | null;
 }
 
 interface NotificationData {
@@ -86,13 +88,35 @@ export function useNotifications(): NotificationData {
       const newLikesData = likes.filter(l => new Date(l.created_at) > lastSeen);
       setNewLikesCount(newLikesData.length);
 
-      // Map to NewLike format
-      setNewLikes(newLikesData.slice(0, 10).map(l => ({
-        id: l.id,
-        bookId: l.book_id,
-        bookTitle: bookTitleMap[l.book_id] || 'Unknown Book',
-        likedAt: l.created_at,
-      })));
+      // Fetch profiles for all likers
+      const likerIds = [...new Set(newLikesData.slice(0, 10).map(l => l.user_id))];
+      let profilesMap = new Map<string, { username: string; avatar_url: string | null }>();
+      
+      if (likerIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, username, avatar_url')
+          .in('user_id', likerIds);
+
+        if (profilesData) {
+          profilesData.forEach((p) => {
+            profilesMap.set(p.user_id, { username: p.username, avatar_url: p.avatar_url });
+          });
+        }
+      }
+
+      // Map to NewLike format with usernames
+      setNewLikes(newLikesData.slice(0, 10).map(l => {
+        const profile = profilesMap.get(l.user_id);
+        return {
+          id: l.id,
+          bookId: l.book_id,
+          bookTitle: bookTitleMap[l.book_id] || 'Unknown Book',
+          likedAt: l.created_at,
+          username: profile?.username,
+          avatarUrl: profile?.avatar_url,
+        };
+      }));
 
       // Count new likes per book
       const perBook: Record<string, number> = {};

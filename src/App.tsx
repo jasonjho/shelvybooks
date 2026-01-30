@@ -6,10 +6,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BookAnimationProvider } from "@/contexts/BookAnimationContext";
+import { ProfileSetupWrapper } from "@/components/ProfileSetupWrapper";
 import Index from "./pages/Index";
 import PublicShelf from "./pages/PublicShelf";
 import ClubPage from "./pages/ClubPage";
 import JoinClubPage from "./pages/JoinClubPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,12 +24,14 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <ProfileSetupWrapper />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/shelf/:shareId" element={<PublicShelf />} />
                 <Route path="/clubs/:clubId" element={<ClubPage />} />
                 <Route path="/clubs/join/:inviteCode" element={<JoinClubPage />} />
+                <Route path="/u/:username" element={<ProfilePage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
