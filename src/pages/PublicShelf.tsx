@@ -271,37 +271,23 @@ export default function PublicShelf() {
       </header>
 
       <main className="container py-8 relative z-10">
-        {/* Owner info */}
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-display mb-2">{shelfTitle}</h2>
-          <p className="text-muted-foreground mb-3">
-            {books.length} book{books.length !== 1 ? 's' : ''} on the shelf
-          </p>
-          {/* Follow button - only show if viewing someone else's shelf and we have their user_id */}
-          {shelfOwner?.user_id && user?.id !== shelfOwner.user_id && (
-            <div className="mb-4">
-              <FollowButton targetUserId={shelfOwner.user_id} />
-            </div>
-          )}
-          {!user && (
-            <div className="mt-6 max-w-md mx-auto">
-              <p className="text-sm text-muted-foreground mb-4">
-                <span className="text-amber-600 dark:text-amber-500 font-medium">Track</span> your reading journey, {' '}
-                <span className="text-amber-600 dark:text-amber-500 font-medium">organize</span> by status, and {' '}
-                <span className="text-amber-600 dark:text-amber-500 font-medium">discover</span> new favorites.
-              </p>
-              <Link to="/">
-                <Button className="gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md">
-                  <BookOpen className="w-4 h-4" />
-                  Start Your Shelf
-                </Button>
-              </Link>
-            </div>
-          )}
+        {/* Owner info - simplified header */}
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-display">
+            {shelfTitle}
+            <span className="text-base font-normal text-muted-foreground ml-2">
+              ({books.length})
+            </span>
+          </h2>
         </div>
 
-        {/* Filters and Sort */}
-        <div className="flex justify-center mb-6">
+        {/* Controls row: Follow + Filters/Sort + CTA */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+          {/* Follow button - only show if viewing someone else's shelf */}
+          {shelfOwner?.user_id && user?.id !== shelfOwner.user_id && (
+            <FollowButton targetUserId={shelfOwner.user_id} />
+          )}
+          
           <ShelfControls
             activeFilters={activeFilters}
             onFilterChange={setActiveFilters}
@@ -310,6 +296,16 @@ export default function PublicShelf() {
             onShuffle={handleShuffle}
             bookCounts={bookCounts}
           />
+          
+          {/* CTA for logged-out users - inline with controls */}
+          {!user && (
+            <Link to="/">
+              <Button size="sm" className="gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md">
+                <BookOpen className="w-4 h-4" />
+                Start Your Shelf
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Bookshelf - Mobile vs Desktop */}
