@@ -13,36 +13,49 @@ interface BookMetadata {
   categories?: string[];
 }
 
-// Search Google Books for metadata
+// Search Google Books for metadata - try multiple query strategies
 async function fetchGoogleBooksMetadata(title: string, author: string, apiKey?: string): Promise<BookMetadata | null> {
-  const query = `intitle:${title} inauthor:${author}`;
-  let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=1&printType=books`;
-  
-  if (apiKey) {
-    url += `&key=${apiKey}`;
-  }
+  // Try different query strategies in order of specificity
+  const queries = [
+    `intitle:${title} inauthor:${author}`,
+    `"${title}" ${author}`,
+    `${title} ${author}`,
+  ];
 
-  try {
-    const response = await fetch(url);
-    if (!response.ok) return null;
+  for (const query of queries) {
+    let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=1&printType=books`;
     
-    const data = await response.json();
-    const book = data.items?.[0]?.volumeInfo;
-    
-    if (!book) return null;
-    
-    const isbn = book.industryIdentifiers?.find((id: { type: string }) => id.type === 'ISBN_13')?.identifier
-      || book.industryIdentifiers?.find((id: { type: string }) => id.type === 'ISBN_10')?.identifier;
-    
-    return {
-      pageCount: book.pageCount,
-      isbn,
-      description: book.description?.slice(0, 2000),
-      categories: book.categories?.slice(0, 5),
-    };
-  } catch {
-    return null;
+    if (apiKey) {
+      url += `&key=${apiKey}`;
+    }
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) continue;
+      
+      const data = await response.json();
+      const book = data.items?.[0]?.volumeInfo;
+      
+      if (!book) continue;
+      
+      // Only return if we got useful data
+      if (book.pageCount || book.description || book.categories?.length) {
+        const isbn = book.industryIdentifiers?.find((id: { type: string }) => id.type === 'ISBN_13')?.identifier
+          || book.industryIdentifiers?.find((id: { type: string }) => id.type === 'ISBN_10')?.identifier;
+        
+        return {
+          pageCount: book.pageCount,
+          isbn,
+          description: book.description?.slice(0, 2000),
+          categories: book.categories?.slice(0, 5),
+        };
+      }
+    } catch {
+      continue;
+    }
   }
+  
+  return null;
 }
 
 // Search Open Library for metadata (fallback)
@@ -117,7 +130,9 @@ serve(async (req) => {
     console.log(`Found ${books.length} books needing metadata backfill`);
 
     let updated = 0;
+    let noDataFound = 0;
     const errors: string[] = [];
+    const notFound: string[] = [];
 
     for (const book of books) {
       // Skip if book already has all metadata
@@ -162,6 +177,11 @@ serve(async (req) => {
               console.log(`Updated: ${book.title}`);
             }
           }
+        } else {
+          // No metadata found from any source
+          noDataFound++;
+          notFound.push(`${book.title} by ${book.author}`);
+          console.log(`No metadata found for: ${book.title} by ${book.author}`);
         }
 
         // Rate limiting delay
@@ -176,6 +196,8 @@ serve(async (req) => {
         message: `Backfill complete`, 
         total: books.length,
         updated,
+        noDataFound,
+        notFoundSamples: notFound.slice(0, 5),
         errors: errors.length > 0 ? errors.slice(0, 10) : undefined 
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
