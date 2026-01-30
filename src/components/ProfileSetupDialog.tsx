@@ -100,8 +100,8 @@ export function ProfileSetupDialog({ open, onComplete }: ProfileSetupDialogProps
     <Dialog open={dialogOpen} onOpenChange={() => {}}>
       <DialogContent className="sm:max-w-md" hideCloseButton onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">Set up your profile</DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
+          <DialogTitle>Set up your profile</DialogTitle>
+          <DialogDescription>
             Choose a username and optional avatar to get started.
           </DialogDescription>
         </DialogHeader>
