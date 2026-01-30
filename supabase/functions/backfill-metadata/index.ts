@@ -115,23 +115,21 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const googleApiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY');
     
-    // Use getClaims for faster local JWT validation (no network call)
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    // Use service role client to validate the token
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
     
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
-    if (claimsError || !claimsData?.claims?.sub) {
-      console.log('Claims validation failed:', claimsError?.message || 'No claims');
+    if (authError || !user) {
+      console.log('Auth validation failed:', authError?.message || 'No user');
       return new Response(
         JSON.stringify({ error: 'Unauthorized - Invalid token' }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const userId = claimsData.claims.sub;
+    const userId = user.id;
     console.log(`Processing backfill for user ${userId}`);
 
     // Use service role for database operations
