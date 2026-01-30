@@ -38,14 +38,14 @@ export function NotificationBell() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
-        <div className="p-3 border-b flex items-center justify-between">
+        <div className="px-3 py-2.5 border-b flex items-center justify-between">
           <h3 className="font-semibold text-sm">Notifications</h3>
           {newLikesCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={markAsSeen}
-              className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground"
+              className="h-6 text-xs gap-1 text-muted-foreground hover:text-foreground"
             >
               <Check className="h-3 w-3" />
               Mark all read
@@ -72,16 +72,16 @@ export function NotificationBell() {
               {newLikes.map((like) => (
                 <div 
                   key={like.id} 
-                  className="p-3 hover:bg-muted/50 transition-colors"
+                  className="px-3 py-2.5 hover:bg-muted/50 transition-colors"
                 >
-                  <div className="flex items-start gap-2">
-                    <div className="p-1.5 rounded-full bg-pink-100 dark:bg-pink-900/30">
+                  <div className="flex items-start gap-2.5">
+                    <div className="p-1.5 rounded-full bg-pink-100 dark:bg-pink-900/30 shrink-0">
                       <Heart className="h-3.5 w-3.5 text-pink-500 fill-pink-500" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm">
+                      <p className="text-sm leading-snug">
                         Someone liked{' '}
-                        <span className="font-medium truncate">
+                        <span className="font-medium">
                           {like.bookTitle}
                         </span>
                       </p>
