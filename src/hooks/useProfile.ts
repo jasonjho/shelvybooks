@@ -19,6 +19,13 @@ export function useProfile() {
   const [loading, setLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
 
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Function to trigger a profile refetch
+  const refreshProfile = useCallback(() => {
+    setRefreshKey((k) => k + 1);
+  }, []);
+
   // Fetch profile for current user
   useEffect(() => {
     const fetchProfile = async () => {
@@ -62,7 +69,7 @@ export function useProfile() {
     };
 
     fetchProfile();
-  }, [user]);
+  }, [user, refreshKey]);
 
   const createProfile = useCallback(
     async (username: string, avatarFile?: File) => {
@@ -199,6 +206,7 @@ export function useProfile() {
     needsSetup,
     createProfile,
     updateProfile,
+    refreshProfile,
   };
 }
 
