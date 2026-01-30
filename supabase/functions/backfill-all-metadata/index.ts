@@ -13,13 +13,26 @@ interface BookMetadata {
   categories?: string[];
 }
 
+// Clean title by removing series notation like "(Book #1)", "#2", etc.
+function cleanTitle(title: string): string {
+  return title
+    .replace(/\s*\([^)]*#\d+[^)]*\)\s*/gi, ' ')  // Remove "(Series Name #1)"
+    .replace(/\s*#\d+\s*/gi, ' ')                  // Remove standalone "#1"
+    .replace(/\s*,?\s*book\s+\d+\s*/gi, ' ')       // Remove "Book 1" or ", Book 1"
+    .replace(/\s*,?\s*vol\.?\s*\d+\s*/gi, ' ')     // Remove "Vol 1" or "Vol. 1"
+    .replace(/\s+/g, ' ')                          // Normalize whitespace
+    .trim();
+}
+
 // Search Google Books for metadata - try multiple query strategies
 async function fetchGoogleBooksMetadata(title: string, author: string, apiKey?: string): Promise<BookMetadata | null> {
+  const cleanedTitle = cleanTitle(title);
+  
   // Try different query strategies in order of specificity
   const queries = [
-    `intitle:${title} inauthor:${author}`,
-    `"${title}" ${author}`,
-    `${title} ${author}`,
+    `intitle:${cleanedTitle} inauthor:${author}`,
+    `"${cleanedTitle}" ${author}`,
+    `${cleanedTitle} ${author}`,
   ];
 
   for (const query of queries) {
@@ -60,7 +73,8 @@ async function fetchGoogleBooksMetadata(title: string, author: string, apiKey?: 
 
 // Search Open Library for metadata (fallback)
 async function fetchOpenLibraryMetadata(title: string, author: string): Promise<BookMetadata | null> {
-  const query = `${title} ${author}`;
+  const cleanedTitle = cleanTitle(title);
+  const query = `${cleanedTitle} ${author}`;
   const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=1&fields=key,title,author_name,number_of_pages_median,isbn,subject`;
 
   try {
@@ -107,14 +121,13 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Find books missing ALL metadata (most critical ones first)
-    // Process very small batch to complete within timeout
+    // Find books missing any key metadata (description, page_count, or categories)
+    // Process small batch to complete within timeout
     const { data: books, error: fetchError } = await supabase
       .from('books')
       .select('id, title, author, page_count, isbn, description, categories')
-      .is('page_count', null)
-      .is('isbn', null)
-      .limit(15); // Very small batch for reliability
+      .or('description.is.null,page_count.is.null,categories.is.null')
+      .limit(20); // Small batch for reliability
 
     if (fetchError) {
       throw new Error(`Failed to fetch books: ${fetchError.message}`);
