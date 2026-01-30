@@ -21,7 +21,6 @@ import { useClubBooks } from '@/hooks/useBookClubs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
-import { useAutoBackfill } from '@/hooks/useAutoBackfill';
 import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
 import { demoBooks } from '@/data/demoBooks';
 import { Library, Loader2 } from 'lucide-react';
@@ -85,11 +84,8 @@ export default function Index() {
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
   
   const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
-  
-  // Auto-backfill metadata on login
-  useAutoBackfill();
-  
-  const { 
+
+  const {
     books,
     loading: booksLoading,
     shelfSkin, 
