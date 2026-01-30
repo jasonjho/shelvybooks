@@ -103,7 +103,7 @@ export default function ProfilePage() {
         </header>
         <main className="container py-12 text-center">
           <User className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-          <h1 className="text-2xl font-semibold mb-2">User not found</h1>
+          <h1 className="text-2xl font-sans font-semibold mb-2">User not found</h1>
           <p className="text-muted-foreground mb-6">
             The profile you're looking for doesn't exist.
           </p>
@@ -152,7 +152,7 @@ export default function ProfilePage() {
           </Avatar>
 
           {/* Username */}
-          <h1 className="text-2xl font-semibold mb-1">{profile.username}</h1>
+          <h1 className="text-2xl font-sans font-semibold mb-1">{profile.username}</h1>
           <p className="text-sm text-muted-foreground mb-6">Member since {memberSince}</p>
 
           {/* Public shelf link */}
