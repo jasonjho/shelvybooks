@@ -168,7 +168,7 @@ export function AuthButton() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="gap-2 px-2">
+          <Button variant="outline" size="sm" className="gap-2 px-2 bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground">
           <Avatar className="w-6 h-6">
               <AvatarImage src={avatarUrl} alt={displayName || 'User'} />
               <AvatarFallback className="text-xs bg-primary/15 text-primary">{initials}</AvatarFallback>
