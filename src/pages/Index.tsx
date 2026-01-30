@@ -316,7 +316,7 @@ export default function Index() {
             <p>Right-click a book to move it or remove it from your shelf</p>
           )}
           <p className="text-xs opacity-70">
-            Made with <span className="text-red-500">♥</span> in NYC
+            Made with <span className="text-red-500">♥</span> in NY
           </p>
         </div>
       </footer>
