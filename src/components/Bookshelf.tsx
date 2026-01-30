@@ -20,6 +20,8 @@ interface BookshelfProps {
   onSelectBook?: (book: Book) => void;
   /** Count of new likes per book ID */
   likesPerBook?: Record<string, number>;
+  /** Display name for nameplate decoration */
+  displayName?: string;
 }
 
 function Bookend() {
@@ -129,6 +131,12 @@ interface ShelfRowProps {
   notes: Map<string, BookNote>;
   onAddNote: (book: Book) => void;
   likesPerBook?: Record<string, number>;
+  /** Show nameplate on this row */
+  showNameplate?: boolean;
+  /** Display name for nameplate */
+  displayName?: string;
+  /** Show stacked books on this row */
+  showStackedBooks?: boolean;
 }
 
 function ShelfRow({
@@ -145,6 +153,9 @@ function ShelfRow({
   notes,
   onAddNote,
   likesPerBook,
+  showNameplate,
+  displayName,
+  showStackedBooks,
 }: ShelfRowProps) {
   const hasBooks = books.length > 0;
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
@@ -155,7 +166,21 @@ function ShelfRow({
     : [];
 
   // Build items array: interleave books and decorations
-  const items: Array<{ type: 'book'; book: Book } | { type: 'decoration'; decorationType: DecorationType; seed: number }> = [];
+  type ShelfItem = 
+    | { type: 'book'; book: Book } 
+    | { type: 'decoration'; decorationType: DecorationType; seed: number; displayName?: string };
+  
+  const items: ShelfItem[] = [];
+  
+  // Add nameplate at the start if enabled for this row
+  if (showNameplate) {
+    items.push({ 
+      type: 'decoration', 
+      decorationType: 'nameplate', 
+      seed: rowIndex,
+      displayName: displayName,
+    });
+  }
   
   let decorIndex = 0;
   books.forEach((book, bookIndex) => {
@@ -182,6 +207,15 @@ function ShelfRow({
       seed: dec.seed 
     });
     decorIndex++;
+  }
+  
+  // Add stacked books at the end if enabled for this row
+  if (showStackedBooks && books.length > 0) {
+    items.push({ 
+      type: 'decoration', 
+      decorationType: 'horizontal-stack', 
+      seed: rowIndex * 7,
+    });
   }
 
   return (
@@ -230,6 +264,7 @@ function ShelfRow({
               <ShelfDecoration
                 type={item.decorationType}
                 seed={item.seed}
+                displayName={'displayName' in item ? item.displayName : undefined}
               />
             </div>
           );
@@ -253,7 +288,7 @@ function ShelfRow({
   );
 }
 
-export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo, onSelectBook, likesPerBook }: BookshelfProps) {
+export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo, onSelectBook, likesPerBook, displayName }: BookshelfProps) {
   const [internalSelectedBook, setInternalSelectedBook] = useState<Book | null>(null);
   const [noteBook, setNoteBook] = useState<Book | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -368,6 +403,9 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
           notes={notes}
           onAddNote={setNoteBook}
           likesPerBook={likesPerBook}
+          showNameplate={settings.showNameplate && rowIndex === 0}
+          displayName={displayName}
+          showStackedBooks={settings.showStackedBooks && rowIndex % 2 === 1}
         />
       ))}
 
