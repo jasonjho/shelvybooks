@@ -15,6 +15,10 @@ interface AddBookDialogProps {
     coverUrl: string;
     status: BookStatus;
     openLibraryKey: string;
+    pageCount?: number;
+    isbn?: string;
+    description?: string;
+    categories?: string[];
   }) => void;
   defaultStatus: BookStatus;
 }
@@ -41,12 +45,20 @@ export function AddBookDialog({ onAddBook, defaultStatus }: AddBookDialogProps) 
   }, [query]);
 
   const handleSelect = (book: GoogleBook) => {
+    // Extract ISBN (prefer ISBN-13, fall back to ISBN-10)
+    const isbn = book.volumeInfo.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier
+      || book.volumeInfo.industryIdentifiers?.find(id => id.type === 'ISBN_10')?.identifier;
+    
     onAddBook({
       title: book.volumeInfo.title,
       author: book.volumeInfo.authors?.[0] || 'Unknown Author',
       coverUrl: getCoverUrl(book),
       status: defaultStatus,
       openLibraryKey: book.volumeInfo.infoLink || book.id,
+      pageCount: book.volumeInfo.pageCount,
+      isbn,
+      description: book.volumeInfo.description,
+      categories: book.volumeInfo.categories?.slice(0, 5),
     });
     setOpen(false);
     setQuery('');

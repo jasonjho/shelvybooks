@@ -18,11 +18,17 @@ interface BookResult {
     publishedDate?: string;
     categories?: string[];
     infoLink?: string;
+    pageCount?: number;
+    industryIdentifiers?: Array<{
+      type: string;
+      identifier: string;
+    }>;
   };
 }
 
 // Search Google Books API
 async function searchGoogleBooks(query: string, apiKey?: string): Promise<BookResult[]> {
+  // Request additional fields for metadata
   let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=12&printType=books`;
   
   if (apiKey) {
@@ -42,7 +48,7 @@ async function searchGoogleBooks(query: string, apiKey?: string): Promise<BookRe
 
 // Search Open Library - better for fiction/novels
 async function searchOpenLibrary(query: string): Promise<BookResult[]> {
-  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=12&fields=key,title,author_name,cover_i,first_publish_year,subject`;
+  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=12&fields=key,title,author_name,cover_i,first_publish_year,subject,number_of_pages_median,isbn`;
   
   const response = await fetch(url);
   
@@ -62,6 +68,8 @@ async function searchOpenLibrary(query: string): Promise<BookResult[]> {
     cover_i?: number;
     first_publish_year?: number;
     subject?: string[];
+    number_of_pages_median?: number;
+    isbn?: string[];
   }) => ({
     id: `ol-${doc.key}`,
     volumeInfo: {
@@ -72,8 +80,10 @@ async function searchOpenLibrary(query: string): Promise<BookResult[]> {
         smallThumbnail: `https://covers.openlibrary.org/b/id/${doc.cover_i}-S.jpg`,
       } : undefined,
       publishedDate: doc.first_publish_year?.toString(),
-      categories: doc.subject?.slice(0, 3),
+      categories: doc.subject?.slice(0, 5),
       infoLink: `https://openlibrary.org${doc.key}`,
+      pageCount: doc.number_of_pages_median,
+      industryIdentifiers: doc.isbn?.[0] ? [{ type: 'ISBN_13', identifier: doc.isbn[0] }] : undefined,
     },
   }));
 }

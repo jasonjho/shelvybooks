@@ -68,6 +68,10 @@ export function useBooks() {
             status: row.status as BookStatus,
             openLibraryKey: undefined,
             completedAt: row.completed_at || undefined,
+            pageCount: row.page_count || undefined,
+            isbn: row.isbn || undefined,
+            description: row.description || undefined,
+            categories: row.categories || undefined,
           }))
         );
       }
@@ -105,6 +109,10 @@ export function useBooks() {
           author: book.author,
           cover_url: book.coverUrl,
           status: book.status,
+          page_count: book.pageCount,
+          isbn: book.isbn,
+          description: book.description,
+          categories: book.categories,
         })
         .select()
         .single();
@@ -127,6 +135,10 @@ export function useBooks() {
           author: data.author,
           coverUrl: data.cover_url || '',
           status: data.status as BookStatus,
+          pageCount: data.page_count || undefined,
+          isbn: data.isbn || undefined,
+          description: data.description || undefined,
+          categories: data.categories || undefined,
         },
       ]);
 
