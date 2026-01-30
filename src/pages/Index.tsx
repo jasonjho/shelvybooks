@@ -168,7 +168,7 @@ export default function Index() {
   const ambientGradient = getAmbientGradient(settings.backgroundTheme);
 
   return (
-    <div className={cn("min-h-screen overflow-x-hidden", getBackgroundClass(settings.backgroundTheme))}>
+    <div className={cn("min-h-screen overflow-x-hidden overscroll-x-none", getBackgroundClass(settings.backgroundTheme))}>
 
       {/* Ambient top light */}
       {settings.showAmbientLight && ambientGradient && (
