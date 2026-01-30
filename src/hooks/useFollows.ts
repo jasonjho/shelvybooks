@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useCallback, useState, useEffect } from 'react';
 
 export interface Follow {
   id: string;
@@ -108,13 +109,42 @@ export function useFollows() {
   };
 }
 
+interface FollowedBook {
+  id: string;
+  title: string;
+  author: string;
+  cover_url: string | null;
+  created_at: string;
+  user_id: string;
+  username: string;
+  avatarUrl: string | null;
+}
+
 // Hook to get new books from followed users for notifications
 export function useFollowedUsersBooks() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [lastSeenAt, setLastSeenAt] = useState<Date | null>(null);
 
-  return useQuery({
+  // Fetch last seen timestamp
+  useEffect(() => {
+    if (!user) return;
+    
+    supabase
+      .from('notification_settings')
+      .select('last_seen_follows_at')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.last_seen_follows_at) {
+          setLastSeenAt(new Date(data.last_seen_follows_at));
+        }
+      });
+  }, [user]);
+
+  const { data: allBooks = [], isLoading } = useQuery({
     queryKey: ['followed-users-books', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<FollowedBook[]> => {
       if (!user) return [];
 
       // Get users I follow
@@ -168,4 +198,40 @@ export function useFollowedUsersBooks() {
     enabled: !!user,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  // Filter to only show books added after last seen
+  const newBooks = allBooks.filter(book => {
+    if (!lastSeenAt) return true; // If never seen, show all
+    return new Date(book.created_at) > lastSeenAt;
+  });
+
+  // Mark followed books as seen
+  const markFollowsAsSeen = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      // Upsert notification settings with current timestamp
+      await supabase
+        .from('notification_settings')
+        .upsert({ 
+          user_id: user.id, 
+          last_seen_follows_at: new Date().toISOString() 
+        }, { 
+          onConflict: 'user_id' 
+        });
+
+      setLastSeenAt(new Date());
+      queryClient.invalidateQueries({ queryKey: ['followed-users-books', user.id] });
+    } catch (error) {
+      console.error('Error marking follows as seen:', error);
+    }
+  }, [user, queryClient]);
+
+  return {
+    data: newBooks,
+    allBooks,
+    isLoading,
+    newCount: newBooks.length,
+    markAsSeen: markFollowsAsSeen,
+  };
 }

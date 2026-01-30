@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Bell, Heart, Check, BookPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -15,10 +16,23 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function NotificationBell() {
+  const [activeTab, setActiveTab] = useState<'likes' | 'following'>('likes');
   const { newLikesCount, newLikes, markAsSeen, isLoading } = useNotifications();
-  const { data: followedBooks = [], isLoading: loadingFollowedBooks } = useFollowedUsersBooks();
+  const { data: followedBooks = [], newCount: followedBooksCount, isLoading: loadingFollowedBooks, markAsSeen: markFollowsAsSeen } = useFollowedUsersBooks();
 
-  const totalCount = newLikesCount + followedBooks.length;
+  const totalCount = newLikesCount + followedBooksCount;
+
+  // Determine which clear action to show based on active tab
+  const showClearButton = (activeTab === 'likes' && newLikesCount > 0) || 
+                          (activeTab === 'following' && followedBooksCount > 0);
+  
+  const handleClear = () => {
+    if (activeTab === 'likes') {
+      markAsSeen();
+    } else {
+      markFollowsAsSeen();
+    }
+  };
 
   return (
     <Popover>
@@ -45,21 +59,21 @@ export function NotificationBell() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
-        <Tabs defaultValue="likes" className="w-full">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'likes' | 'following')} className="w-full">
           <div className="px-3 py-2 border-b border-border flex items-center justify-between">
             <TabsList className="h-8 p-0.5 bg-muted/50">
               <TabsTrigger value="likes" className="text-xs px-2.5 h-7 font-sans data-[state=active]:font-medium">
                 Likes {newLikesCount > 0 && `(${newLikesCount})`}
               </TabsTrigger>
               <TabsTrigger value="following" className="text-xs px-2.5 h-7 font-sans data-[state=active]:font-medium">
-                Following {followedBooks.length > 0 && `(${followedBooks.length})`}
+                Following {followedBooksCount > 0 && `(${followedBooksCount})`}
               </TabsTrigger>
             </TabsList>
-            {newLikesCount > 0 && (
+            {showClearButton && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={markAsSeen}
+                onClick={handleClear}
                 className="h-6 text-xs gap-1 text-muted-foreground hover:text-foreground font-sans"
               >
                 <Check className="h-3 w-3" />
