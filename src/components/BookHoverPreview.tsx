@@ -1,15 +1,17 @@
 import { Book } from '@/types/book';
 import { BookOpen, Hash, Tag, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { getAmazonBookUrl } from '@/lib/amazonLinks';
 
 interface BookHoverPreviewProps {
   book: Book;
-  amazonUrl: string;
+  amazonUrl?: string; // Now optional - will be generated if not provided
   onSelect?: () => void;
   clubInfo?: Array<{ clubName: string; status: string }>;
 }
 
 export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo }: BookHoverPreviewProps) {
+  const finalAmazonUrl = amazonUrl || getAmazonBookUrl(book.title, book.author, book.isbn);
   const hasMetadata = book.pageCount || book.isbn || book.categories?.length || book.description;
 
   return (
@@ -81,7 +83,7 @@ export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo }: BookHo
       
       {/* Amazon link */}
       <a 
-        href={amazonUrl}
+        href={finalAmazonUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="text-primary hover:underline mt-2 text-xs flex items-center gap-1 font-medium"
