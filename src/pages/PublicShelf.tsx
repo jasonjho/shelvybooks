@@ -156,7 +156,19 @@ export default function PublicShelf() {
         if (booksError) throw booksError;
 
         // Transform to Book type
-        const transformedBooks: Book[] = (booksData || []).map((b) => ({
+        const transformedBooks: Book[] = (booksData || []).map((b: {
+          id: string;
+          title: string;
+          author: string;
+          color: string;
+          status: string;
+          cover_url: string | null;
+          created_at: string;
+          page_count: number | null;
+          isbn: string | null;
+          description: string | null;
+          categories: string[] | null;
+        }) => ({
           id: b.id,
           title: b.title,
           author: b.author,
@@ -164,6 +176,10 @@ export default function PublicShelf() {
           status: b.status as BookStatus,
           coverUrl: b.cover_url || '/placeholder.svg',
           createdAt: b.created_at,
+          pageCount: b.page_count ?? undefined,
+          isbn: b.isbn ?? undefined,
+          description: b.description ?? undefined,
+          categories: b.categories ?? undefined,
         }));
 
         setBooks(transformedBooks);
