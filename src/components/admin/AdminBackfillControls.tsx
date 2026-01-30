@@ -4,17 +4,83 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Database, Play, RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Database, Play, RefreshCw, CheckCircle, AlertCircle, User } from "lucide-react";
 import { toast } from "sonner";
+
+interface UserWithBooks {
+  user_id: string;
+  email: string;
+  book_count: number;
+  pending_count: number;
+}
 
 export function AdminBackfillControls() {
   const [isRunning, setIsRunning] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+  // Fetch users with book counts
+  const { data: users, isLoading: usersLoading } = useQuery({
+    queryKey: ["admin-users-with-books"],
+    queryFn: async () => {
+      // Get all books grouped by user
+      const { data: books, error } = await supabase
+        .from("books")
+        .select("user_id, metadata_attempted_at, page_count, description, categories");
+
+      if (error) throw error;
+
+      // Group by user and calculate stats
+      const userMap = new Map<string, { total: number; pending: number }>();
+      
+      for (const book of books || []) {
+        const userId = book.user_id;
+        if (!userMap.has(userId)) {
+          userMap.set(userId, { total: 0, pending: 0 });
+        }
+        const stats = userMap.get(userId)!;
+        stats.total++;
+        if (!book.metadata_attempted_at && (!book.page_count || !book.description || !book.categories)) {
+          stats.pending++;
+        }
+      }
+
+      // Get user emails via admin function
+      const userIds = Array.from(userMap.keys());
+      const { data: userData } = await supabase.functions.invoke("admin-users", {
+        body: { userIds },
+      });
+
+      const emailMap = new Map<string, string>();
+      if (userData?.users) {
+        for (const u of userData.users) {
+          emailMap.set(u.id, u.email || "Unknown");
+        }
+      }
+
+      // Build result
+      const result: UserWithBooks[] = [];
+      for (const [userId, stats] of userMap.entries()) {
+        result.push({
+          user_id: userId,
+          email: emailMap.get(userId) || userId.slice(0, 8) + "...",
+          book_count: stats.total,
+          pending_count: stats.pending,
+        });
+      }
+
+      // Sort by pending count descending
+      result.sort((a, b) => b.pending_count - a.pending_count);
+      return result;
+    },
+  });
+
+  // Get selected user stats
+  const selectedUser = users?.find(u => u.user_id === selectedUserId);
 
   const { data: stats, isLoading, refetch } = useQuery({
     queryKey: ["admin-backfill-stats"],
     queryFn: async () => {
-      // IMPORTANT: never fetch all rows here (default API cap is 1000).
-      // Use count queries so totals are accurate even with large datasets.
       const [totalResult, withMetadataResult, attemptedResult, pendingResult] = await Promise.all([
         supabase.from("books").select("id", { count: "exact", head: true }),
         supabase
@@ -51,34 +117,37 @@ export function AdminBackfillControls() {
         percentage: total > 0 ? Math.round((withMetadata / total) * 100) : 0,
       };
     },
-    refetchInterval: isRunning ? 5000 : false, // Poll when running
+    refetchInterval: isRunning ? 5000 : false,
   });
 
   const triggerBackfill = useMutation({
     mutationFn: async () => {
+      if (!selectedUserId) {
+        throw new Error("Please select a user first");
+      }
+      
       setIsRunning(true);
       
-      const response = await supabase.functions.invoke("backfill-all-metadata", {
-        body: { batchSize: 25 },
+      const response = await supabase.functions.invoke("backfill-metadata", {
+        body: { targetUserId: selectedUserId, batchSize: 20 },
       });
 
       if (response.error) throw response.error;
       return response.data;
     },
     onSuccess: (data) => {
-      toast.success(`Backfill started: Processing ${data?.found ?? 0} books`);
+      toast.success(`Backfill complete: ${data?.updated ?? 0} books updated, ${data?.pending ?? 0} remaining`);
       refetch();
     },
     onError: (error) => {
       toast.error(`Backfill failed: ${error.message}`);
-      setIsRunning(false);
     },
     onSettled: () => {
-      setTimeout(() => setIsRunning(false), 30000); // Auto-stop polling after 30s
+      setIsRunning(false);
     },
   });
 
-  if (isLoading) {
+  if (isLoading || usersLoading) {
     return (
       <Card>
         <CardHeader>
@@ -109,7 +178,7 @@ export function AdminBackfillControls() {
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Progress</span>
+              <span>Overall Progress</span>
               <span className="font-medium">{stats?.percentage}%</span>
             </div>
             <Progress value={stats?.percentage} className="h-3" />
@@ -121,7 +190,7 @@ export function AdminBackfillControls() {
               <div>
                 <p className="font-medium text-green-700">Backfill Complete</p>
                 <p className="text-sm text-muted-foreground">
-                  All books have been checked. {stats.withMetadata} have metadata, {stats.attempted - stats.withMetadata} had no API data available.
+                  All books have been checked. {stats.withMetadata} have metadata.
                 </p>
               </div>
             </div>
@@ -157,11 +226,47 @@ export function AdminBackfillControls() {
               <p className="text-sm text-muted-foreground">Pending</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Backfill by User
+          </CardTitle>
+          <CardDescription>
+            Select a specific user to backfill their books
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="flex gap-3">
+            <Select value={selectedUserId || ""} onValueChange={setSelectedUserId}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Select a user..." />
+              </SelectTrigger>
+              <SelectContent>
+                {users?.map((user) => (
+                  <SelectItem key={user.user_id} value={user.user_id}>
+                    <div className="flex items-center justify-between gap-4 w-full">
+                      <span className="truncate">{user.email}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {user.pending_count > 0 ? (
+                          <span className="text-amber-600">{user.pending_count} pending</span>
+                        ) : (
+                          <span className="text-green-600">✓ complete</span>
+                        )}
+                        {" / "}{user.book_count} books
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Button
               onClick={() => triggerBackfill.mutate()}
-              disabled={triggerBackfill.isPending || isRunning || stats?.isComplete}
+              disabled={triggerBackfill.isPending || isRunning || !selectedUserId || selectedUser?.pending_count === 0}
               className="gap-2"
             >
               {isRunning ? (
@@ -169,28 +274,38 @@ export function AdminBackfillControls() {
                   <RefreshCw className="h-4 w-4 animate-spin" />
                   Running...
                 </>
-              ) : stats?.isComplete ? (
-                <>
-                  <CheckCircle className="h-4 w-4" />
-                  Complete
-                </>
               ) : (
                 <>
                   <Play className="h-4 w-4" />
-                  Run Backfill
+                  Backfill User
                 </>
               )}
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => refetch()}
-              disabled={isLoading}
-              className="gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh Stats
-            </Button>
           </div>
+
+          {selectedUser && (
+            <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+              <p className="font-medium">{selectedUser.email}</p>
+              <div className="flex gap-4 text-sm">
+                <span>{selectedUser.book_count} total books</span>
+                {selectedUser.pending_count > 0 ? (
+                  <span className="text-amber-600">{selectedUser.pending_count} pending</span>
+                ) : (
+                  <span className="text-green-600">All books processed</span>
+                )}
+              </div>
+            </div>
+          )}
+
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh Stats
+          </Button>
         </CardContent>
       </Card>
 
@@ -200,16 +315,16 @@ export function AdminBackfillControls() {
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-2">
           <p>
-            • The backfill fetches metadata from Google Books API for books missing descriptions, categories, or page counts.
+            • Select a user from the dropdown to backfill their books.
           </p>
           <p>
             • Books are processed in batches of 20 to respect API rate limits.
           </p>
           <p>
-            • Each book is marked as "attempted" so it won't be retried. The process completes when all books have been checked.
+            • Each book is marked as "attempted" so it won't be retried.
           </p>
           <p>
-            • Books without API data can still be enriched manually via the book detail dialog.
+            • Users with pending books are shown first in the dropdown.
           </p>
         </CardContent>
       </Card>
