@@ -13,41 +13,66 @@ interface BookMetadata {
   categories?: string[];
 }
 
-// Search Google Books for metadata
-async function fetchGoogleBooksMetadata(title: string, author: string, apiKey?: string): Promise<BookMetadata | null> {
-  const query = `intitle:${title} inauthor:${author}`;
-  let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=1&printType=books`;
-  
-  if (apiKey) {
-    url += `&key=${apiKey}`;
-  }
+// Clean title by removing series notation like "(Book #1)", "#2", etc.
+function cleanTitle(title: string): string {
+  return title
+    .replace(/\s*\([^)]*#\d+[^)]*\)\s*/gi, ' ')
+    .replace(/\s*#\d+\s*/gi, ' ')
+    .replace(/\s*,?\s*book\s+\d+\s*/gi, ' ')
+    .replace(/\s*,?\s*vol\.?\s*\d+\s*/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
-  try {
-    const response = await fetch(url);
-    if (!response.ok) return null;
+// Search Google Books for metadata - try multiple query strategies
+async function fetchGoogleBooksMetadata(title: string, author: string, apiKey?: string): Promise<BookMetadata | null> {
+  const cleanedTitle = cleanTitle(title);
+  
+  const queries = [
+    `intitle:${cleanedTitle} inauthor:${author}`,
+    `"${cleanedTitle}" ${author}`,
+    `${cleanedTitle} ${author}`,
+  ];
+
+  for (const query of queries) {
+    let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=1&printType=books`;
     
-    const data = await response.json();
-    const book = data.items?.[0]?.volumeInfo;
-    
-    if (!book) return null;
-    
-    const isbn = book.industryIdentifiers?.find((id: { type: string }) => id.type === 'ISBN_13')?.identifier
-      || book.industryIdentifiers?.find((id: { type: string }) => id.type === 'ISBN_10')?.identifier;
-    
-    return {
-      pageCount: book.pageCount,
-      isbn,
-      description: book.description?.slice(0, 2000), // Limit description length
-      categories: book.categories?.slice(0, 5),
-    };
-  } catch {
-    return null;
+    if (apiKey) {
+      url += `&key=${apiKey}`;
+    }
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) continue;
+      
+      const data = await response.json();
+      const book = data.items?.[0]?.volumeInfo;
+      
+      if (!book) continue;
+      
+      if (book.pageCount || book.description || book.categories?.length) {
+        const isbn = book.industryIdentifiers?.find((id: { type: string }) => id.type === 'ISBN_13')?.identifier
+          || book.industryIdentifiers?.find((id: { type: string }) => id.type === 'ISBN_10')?.identifier;
+        
+        return {
+          pageCount: book.pageCount,
+          isbn,
+          description: book.description?.slice(0, 2000),
+          categories: book.categories?.slice(0, 5),
+        };
+      }
+    } catch {
+      continue;
+    }
   }
+  
+  return null;
 }
 
 // Search Open Library for metadata (fallback)
 async function fetchOpenLibraryMetadata(title: string, author: string): Promise<BookMetadata | null> {
-  const query = `${title} ${author}`;
+  const cleanedTitle = cleanTitle(title);
+  const query = `${cleanedTitle} ${author}`;
   const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=1&fields=key,title,author_name,number_of_pages_median,isbn,subject`;
 
   try {
@@ -77,7 +102,7 @@ serve(async (req) => {
   try {
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -85,14 +110,16 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const googleApiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY');
     
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
     // Verify the user's JWT
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
     
     if (authError || !user) {
       return new Response(
@@ -101,12 +128,18 @@ serve(async (req) => {
       );
     }
 
-    // Find books missing metadata for this user
+    // Use service role for database operations
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    // Find books missing metadata AND not yet attempted for this user
+    // Small batch to avoid timeout and rate limits
     const { data: books, error: fetchError } = await supabase
       .from('books')
       .select('id, title, author, page_count, isbn, description, categories')
       .eq('user_id', user.id)
-      .or('page_count.is.null,isbn.is.null,description.is.null,categories.is.null');
+      .is('metadata_attempted_at', null)
+      .or('page_count.is.null,description.is.null,categories.is.null')
+      .limit(10); // Small batch per login
 
     if (fetchError) {
       throw new Error(`Failed to fetch books: ${fetchError.message}`);
@@ -114,29 +147,24 @@ serve(async (req) => {
 
     if (!books || books.length === 0) {
       return new Response(
-        JSON.stringify({ message: 'All books already have metadata', updated: 0 }),
+        JSON.stringify({ message: 'No books need metadata', updated: 0, pending: 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`Found ${books.length} books needing metadata backfill`);
+    console.log(`User ${user.id}: Processing ${books.length} books for metadata`);
 
     let updated = 0;
+    let noDataFound = 0;
     const errors: string[] = [];
 
-    // Process books with rate limiting (avoid API throttling)
     for (const book of books) {
-      // Skip if book already has all metadata
-      if (book.page_count && book.isbn && book.description && book.categories) {
-        continue;
-      }
-
       try {
         // Try Google Books first
         let metadata = await fetchGoogleBooksMetadata(book.title, book.author, googleApiKey);
         
-        // Fallback to Open Library if Google didn't return enough data
-        if (!metadata?.pageCount && !metadata?.isbn) {
+        // Fallback to Open Library
+        if (!metadata?.pageCount && !metadata?.description) {
           const olMetadata = await fetchOpenLibraryMetadata(book.title, book.author);
           if (olMetadata) {
             metadata = {
@@ -148,42 +176,55 @@ serve(async (req) => {
           }
         }
 
+        // Always mark as attempted
+        const updateData: Record<string, unknown> = {
+          metadata_attempted_at: new Date().toISOString(),
+        };
+
         if (metadata && (metadata.pageCount || metadata.isbn || metadata.description || metadata.categories)) {
-          // Only update fields that are currently null
-          const updateData: Record<string, unknown> = {};
           if (!book.page_count && metadata.pageCount) updateData.page_count = metadata.pageCount;
           if (!book.isbn && metadata.isbn) updateData.isbn = metadata.isbn;
           if (!book.description && metadata.description) updateData.description = metadata.description;
           if (!book.categories && metadata.categories) updateData.categories = metadata.categories;
-
-          if (Object.keys(updateData).length > 0) {
-            const { error: updateError } = await supabase
-              .from('books')
-              .update(updateData)
-              .eq('id', book.id);
-
-            if (updateError) {
-              errors.push(`Failed to update "${book.title}": ${updateError.message}`);
-            } else {
-              updated++;
-              console.log(`Updated metadata for: ${book.title}`);
-            }
-          }
         }
 
-        // Small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 200));
+        const { error: updateError } = await supabase
+          .from('books')
+          .update(updateData)
+          .eq('id', book.id);
+
+        if (updateError) {
+          errors.push(`Failed to update "${book.title}": ${updateError.message}`);
+        } else if (Object.keys(updateData).length > 1) {
+          updated++;
+          console.log(`Updated: ${book.title}`);
+        } else {
+          noDataFound++;
+        }
+
+        // Rate limiting delay
+        await new Promise(resolve => setTimeout(resolve, 150));
       } catch (err) {
         errors.push(`Error processing "${book.title}": ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
     }
 
+    // Check how many are still pending for this user
+    const { count: pendingCount } = await supabase
+      .from('books')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .is('metadata_attempted_at', null)
+      .or('page_count.is.null,description.is.null,categories.is.null');
+
     return new Response(
       JSON.stringify({ 
-        message: `Backfill complete`, 
-        total: books.length,
+        message: 'Backfill complete', 
+        processed: books.length,
         updated,
-        errors: errors.length > 0 ? errors : undefined 
+        noDataFound,
+        pending: pendingCount ?? 0,
+        errors: errors.length > 0 ? errors.slice(0, 5) : undefined 
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
