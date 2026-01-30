@@ -61,14 +61,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    try {
-      // Try global signOut first (clears session on server and locally)
-      await supabase.auth.signOut({ scope: 'global' });
-    } catch {
-      // If global fails, force local signOut to clear local storage
-      await supabase.auth.signOut({ scope: 'local' });
-    }
-    // Force clear local state as fallback in case listener doesn't fire
+    // Use local scope to ensure localStorage is always cleared
+    // This doesn't make server calls, so it can't fail due to expired sessions
+    await supabase.auth.signOut({ scope: 'local' });
+    // Force clear state as safety net
     setSession(null);
     setUser(null);
   };
