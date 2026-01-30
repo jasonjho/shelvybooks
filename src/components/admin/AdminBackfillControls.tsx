@@ -13,16 +13,21 @@ export function AdminBackfillControls() {
   const { data: stats, isLoading, refetch } = useQuery({
     queryKey: ["admin-backfill-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("books")
-        .select("id, description, categories, page_count");
+      // IMPORTANT: never fetch all rows here (default API cap is 1000).
+      // Use count queries so totals are accurate even with large datasets.
+      const [totalResult, withMetadataResult] = await Promise.all([
+        supabase.from("books").select("id", { count: "exact", head: true }),
+        supabase
+          .from("books")
+          .select("id", { count: "exact", head: true })
+          .or("description.not.is.null,categories.not.is.null,page_count.not.is.null"),
+      ]);
 
-      if (error) throw error;
+      if (totalResult.error) throw totalResult.error;
+      if (withMetadataResult.error) throw withMetadataResult.error;
 
-      const total = data?.length ?? 0;
-      const withMetadata = data?.filter(
-        (b) => b.description || b.categories || b.page_count
-      ).length ?? 0;
+      const total = totalResult.count ?? 0;
+      const withMetadata = withMetadataResult.count ?? 0;
       const pending = total - withMetadata;
 
       return {
