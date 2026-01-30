@@ -29,37 +29,52 @@ export function AdminBackfillControls() {
       if (userError) throw userError;
       
       const allUsers: { id: string; email: string }[] = userData?.users || [];
+      const emailMap = new Map(allUsers.map(u => [u.id, u.email || u.id.slice(0, 8) + "..."]));
       
-      // For each user, get their book stats using individual queries (to avoid 1000 row limit)
-      const result: UserWithBooks[] = [];
+      // Get all books with a single query (admin RLS allows viewing all)
+      // Fetch in batches of 1000 to handle large datasets
+      const allBooks: { user_id: string; metadata_attempted_at: string | null; page_count: number | null; description: string | null; categories: string[] | null }[] = [];
+      let offset = 0;
+      const batchSize = 1000;
       
-      for (const user of allUsers) {
-        // Get total and pending counts for this user
-        const [totalResult, pendingResult] = await Promise.all([
-          supabase
-            .from("books")
-            .select("id", { count: "exact", head: true })
-            .eq("user_id", user.id),
-          supabase
-            .from("books")
-            .select("id", { count: "exact", head: true })
-            .eq("user_id", user.id)
-            .is("metadata_attempted_at", null)
-            .or("description.is.null,page_count.is.null,categories.is.null"),
-        ]);
+      while (true) {
+        const { data: books, error } = await supabase
+          .from("books")
+          .select("user_id, metadata_attempted_at, page_count, description, categories")
+          .range(offset, offset + batchSize - 1);
         
-        const bookCount = totalResult.count ?? 0;
-        const pendingCount = pendingResult.count ?? 0;
+        if (error) throw error;
+        if (!books || books.length === 0) break;
         
-        // Only include users who have books
-        if (bookCount > 0) {
-          result.push({
-            user_id: user.id,
-            email: user.email || user.id.slice(0, 8) + "...",
-            book_count: bookCount,
-            pending_count: pendingCount,
-          });
+        allBooks.push(...books);
+        if (books.length < batchSize) break;
+        offset += batchSize;
+      }
+
+      // Group by user and calculate stats
+      const userMap = new Map<string, { total: number; pending: number }>();
+      
+      for (const book of allBooks) {
+        const userId = book.user_id;
+        if (!userMap.has(userId)) {
+          userMap.set(userId, { total: 0, pending: 0 });
         }
+        const stats = userMap.get(userId)!;
+        stats.total++;
+        if (!book.metadata_attempted_at && (!book.page_count || !book.description || !book.categories)) {
+          stats.pending++;
+        }
+      }
+
+      // Build result - only include users who have books
+      const result: UserWithBooks[] = [];
+      for (const [userId, stats] of userMap.entries()) {
+        result.push({
+          user_id: userId,
+          email: emailMap.get(userId) || userId.slice(0, 8) + "...",
+          book_count: stats.total,
+          pending_count: stats.pending,
+        });
       }
 
       // Sort by pending count descending
