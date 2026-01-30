@@ -238,7 +238,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
       </div>
       
       {/* Hover tooltip */}
-      <div className="absolute -top-24 sm:-top-28 left-1/2 -translate-x-1/2 opacity-0 group-hover/book:opacity-100 transition-opacity duration-200 z-30 pb-4 hidden sm:block pointer-events-none group-hover/book:pointer-events-auto">
+      <div className="absolute -top-32 sm:-top-40 left-1/2 -translate-x-1/2 opacity-0 group-hover/book:opacity-100 transition-opacity duration-200 z-30 pb-4 hidden sm:block pointer-events-none group-hover/book:pointer-events-auto">
         <div className="bg-popover text-popover-foreground px-4 py-3 rounded-lg text-sm min-w-[200px] max-w-[280px] shadow-xl border border-border">
           <button 
             onClick={(e) => {
