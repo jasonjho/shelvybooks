@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.refresh-covers]
 verify_jwt = false
+
+[functions.backfill-all-metadata]
+verify_jwt = false
