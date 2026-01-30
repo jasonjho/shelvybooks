@@ -9,6 +9,9 @@ export const demoBooks: Book[] = [
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780593135204-M.jpg',
     status: 'reading',
     createdAt: '2024-01-15T10:00:00Z',
+    pageCount: 496,
+    description: 'Ryland Grace is the sole survivor on a desperate, last-chance mission—and if he fails, humanity and the earth itself will perish. A tale of discovery, speculation, and survival.',
+    categories: ['Science Fiction', 'Adventure'],
   },
   {
     id: 'demo-2',
@@ -16,6 +19,9 @@ export const demoBooks: Book[] = [
     author: 'James Clear',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780735211292-M.jpg',
     status: 'reading',
+    pageCount: 320,
+    description: 'A revolutionary system to get 1 percent better every day. Learn how tiny changes in behavior can lead to remarkable results.',
+    categories: ['Self-Help', 'Psychology', 'Business'],
   },
   {
     id: 'demo-3',
@@ -23,6 +29,9 @@ export const demoBooks: Book[] = [
     author: 'Patrick Rothfuss',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780756404741-M.jpg',
     status: 'reading',
+    pageCount: 662,
+    description: 'The riveting first-person narrative of Kvothe, a young man who grows to be one of the most notorious wizards his world has ever seen.',
+    categories: ['Fantasy', 'Fiction'],
   },
   {
     id: 'demo-4',
@@ -30,6 +39,9 @@ export const demoBooks: Book[] = [
     author: 'Tara Westover',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780399590504-M.jpg',
     status: 'reading',
+    pageCount: 334,
+    description: 'A memoir about a young girl who, kept out of school, leaves her survivalist family and goes on to earn a PhD from Cambridge University.',
+    categories: ['Memoir', 'Biography', 'Nonfiction'],
   },
   {
     id: 'demo-5',
@@ -37,6 +49,9 @@ export const demoBooks: Book[] = [
     author: 'Andy Weir',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780553418026-M.jpg',
     status: 'reading',
+    pageCount: 369,
+    description: 'Stranded on Mars, astronaut Mark Watney must use his ingenuity and wit to survive and find a way to signal Earth that he is alive.',
+    categories: ['Science Fiction', 'Thriller'],
   },
   // Want to Read
   {
@@ -45,6 +60,9 @@ export const demoBooks: Book[] = [
     author: 'Frank Herbert',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780441172719-M.jpg',
     status: 'want-to-read',
+    pageCount: 688,
+    description: 'Set on the desert planet Arrakis, Dune is the story of the boy Paul Atreides, heir to a noble family tasked with ruling an inhospitable world.',
+    categories: ['Science Fiction', 'Fantasy', 'Classic'],
   },
   {
     id: 'demo-7',
@@ -52,6 +70,9 @@ export const demoBooks: Book[] = [
     author: 'Matt Haig',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780525559474-M.jpg',
     status: 'want-to-read',
+    pageCount: 304,
+    description: 'Between life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived.',
+    categories: ['Fiction', 'Fantasy', 'Contemporary'],
   },
   {
     id: 'demo-8',
@@ -59,6 +80,9 @@ export const demoBooks: Book[] = [
     author: 'Yuval Noah Harari',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780062316097-M.jpg',
     status: 'want-to-read',
+    pageCount: 443,
+    description: 'A brief history of humankind, exploring how Homo sapiens came to dominate the Earth and what it means for our future.',
+    categories: ['History', 'Science', 'Nonfiction'],
   },
   {
     id: 'demo-9',
@@ -66,6 +90,9 @@ export const demoBooks: Book[] = [
     author: 'Brandon Sanderson',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780765365279-M.jpg',
     status: 'want-to-read',
+    pageCount: 1007,
+    description: 'The first volume in the Stormlight Archive epic fantasy series, introducing a world of stone and storms, and war that has raged for centuries.',
+    categories: ['Fantasy', 'Epic Fantasy', 'Fiction'],
   },
   {
     id: 'demo-10',
@@ -73,6 +100,9 @@ export const demoBooks: Book[] = [
     author: 'Daniel Kahneman',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780374533557-M.jpg',
     status: 'want-to-read',
+    pageCount: 499,
+    description: 'Nobel laureate Daniel Kahneman takes us on a groundbreaking tour of the mind and explains the two systems that drive the way we think.',
+    categories: ['Psychology', 'Nonfiction', 'Science'],
   },
   {
     id: 'demo-11',
@@ -80,6 +110,9 @@ export const demoBooks: Book[] = [
     author: 'Alex Michaelides',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9781250301697-M.jpg',
     status: 'want-to-read',
+    pageCount: 336,
+    description: 'A woman shoots her husband five times in the face, then never speaks another word. A criminal psychotherapist becomes obsessed with uncovering the truth.',
+    categories: ['Thriller', 'Mystery', 'Fiction'],
   },
   {
     id: 'demo-12',
@@ -87,6 +120,9 @@ export const demoBooks: Book[] = [
     author: 'Fredrik Backman',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9781501160837-M.jpg',
     status: 'want-to-read',
+    pageCount: 341,
+    description: 'A failed bank robber takes a group of strangers hostage during an open house, and the ensuing standoff leads to revelations about all their lives.',
+    categories: ['Fiction', 'Contemporary', 'Humor'],
   },
   {
     id: 'demo-13',
@@ -94,6 +130,9 @@ export const demoBooks: Book[] = [
     author: 'Madeline Miller',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780316556347-M.jpg',
     status: 'want-to-read',
+    pageCount: 393,
+    description: 'In the house of Helios, god of the sun, a daughter is born. But Circe is a strange child—not powerful like her father, nor viciously alluring like her mother.',
+    categories: ['Fantasy', 'Mythology', 'Historical Fiction'],
   },
   // Read
   {
@@ -102,6 +141,9 @@ export const demoBooks: Book[] = [
     author: 'J.R.R. Tolkien',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780547928227-M.jpg',
     status: 'read',
+    pageCount: 310,
+    description: 'Bilbo Baggins is a hobbit who enjoys a comfortable, unambitious life, until the wizard Gandalf arrives with a company of dwarves seeking treasure.',
+    categories: ['Fantasy', 'Classic', 'Adventure'],
   },
   {
     id: 'demo-15',
@@ -109,6 +151,9 @@ export const demoBooks: Book[] = [
     author: 'George Orwell',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780451524935-M.jpg',
     status: 'read',
+    pageCount: 328,
+    description: 'A dystopian novel set in Airstrip One, a province of the superstate Oceania in a world of perpetual war, omnipresent government surveillance, and public manipulation.',
+    categories: ['Dystopian', 'Classic', 'Science Fiction'],
   },
   {
     id: 'demo-16',
@@ -116,6 +161,9 @@ export const demoBooks: Book[] = [
     author: 'Harper Lee',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780060935467-M.jpg',
     status: 'read',
+    pageCount: 336,
+    description: 'The unforgettable novel of a childhood in a sleepy Southern town and the crisis of conscience that rocked it.',
+    categories: ['Classic', 'Fiction', 'Historical Fiction'],
   },
   {
     id: 'demo-17',
@@ -123,6 +171,9 @@ export const demoBooks: Book[] = [
     author: 'F. Scott Fitzgerald',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780743273565-M.jpg',
     status: 'read',
+    pageCount: 180,
+    description: 'A portrait of the Jazz Age in all of its decadence and excess, following the mysterious millionaire Jay Gatsby and his obsession with the beautiful Daisy Buchanan.',
+    categories: ['Classic', 'Fiction', 'Literary Fiction'],
   },
   {
     id: 'demo-18',
@@ -130,6 +181,9 @@ export const demoBooks: Book[] = [
     author: 'Jane Austen',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780141439518-M.jpg',
     status: 'read',
+    pageCount: 432,
+    description: 'The story of Elizabeth Bennet, a spirited young woman who learns about the repercussions of hasty judgments and comes to appreciate the difference between superficial goodness and actual goodness.',
+    categories: ['Classic', 'Romance', 'Fiction'],
   },
   {
     id: 'demo-19',
@@ -137,6 +191,9 @@ export const demoBooks: Book[] = [
     author: 'J.D. Salinger',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780316769488-M.jpg',
     status: 'read',
+    pageCount: 234,
+    description: 'The story of Holden Caulfield, a teenage boy dealing with complex issues of identity, belonging, connection, and alienation.',
+    categories: ['Classic', 'Fiction', 'Coming of Age'],
   },
   {
     id: 'demo-20',
@@ -144,6 +201,9 @@ export const demoBooks: Book[] = [
     author: 'Aldous Huxley',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780060850524-M.jpg',
     status: 'read',
+    pageCount: 288,
+    description: 'A dystopian novel set in a futuristic World State, whose citizens are environmentally engineered into an intelligence-based social hierarchy.',
+    categories: ['Dystopian', 'Classic', 'Science Fiction'],
   },
   {
     id: 'demo-21',
@@ -151,6 +211,9 @@ export const demoBooks: Book[] = [
     author: 'J.R.R. Tolkien',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780544003415-M.jpg',
     status: 'read',
+    pageCount: 1178,
+    description: 'The epic high-fantasy novel that follows hobbits Frodo and Sam on their journey to destroy the One Ring and save Middle-earth from the Dark Lord Sauron.',
+    categories: ['Fantasy', 'Classic', 'Epic Fantasy'],
   },
   {
     id: 'demo-22',
@@ -158,6 +221,9 @@ export const demoBooks: Book[] = [
     author: 'J.K. Rowling',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780590353427-M.jpg',
     status: 'read',
+    pageCount: 309,
+    description: 'Harry Potter has never been the star of a Quidditch team, scoring points while riding a broom far above the ground. He knows no spells, has never helped to hatch a dragon, and has never worn a cloak of invisibility.',
+    categories: ['Fantasy', 'Young Adult', 'Fiction'],
   },
   {
     id: 'demo-23',
@@ -165,6 +231,9 @@ export const demoBooks: Book[] = [
     author: 'Paulo Coelho',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780062315007-M.jpg',
     status: 'read',
+    pageCount: 208,
+    description: 'A magical fable about learning to listen to your heart, read the omens strewn along life\'s path, and follow your dreams.',
+    categories: ['Fiction', 'Fantasy', 'Philosophy'],
   },
   {
     id: 'demo-24',
@@ -172,6 +241,9 @@ export const demoBooks: Book[] = [
     author: 'Ray Bradbury',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9781451673319-M.jpg',
     status: 'read',
+    pageCount: 249,
+    description: 'A dystopian novel set in a future American society where books are outlawed and "firemen" burn any that are found.',
+    categories: ['Dystopian', 'Classic', 'Science Fiction'],
   },
   {
     id: 'demo-25',
@@ -179,6 +251,9 @@ export const demoBooks: Book[] = [
     author: 'Oscar Wilde',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780141439570-M.jpg',
     status: 'read',
+    pageCount: 254,
+    description: 'A philosophical novel about a young man whose portrait ages while he himself stays young—a tale of art, beauty, and the corruption of the soul.',
+    categories: ['Classic', 'Gothic', 'Fiction'],
   },
   {
     id: 'demo-26',
@@ -186,6 +261,9 @@ export const demoBooks: Book[] = [
     author: 'Fyodor Dostoevsky',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780143058144-M.jpg',
     status: 'read',
+    pageCount: 671,
+    description: 'The story of Raskolnikov, a poor ex-student who conceives a plan to kill and rob an unscrupulous pawnbroker, and the moral consequences that follow.',
+    categories: ['Classic', 'Fiction', 'Psychological Fiction'],
   },
   {
     id: 'demo-27',
@@ -193,6 +271,9 @@ export const demoBooks: Book[] = [
     author: 'Gabriel García Márquez',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780060883287-M.jpg',
     status: 'read',
+    pageCount: 417,
+    description: 'The multi-generational story of the Buendía family, whose patriarch founded the town of Macondo, a fictional town in Colombia.',
+    categories: ['Fiction', 'Magical Realism', 'Classic'],
   },
   {
     id: 'demo-28',
@@ -200,6 +281,9 @@ export const demoBooks: Book[] = [
     author: 'George Orwell',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780451526342-M.jpg',
     status: 'read',
+    pageCount: 141,
+    description: 'A satirical allegorical novella reflecting events leading up to the Russian Revolution and the Stalinist era of the Soviet Union.',
+    categories: ['Classic', 'Political Fiction', 'Satire'],
   },
   {
     id: 'demo-29',
@@ -207,6 +291,9 @@ export const demoBooks: Book[] = [
     author: 'Homer',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780140268867-M.jpg',
     status: 'read',
+    pageCount: 541,
+    description: 'The epic Greek poem following the hero Odysseus and his journey home after the fall of Troy—a tale of adventure, perseverance, and homecoming.',
+    categories: ['Classic', 'Mythology', 'Poetry'],
   },
   {
     id: 'demo-30',
@@ -214,6 +301,9 @@ export const demoBooks: Book[] = [
     author: 'Kurt Vonnegut',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780440180296-M.jpg',
     status: 'read',
+    pageCount: 275,
+    description: 'Billy Pilgrim survives capture by the German Army and the firebombing of Dresden as a POW only to be kidnapped in a flying saucer by aliens from Tralfamadore.',
+    categories: ['Science Fiction', 'Classic', 'War Fiction'],
   },
   {
     id: 'demo-31',
@@ -221,6 +311,9 @@ export const demoBooks: Book[] = [
     author: 'Fyodor Dostoevsky',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780374528379-M.jpg',
     status: 'read',
+    pageCount: 796,
+    description: 'A passionate philosophical novel set in 19th-century Russia that enters deeply into the ethical debates of God, free will, and morality.',
+    categories: ['Classic', 'Fiction', 'Philosophy'],
   },
   {
     id: 'demo-32',
@@ -228,6 +321,9 @@ export const demoBooks: Book[] = [
     author: 'Emily Brontë',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780141439556-M.jpg',
     status: 'read',
+    pageCount: 416,
+    description: 'The tale of the all-encompassing and passionate, yet thwarted, love between Heathcliff and Catherine Earnshaw on the Yorkshire moors.',
+    categories: ['Classic', 'Romance', 'Gothic'],
   },
   {
     id: 'demo-33',
@@ -235,6 +331,9 @@ export const demoBooks: Book[] = [
     author: 'Charlotte Brontë',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780141441146-M.jpg',
     status: 'read',
+    pageCount: 532,
+    description: 'A young orphaned girl grows up to become a governess at Thornfield Hall, where she falls in love with the mysterious Mr. Rochester.',
+    categories: ['Classic', 'Romance', 'Gothic'],
   },
   {
     id: 'demo-34',
@@ -242,6 +341,9 @@ export const demoBooks: Book[] = [
     author: 'Alexandre Dumas',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780140449266-M.jpg',
     status: 'read',
+    pageCount: 1276,
+    description: 'An adventure novel about a man who is wrongfully imprisoned, escapes, and acquires a vast fortune to exact revenge on those who betrayed him.',
+    categories: ['Classic', 'Adventure', 'Historical Fiction'],
   },
   {
     id: 'demo-35',
@@ -249,5 +351,8 @@ export const demoBooks: Book[] = [
     author: 'Victor Hugo',
     coverUrl: 'https://covers.openlibrary.org/b/isbn/9780451419439-M.jpg',
     status: 'read',
+    pageCount: 1463,
+    description: 'The story of Jean Valjean, a former convict who becomes a force for good in a world filled with injustice, suffering, and the search for redemption.',
+    categories: ['Classic', 'Historical Fiction', 'Fiction'],
   },
 ];
