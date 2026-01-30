@@ -61,7 +61,7 @@ export function ShareShelfDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-display">Share Your Shelf</DialogTitle>
+          <DialogTitle>Share Your Shelf</DialogTitle>
           <DialogDescription>
             Make your bookshelf public so friends can see what you're reading.
           </DialogDescription>
