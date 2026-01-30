@@ -420,6 +420,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      has_public_shelf: { Args: { _user_id: string }; Returns: boolean }
       is_club_member: {
         Args: { _club_id: string; _user_id: string }
         Returns: boolean
@@ -434,6 +435,10 @@ export type Database = {
           id: string
           name: string
         }[]
+      }
+      shares_club_with: {
+        Args: { _profile_user_id: string; _viewer_id: string }
+        Returns: boolean
       }
     }
     Enums: {
