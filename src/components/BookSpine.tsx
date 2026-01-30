@@ -239,8 +239,8 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
         )}
       </div>
       
-      {/* Hover tooltip with metadata */}
-      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover/book:opacity-100 transition-opacity duration-200 z-30 hidden sm:block pointer-events-none group-hover/book:pointer-events-auto">
+      {/* Hover tooltip with metadata - pb-4 creates invisible bridge to prevent hover gap */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 pb-4 opacity-0 group-hover/book:opacity-100 transition-opacity duration-200 z-30 hidden sm:block pointer-events-none group-hover/book:pointer-events-auto">
         <BookHoverPreview 
           book={book} 
           amazonUrl={amazonUrl} 
