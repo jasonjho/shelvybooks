@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Book, BookStatus } from '@/types/book';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { getAmazonBookUrl } from '@/lib/amazonLinks';
 
 interface Recommendation {
   title: string;
@@ -106,9 +107,9 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
     }
   };
 
+  // Use centralized Amazon link generator (recommendations don't have ISBN yet)
   const getAmazonSearchUrl = (title: string, author: string) => {
-    const query = encodeURIComponent(`${title} ${author}`);
-    return `https://www.amazon.com/s?k=${query}&i=stripbooks`;
+    return getAmazonBookUrl(title, author);
   };
 
   const toggleSelection = (index: number) => {

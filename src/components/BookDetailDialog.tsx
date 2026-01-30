@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
+import { getAmazonBookUrl } from '@/lib/amazonLinks';
 import { format } from 'date-fns';
 import { CalendarCheck, BookMarked, Check, BookOpen, Hash, Tag } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
@@ -42,8 +43,8 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
   // Demo books have non-UUID IDs like "demo-1"
   const isDemoBook = book.id.startsWith('demo-');
 
-  // Link to Amazon search for the book
-  const amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author)}`;
+  // Link to Amazon with affiliate tag (uses ISBN when available)
+  const amazonUrl = getAmazonBookUrl(book.title, book.author, book.isbn);
   const coverSrc = normalizeCoverUrl(book.coverUrl);
 
   const handleDateSelect = (date: Date | undefined) => {

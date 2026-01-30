@@ -12,6 +12,7 @@ import { useBookAnimations } from '@/contexts/BookAnimationContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
+import { getAmazonBookUrl } from '@/lib/amazonLinks';
 import { BookNote, NoteColor } from '@/hooks/useBookNotes';
 import { PostItNote } from '@/components/PostItNote';
 import { BookLikeBadge } from '@/components/BookLikeBadge';
@@ -61,7 +62,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
   const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author)}`;
+  const amazonUrl = getAmazonBookUrl(book.title, book.author, book.isbn);
   const hasClubInfo = clubInfo && clubInfo.length > 0;
   const isCurrentlyReading = clubInfo?.some(c => c.status === 'reading');
   const showPlaceholder = !book.coverUrl || book.coverUrl === '/placeholder.svg' || imageError;
