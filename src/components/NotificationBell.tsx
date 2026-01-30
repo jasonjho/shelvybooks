@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Bell, Heart, Check, BookPlus } from 'lucide-react';
+import { Bell, Heart, Check, BookPlus, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useFollowedUsersBooks } from '@/hooks/useFollows';
+import { useFollowerNotifications } from '@/hooks/useFollowerNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
@@ -17,19 +18,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FollowingListCompact } from '@/components/FollowingList';
 
 export function NotificationBell() {
-  const [activeTab, setActiveTab] = useState<'likes' | 'following'>('likes');
-  const { newLikesCount, newLikes, markAsSeen, isLoading } = useNotifications();
+  const [activeTab, setActiveTab] = useState<'activity' | 'following'>('activity');
+  const { newLikesCount, newLikes, markAsSeen: markLikesAsSeen, isLoading } = useNotifications();
   const { data: followedBooks = [], newCount: followedBooksCount, isLoading: loadingFollowedBooks, markAsSeen: markFollowsAsSeen } = useFollowedUsersBooks();
+  const { newFollowers, newCount: newFollowersCount, isLoading: loadingFollowers, markAsSeen: markFollowersAsSeen } = useFollowerNotifications();
 
-  const totalCount = newLikesCount + followedBooksCount;
+  // Activity = likes + new followers
+  const activityCount = newLikesCount + newFollowersCount;
+  const totalCount = activityCount + followedBooksCount;
 
   // Determine which clear action to show based on active tab
-  const showClearButton = (activeTab === 'likes' && newLikesCount > 0) || 
+  const showClearButton = (activeTab === 'activity' && activityCount > 0) || 
                           (activeTab === 'following' && followedBooksCount > 0);
   
   const handleClear = () => {
-    if (activeTab === 'likes') {
-      markAsSeen();
+    if (activeTab === 'activity') {
+      markLikesAsSeen();
+      markFollowersAsSeen();
     } else {
       markFollowsAsSeen();
     }
@@ -60,11 +65,11 @@ export function NotificationBell() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'likes' | 'following')} className="w-full">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'activity' | 'following')} className="w-full">
           <div className="px-3 py-2 border-b border-border flex items-center justify-between">
             <TabsList className="h-8 p-0.5 bg-muted/50">
-              <TabsTrigger value="likes" className="text-xs px-2.5 h-7 font-sans data-[state=active]:font-medium">
-                Likes {newLikesCount > 0 && `(${newLikesCount})`}
+              <TabsTrigger value="activity" className="text-xs px-2.5 h-7 font-sans data-[state=active]:font-medium">
+                Activity {activityCount > 0 && `(${activityCount})`}
               </TabsTrigger>
               <TabsTrigger value="following" className="text-xs px-2.5 h-7 font-sans data-[state=active]:font-medium">
                 Following {followedBooksCount > 0 && `(${followedBooksCount})`}
@@ -83,67 +88,104 @@ export function NotificationBell() {
             )}
           </div>
           
-          {/* Likes Tab */}
-          <TabsContent value="likes" className="m-0">
+          {/* Activity Tab (Likes + Followers) */}
+          <TabsContent value="activity" className="m-0">
             <ScrollArea className="max-h-[280px]">
-              {isLoading ? (
+              {(isLoading || loadingFollowers) ? (
                 <div className="p-4 text-center text-sm text-muted-foreground font-sans">
                   Loading...
                 </div>
-              ) : newLikes.length === 0 ? (
+              ) : (newLikes.length === 0 && newFollowers.length === 0) ? (
                 <div className="p-6 text-center">
                   <Heart className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
                   <p className="text-sm text-muted-foreground font-sans">
-                    No new likes
+                    No new activity
                   </p>
                   <p className="text-xs text-muted-foreground/70 mt-1 font-sans">
-                    When someone likes your books, you'll see it here
+                    Likes and new followers will appear here
                   </p>
                 </div>
               ) : (
                 <div className="divide-y divide-border">
-                  {newLikes.map((like) => (
-                    <div 
-                      key={like.id} 
-                      className="px-3 py-2.5 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-start gap-2.5">
-                        {like.username ? (
-                          <Link to={`/u/${like.username}`} className="shrink-0">
-                            <Avatar className="w-8 h-8">
-                              <AvatarImage src={like.avatarUrl || undefined} alt={like.username} />
-                              <AvatarFallback className="text-xs font-sans">
-                                {like.username.slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                          </Link>
-                        ) : (
-                          <div className="p-1.5 rounded-full bg-pink-100 dark:bg-pink-900/30 shrink-0">
-                            <Heart className="h-3.5 w-3.5 text-pink-500 fill-pink-500" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm leading-snug font-sans">
-                            {like.username ? (
-                              <Link 
-                                to={`/u/${like.username}`} 
-                                className="font-medium hover:underline"
-                              >
-                                {like.username}
+                  {/* Combine and sort by date */}
+                  {[
+                    ...newFollowers.map(f => ({ type: 'follower' as const, data: f, date: new Date(f.followedAt) })),
+                    ...newLikes.map(l => ({ type: 'like' as const, data: l, date: new Date(l.likedAt) })),
+                  ]
+                    .sort((a, b) => b.date.getTime() - a.date.getTime())
+                    .map((item) => (
+                      <div 
+                        key={item.type === 'follower' ? `follower-${item.data.id}` : `like-${item.data.id}`}
+                        className="px-3 py-2.5 hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-start gap-2.5">
+                          {item.type === 'follower' ? (
+                            <>
+                              <Link to={`/u/${item.data.username}`} className="shrink-0">
+                                <Avatar className="w-8 h-8">
+                                  <AvatarImage src={item.data.avatarUrl || undefined} alt={item.data.username} />
+                                  <AvatarFallback className="text-xs font-sans">
+                                    {item.data.username.slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
                               </Link>
-                            ) : (
-                              <span className="text-muted-foreground">Someone</span>
-                            )}
-                            {' liked '}
-                            <span className="font-medium">{like.bookTitle}</span>
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5 font-sans">
-                            {formatDistanceToNow(new Date(like.likedAt), { addSuffix: true })}
-                          </p>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm leading-snug font-sans">
+                                  <Link 
+                                    to={`/u/${item.data.username}`} 
+                                    className="font-medium hover:underline"
+                                  >
+                                    {item.data.username}
+                                  </Link>
+                                  {' started following you'}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-0.5 font-sans">
+                                  {formatDistanceToNow(item.date, { addSuffix: true })}
+                                </p>
+                              </div>
+                              <UserPlus className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                            </>
+                          ) : (
+                            <>
+                              {item.data.username ? (
+                                <Link to={`/u/${item.data.username}`} className="shrink-0">
+                                  <Avatar className="w-8 h-8">
+                                    <AvatarImage src={item.data.avatarUrl || undefined} alt={item.data.username} />
+                                    <AvatarFallback className="text-xs font-sans">
+                                      {item.data.username.slice(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </Link>
+                              ) : (
+                                <div className="p-1.5 rounded-full bg-pink-100 dark:bg-pink-900/30 shrink-0">
+                                  <Heart className="h-3.5 w-3.5 text-pink-500 fill-pink-500" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm leading-snug font-sans">
+                                  {item.data.username ? (
+                                    <Link 
+                                      to={`/u/${item.data.username}`} 
+                                      className="font-medium hover:underline"
+                                    >
+                                      {item.data.username}
+                                    </Link>
+                                  ) : (
+                                    <span className="text-muted-foreground">Someone</span>
+                                  )}
+                                  {' liked '}
+                                  <span className="font-medium">{item.data.bookTitle}</span>
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-0.5 font-sans">
+                                  {formatDistanceToNow(item.date, { addSuffix: true })}
+                                </p>
+                              </div>
+                              <Heart className="h-4 w-4 text-pink-500 fill-pink-500 shrink-0 mt-0.5" />
+                            </>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </ScrollArea>
