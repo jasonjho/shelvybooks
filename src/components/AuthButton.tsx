@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogIn, LogOut } from 'lucide-react';
+import { useProfile } from '@/hooks/useProfile';
+import { LogIn, LogOut, User, Settings } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -14,15 +15,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ProfileEditDialog } from '@/components/ProfileEditDialog';
 import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 
 export function AuthButton() {
   const { user, loading, signIn, signUp, signOut, authDialogOpen, setAuthDialogOpen } = useAuth();
+  const { profile } = useProfile();
   const { toast } = useToast();
   const open = authDialogOpen;
   const setOpen = setAuthDialogOpen;
@@ -30,6 +35,7 @@ export function AuthButton() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [profileEditOpen, setProfileEditOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,28 +158,48 @@ export function AuthButton() {
     );
   }
 
-  const initials = user.email?.slice(0, 2).toUpperCase() || 'U';
-  const avatarUrl = user.user_metadata?.avatar_url;
+  const displayName = profile?.username || user.email;
+  const initials = profile?.username 
+    ? profile.username.slice(0, 2).toUpperCase() 
+    : user.email?.slice(0, 2).toUpperCase() || 'U';
+  const avatarUrl = profile?.avatarUrl || user.user_metadata?.avatar_url;
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2 px-2">
-          <Avatar className="w-6 h-6">
-            <AvatarImage src={avatarUrl} alt={user.email || 'User'} />
-            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-          </Avatar>
-          <span className="hidden sm:inline text-sm truncate max-w-[120px]">
-            {user.user_metadata?.full_name || user.email}
-          </span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={signOut} className="gap-2 cursor-pointer">
-          <LogOut className="w-4 h-4" />
-          Sign out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="gap-2 px-2">
+            <Avatar className="w-6 h-6">
+              <AvatarImage src={avatarUrl} alt={displayName || 'User'} />
+              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            </Avatar>
+            <span className="hidden sm:inline text-sm truncate max-w-[120px]">
+              {displayName}
+            </span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {profile?.username && (
+            <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+              <Link to={`/u/${profile.username}`}>
+                <User className="w-4 h-4" />
+                View profile
+              </Link>
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem onClick={() => setProfileEditOpen(true)} className="gap-2 cursor-pointer">
+            <Settings className="w-4 h-4" />
+            Edit profile
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={signOut} className="gap-2 cursor-pointer">
+            <LogOut className="w-4 h-4" />
+            Sign out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ProfileEditDialog open={profileEditOpen} onOpenChange={setProfileEditOpen} />
+    </>
   );
 }

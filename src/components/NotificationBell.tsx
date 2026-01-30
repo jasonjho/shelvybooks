@@ -1,4 +1,5 @@
 import { Bell, Heart, Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -9,6 +10,7 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export function NotificationBell() {
   const { newLikesCount, newLikes, markAsSeen, isLoading } = useNotifications();
@@ -38,7 +40,7 @@ export function NotificationBell() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
-        <div className="px-3 py-2.5 border-b flex items-center justify-between">
+        <div className="px-3 py-2.5 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold text-sm">Notifications</h3>
           {newLikesCount > 0 && (
             <Button
@@ -68,22 +70,42 @@ export function NotificationBell() {
               </p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y divide-border">
               {newLikes.map((like) => (
                 <div 
                   key={like.id} 
                   className="px-3 py-2.5 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-start gap-2.5">
-                    <div className="p-1.5 rounded-full bg-pink-100 dark:bg-pink-900/30 shrink-0">
-                      <Heart className="h-3.5 w-3.5 text-pink-500 fill-pink-500" />
-                    </div>
+                    {/* Avatar or heart icon */}
+                    {like.username ? (
+                      <Link to={`/u/${like.username}`} className="shrink-0">
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={like.avatarUrl || undefined} alt={like.username} />
+                          <AvatarFallback className="text-xs">
+                            {like.username.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Link>
+                    ) : (
+                      <div className="p-1.5 rounded-full bg-pink-100 dark:bg-pink-900/30 shrink-0">
+                        <Heart className="h-3.5 w-3.5 text-pink-500 fill-pink-500" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm leading-snug">
-                        Someone liked{' '}
-                        <span className="font-medium">
-                          {like.bookTitle}
-                        </span>
+                        {like.username ? (
+                          <Link 
+                            to={`/u/${like.username}`} 
+                            className="font-medium hover:underline"
+                          >
+                            {like.username}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">Someone</span>
+                        )}
+                        {' liked '}
+                        <span className="font-medium">{like.bookTitle}</span>
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {formatDistanceToNow(new Date(like.likedAt), { addSuffix: true })}
