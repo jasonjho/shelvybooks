@@ -87,8 +87,8 @@ export function DailyQuote({ onAddBook, existingBooks }: DailyQuoteProps) {
   }, [localIndex]);
 
   const handleNextQuote = () => {
-    // Alternate between local and dynamic quotes
-    if (user && Math.random() > 0.5) {
+    // Always use AI for shuffle when logged in (more reliable covers)
+    if (user) {
       fetchDynamicQuote();
     } else {
       const nextIndex = (localIndex + 1) % bookQuotes.length;
