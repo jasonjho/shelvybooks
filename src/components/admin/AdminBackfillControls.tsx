@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Database, Play, RefreshCw, CheckCircle, AlertCircle, User } from "lucide-react";
+import { Database, Play, RefreshCw, CheckCircle, AlertCircle, User, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 interface UserWithBooks {
@@ -15,10 +15,21 @@ interface UserWithBooks {
   pending_count: number;
 }
 
+interface BackfillAllResult {
+  message: string;
+  total: number;
+  updated: number;
+  noDataFound: number;
+  notFoundSamples?: string[];
+  errors?: string[];
+}
+
 export function AdminBackfillControls() {
   const queryClient = useQueryClient();
   const [isRunning, setIsRunning] = useState(false);
+  const [isRunningAll, setIsRunningAll] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [allResults, setAllResults] = useState<BackfillAllResult | null>(null);
 
   // Fetch users with book counts
   const { data: users, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
@@ -146,7 +157,6 @@ export function AdminBackfillControls() {
     },
     onSuccess: (data) => {
       toast.success(`Backfill complete: ${data?.updated ?? 0} books updated, ${data?.pending ?? 0} remaining`);
-      // Keep both overall stats and per-user pending counts in sync.
       queryClient.invalidateQueries({ queryKey: ["admin-users-with-books"] });
       queryClient.invalidateQueries({ queryKey: ["admin-backfill-stats"] });
       refetch();
@@ -157,6 +167,32 @@ export function AdminBackfillControls() {
     },
     onSettled: () => {
       setIsRunning(false);
+    },
+  });
+
+  const triggerBackfillAll = useMutation({
+    mutationFn: async () => {
+      setIsRunningAll(true);
+      setAllResults(null);
+      
+      const response = await supabase.functions.invoke("backfill-all-metadata");
+
+      if (response.error) throw response.error;
+      return response.data as BackfillAllResult;
+    },
+    onSuccess: (data) => {
+      setAllResults(data);
+      toast.success(`Bulk backfill: ${data?.updated ?? 0} books enriched out of ${data?.total ?? 0} processed`);
+      queryClient.invalidateQueries({ queryKey: ["admin-users-with-books"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-backfill-stats"] });
+      refetch();
+      refetchUsers();
+    },
+    onError: (error) => {
+      toast.error(`Bulk backfill failed: ${error.message}`);
+    },
+    onSettled: () => {
+      setIsRunningAll(false);
     },
   });
 
@@ -239,6 +275,81 @@ export function AdminBackfillControls() {
               <p className="text-sm text-muted-foreground">Pending</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-amber-500/30 bg-amber-500/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-amber-500" />
+            Bulk Backfill All Users
+          </CardTitle>
+          <CardDescription>
+            Process all books missing metadata across all users (30 books per run)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button
+            onClick={() => triggerBackfillAll.mutate()}
+            disabled={triggerBackfillAll.isPending || isRunningAll || stats?.pending === 0}
+            className="gap-2 bg-amber-600 hover:bg-amber-700"
+          >
+            {isRunningAll ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Zap className="h-4 w-4" />
+                Backfill All Users ({stats?.pending ?? 0} pending)
+              </>
+            )}
+          </Button>
+
+          {allResults && (
+            <div className="p-4 rounded-lg bg-muted/50 space-y-2 text-sm">
+              <p className="font-medium">Last run results:</p>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <span className="text-muted-foreground">Processed:</span>{" "}
+                  <span className="font-medium">{allResults.total}</span>
+                </div>
+                <div>
+                  <span className="text-green-600">Updated:</span>{" "}
+                  <span className="font-medium text-green-600">{allResults.updated}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">No data:</span>{" "}
+                  <span className="font-medium">{allResults.noDataFound}</span>
+                </div>
+              </div>
+              {allResults.notFoundSamples && allResults.notFoundSamples.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-muted-foreground text-xs">Sample books with no metadata found:</p>
+                  <ul className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                    {allResults.notFoundSamples.map((title, i) => (
+                      <li key={i}>• {title}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {allResults.errors && allResults.errors.length > 0 && (
+                <div className="mt-2 text-red-500">
+                  <p className="text-xs">Errors:</p>
+                  <ul className="text-xs mt-1 space-y-0.5">
+                    {allResults.errors.slice(0, 3).map((err, i) => (
+                      <li key={i}>• {err}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          <p className="text-xs text-muted-foreground">
+            Uses exponential backoff on rate limits. Click multiple times to process more batches.
+          </p>
         </CardContent>
       </Card>
 
