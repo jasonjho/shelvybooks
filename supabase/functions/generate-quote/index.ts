@@ -84,16 +84,44 @@ serve(async (req) => {
       throw new Error('Invalid quote structure');
     }
 
-    // Generate a cover URL from Open Library
-    const searchQuery = encodeURIComponent(`${quoteData.book.title} ${quoteData.book.author}`);
+    // Generate a cover URL from Open Library with strict matching
+    const titleQuery = encodeURIComponent(quoteData.book.title);
+    const authorQuery = encodeURIComponent(quoteData.book.author);
     const olResponse = await fetch(
-      `https://openlibrary.org/search.json?q=${searchQuery}&limit=1`
+      `https://openlibrary.org/search.json?title=${titleQuery}&author=${authorQuery}&limit=5`
     );
     const olData = await olResponse.json();
     
     let coverUrl = '/placeholder.svg';
-    if (olData.docs?.[0]?.cover_i) {
-      coverUrl = `https://covers.openlibrary.org/b/id/${olData.docs[0].cover_i}-L.jpg`;
+    
+    // Find a result that actually matches our book
+    if (olData.docs?.length > 0) {
+      const normalizeStr = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const targetTitle = normalizeStr(quoteData.book.title);
+      const targetAuthor = normalizeStr(quoteData.book.author);
+      
+      for (const doc of olData.docs) {
+        const docTitle = normalizeStr(doc.title || '');
+        const docAuthors = (doc.author_name || []).map((a: string) => normalizeStr(a));
+        
+        // Check if title matches (contains or is contained)
+        const titleMatches = docTitle.includes(targetTitle) || targetTitle.includes(docTitle);
+        // Check if any author matches
+        const authorMatches = docAuthors.some((a: string) => 
+          a.includes(targetAuthor) || targetAuthor.includes(a)
+        );
+        
+        if (titleMatches && authorMatches && doc.cover_i) {
+          coverUrl = `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`;
+          console.log('Found matching cover for:', doc.title, 'by', doc.author_name?.join(', '));
+          break;
+        }
+      }
+      
+      // If no verified match found but we have results with covers, log it
+      if (coverUrl === '/placeholder.svg') {
+        console.log('No verified cover match found for:', quoteData.book.title, 'by', quoteData.book.author);
+      }
     }
 
     console.log('Returning quote:', quoteData.book.title, 'by', quoteData.book.author);
