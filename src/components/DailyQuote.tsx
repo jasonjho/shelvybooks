@@ -12,91 +12,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-// Text-based fallback cover for when images fail
-function QuoteCover({ 
-  coverUrl, 
-  title, 
-  author, 
-  loading 
-}: { 
-  coverUrl: string; 
-  title: string; 
-  author: string; 
-  loading: boolean; 
-}) {
-  const [showFallback, setShowFallback] = useState(false);
-  const [imgLoaded, setImgLoaded] = useState(false);
-
-  // Reset state when URL changes
-  useEffect(() => {
-    setShowFallback(false);
-    setImgLoaded(false);
-  }, [coverUrl]);
-
-  const isPlaceholder = !coverUrl || coverUrl === '/placeholder.svg';
-
-  // Determine if we should show fallback
-  const useFallback = showFallback || isPlaceholder;
-
-  // Generate a consistent color based on title
-  const hue = title.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360;
-  const bgColor = `hsl(${hue}, 35%, 45%)`;
-
-  return (
-    <>
-      {!useFallback && (
-        <img
-          src={coverUrl}
-          alt={title}
-          className={cn(
-            "w-full h-full object-cover rounded shadow-sm transition-opacity",
-            imgLoaded ? "opacity-100" : "opacity-0"
-          )}
-          onLoad={(e) => {
-            const img = e.currentTarget;
-            // Check for placeholder dimensions (Google Books / Open Library)
-            if (
-              (img.naturalWidth === 1 && img.naturalHeight === 1) ||
-              (img.naturalWidth === 120 && img.naturalHeight === 192) ||
-              (img.naturalWidth === 128 && (img.naturalHeight >= 188 && img.naturalHeight <= 197))
-            ) {
-              setShowFallback(true);
-            } else {
-              setImgLoaded(true);
-            }
-          }}
-          onError={() => setShowFallback(true)}
-        />
-      )}
-      
-      {useFallback && (
-        <div 
-          className="w-full h-full rounded shadow-sm flex flex-col justify-center items-center p-1 text-center"
-          style={{ backgroundColor: bgColor }}
-        >
-          <span className="text-[6px] font-medium text-white/90 leading-tight line-clamp-3">
-            {title}
-          </span>
-          <span className="text-[5px] text-white/70 mt-0.5 line-clamp-1">
-            {author.split(' ').pop()}
-          </span>
-        </div>
-      )}
-
-      {loading && (
-        <div 
-          className="absolute inset-0 rounded overflow-hidden"
-          style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 1.2s ease-in-out infinite',
-          }}
-        />
-      )}
-    </>
-  );
-}
 interface DailyQuoteProps {
   onAddBook: (book: Omit<import('@/types/book').Book, 'id'>) => void;
   existingBooks: { title: string; author: string }[];
@@ -222,16 +137,7 @@ export function DailyQuote({ onAddBook, existingBooks }: DailyQuoteProps) {
       <span className="absolute -top-2.5 left-3 px-1.5 text-[10px] font-medium uppercase tracking-wider text-amber-600/70 dark:text-amber-400/50 bg-background rounded">
         Daily Inspiration
       </span>
-      <div className="flex items-center gap-3">
-        {/* Book cover with text fallback */}
-        <div className="relative w-10 h-14 flex-shrink-0">
-          <QuoteCover 
-            coverUrl={quote.book.coverUrl} 
-            title={quote.book.title}
-            author={quote.book.author}
-            loading={loading}
-          />
-        </div>
+      <div className="flex items-start gap-3">
 
         {/* Quote & book info */}
         <div className="flex-1 min-w-0">
