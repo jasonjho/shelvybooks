@@ -150,43 +150,50 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const googleApiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY');
 
-    // Verify admin role from JWT token
+    // Check if this is a cron job call (uses service role key in Authorization header)
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - No token provided' }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Use anon key client to verify the user's token
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    const isCronCall = authHeader?.includes(supabaseAnonKey);
     
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
-    
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - Invalid token' }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (isCronCall) {
+      console.log('Cron job triggered backfill');
+    } else {
+      // Verify admin role from JWT token for manual calls
+      if (!authHeader?.startsWith('Bearer ')) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized - No token provided' }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Use anon key client to verify the user's token
+      const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      
+      const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+      
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized - Invalid token' }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check admin role using the has_role RPC function
+      const { data: isAdmin, error: roleError } = await supabaseAuth.rpc('has_role', {
+        _user_id: user.id,
+        _role: 'admin',
+      });
+
+      if (roleError || !isAdmin) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden - Admin access required' }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log(`Admin ${user.id} triggered backfill`);
     }
-
-    // Check admin role using the has_role RPC function
-    const { data: isAdmin, error: roleError } = await supabaseAuth.rpc('has_role', {
-      _user_id: user.id,
-      _role: 'admin',
-    });
-
-    if (roleError || !isAdmin) {
-      return new Response(
-        JSON.stringify({ error: 'Forbidden - Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log(`Admin ${user.id} triggered backfill`);
     
     // Use service role for actual database operations
     const supabase = createClient(supabaseUrl, serviceRoleKey);
