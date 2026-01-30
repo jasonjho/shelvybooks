@@ -173,7 +173,7 @@ serve(async (req) => {
       .select('id, title, author, page_count, isbn, description, categories')
       .is('isbndb_attempted_at', null)
       .or('page_count.is.null,isbn.is.null,description.is.null,categories.is.null')
-      .limit(50);
+      .limit(3);
 
     if (fetchError) {
       throw new Error(`Failed to fetch books: ${fetchError.message}`);
