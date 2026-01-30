@@ -1,4 +1,4 @@
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@/contexts/ProfileContext';
 import { ProfileSetupDialog } from '@/components/ProfileSetupDialog';
 
 export function ProfileSetupWrapper() {

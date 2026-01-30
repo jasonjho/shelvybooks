@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera, User } from 'lucide-react';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@/contexts/ProfileContext';
 import { useToast } from '@/hooks/use-toast';
 
 interface ProfileEditDialogProps {

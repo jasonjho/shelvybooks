@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProfileProvider } from "@/contexts/ProfileContext";
 import { BookAnimationProvider } from "@/contexts/BookAnimationContext";
 import { ProfileSetupWrapper } from "@/components/ProfileSetupWrapper";
 import Index from "./pages/Index";
@@ -20,24 +21,26 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <AuthProvider>
-        <BookAnimationProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <ProfileSetupWrapper />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/shelf/:shareId" element={<PublicShelf />} />
-                <Route path="/clubs/:clubId" element={<ClubPage />} />
-                <Route path="/clubs/join/:inviteCode" element={<JoinClubPage />} />
-                <Route path="/u/:username" element={<ProfilePage />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </BookAnimationProvider>
+        <ProfileProvider>
+          <BookAnimationProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <ProfileSetupWrapper />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/shelf/:shareId" element={<PublicShelf />} />
+                  <Route path="/clubs/:clubId" element={<ClubPage />} />
+                  <Route path="/clubs/join/:inviteCode" element={<JoinClubPage />} />
+                  <Route path="/u/:username" element={<ProfilePage />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </BookAnimationProvider>
+        </ProfileProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>

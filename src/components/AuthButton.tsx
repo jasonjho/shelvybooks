@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@/contexts/ProfileContext';
 import { LogIn, LogOut, User, Settings } from 'lucide-react';
 import {
   Dialog,

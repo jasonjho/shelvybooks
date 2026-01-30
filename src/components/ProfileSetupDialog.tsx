@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera, User } from 'lucide-react';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@/contexts/ProfileContext';
 import { useToast } from '@/hooks/use-toast';
 
 interface ProfileSetupDialogProps {
@@ -20,7 +20,7 @@ interface ProfileSetupDialogProps {
 }
 
 export function ProfileSetupDialog({ open, onComplete }: ProfileSetupDialogProps) {
-  const { createProfile, refreshProfile } = useProfile();
+  const { createProfile } = useProfile();
   const { toast } = useToast();
   const [username, setUsername] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -84,9 +84,6 @@ export function ProfileSetupDialog({ open, onComplete }: ProfileSetupDialogProps
 
     // Close dialog immediately
     setDialogOpen(false);
-
-    // Refresh profile so AuthButton shows username
-    refreshProfile();
 
     toast({
       title: 'Profile created!',
