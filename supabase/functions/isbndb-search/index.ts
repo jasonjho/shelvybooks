@@ -26,6 +26,21 @@ interface ISBNdbSearchResponse {
   book?: ISBNdbBook;
 }
 
+// Strip HTML tags from text
+function stripHtml(html: string | undefined): string | undefined {
+  if (!html) return undefined;
+  return html
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+    .replace(/&amp;/g, '&')  // Replace &amp; with &
+    .replace(/&lt;/g, '<')   // Replace &lt; with <
+    .replace(/&gt;/g, '>')   // Replace &gt; with >
+    .replace(/&quot;/g, '"') // Replace &quot; with "
+    .replace(/&#39;/g, "'")  // Replace &#39; with '
+    .replace(/\s+/g, ' ')    // Collapse multiple spaces
+    .trim();
+}
+
 // Normalize ISBNdb response to a common format matching Google Books structure
 function normalizeBook(book: ISBNdbBook, index: number): {
   id: string;
@@ -47,7 +62,7 @@ function normalizeBook(book: ISBNdbBook, index: number): {
   };
   source: string;
 } {
-  const description = book.synopsis || book.overview || undefined;
+  const description = stripHtml(book.synopsis || book.overview);
   const isbn = book.isbn13 || book.isbn;
   
   return {
