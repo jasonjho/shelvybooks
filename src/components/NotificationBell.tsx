@@ -41,7 +41,7 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
         <div className="px-3 py-2.5 border-b border-border flex items-center justify-between">
-          <h3 className="font-semibold text-sm">Notifications</h3>
+          <h3 className="font-sans font-semibold text-sm">Notifications</h3>
           {newLikesCount > 0 && (
             <Button
               variant="ghost"
