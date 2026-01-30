@@ -15,6 +15,7 @@ import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
 import { BookNote, NoteColor } from '@/hooks/useBookNotes';
 import { PostItNote } from '@/components/PostItNote';
 import { BookLikeBadge } from '@/components/BookLikeBadge';
+import { BookHoverPreview } from '@/components/BookHoverPreview';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -237,35 +238,14 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
         )}
       </div>
       
-      {/* Hover tooltip */}
+      {/* Hover tooltip with metadata */}
       <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover/book:opacity-100 transition-opacity duration-200 z-30 hidden sm:block pointer-events-none group-hover/book:pointer-events-auto">
-        <div className="bg-popover text-popover-foreground px-4 py-3 rounded-lg text-sm min-w-[200px] max-w-[280px] shadow-xl border border-border">
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect?.();
-            }}
-            className="font-medium leading-snug text-left hover:text-primary transition-colors"
-          >
-            {book.title}
-          </button>
-          <p className="text-muted-foreground mt-1.5 text-xs">{book.author}</p>
-          {hasClubInfo && (
-            <div className="flex items-center gap-1.5 mt-2 text-xs text-primary">
-              <Users className="w-3 h-3" />
-              <span>{clubInfo.map(c => c.clubName).join(', ')}</span>
-            </div>
-          )}
-          <a 
-            href={amazonUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline mt-2 text-xs flex items-center gap-1 font-medium"
-            onClick={(e) => e.stopPropagation()}
-          >
-            View on Amazon →
-          </a>
-        </div>
+        <BookHoverPreview 
+          book={book} 
+          amazonUrl={amazonUrl} 
+          onSelect={onSelect}
+          clubInfo={clubInfo}
+        />
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 border-[8px] border-transparent border-t-popover" />
       </div>
     </div>

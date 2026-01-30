@@ -251,11 +251,15 @@ export type Database = {
       books: {
         Row: {
           author: string
+          categories: string[] | null
           color: string
           completed_at: string | null
           cover_url: string | null
           created_at: string
+          description: string | null
           id: string
+          isbn: string | null
+          page_count: number | null
           status: string
           title: string
           updated_at: string
@@ -263,11 +267,15 @@ export type Database = {
         }
         Insert: {
           author: string
+          categories?: string[] | null
           color?: string
           completed_at?: string | null
           cover_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
+          isbn?: string | null
+          page_count?: number | null
           status?: string
           title: string
           updated_at?: string
@@ -275,11 +283,15 @@ export type Database = {
         }
         Update: {
           author?: string
+          categories?: string[] | null
           color?: string
           completed_at?: string | null
           cover_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
+          isbn?: string | null
+          page_count?: number | null
           status?: string
           title?: string
           updated_at?: string

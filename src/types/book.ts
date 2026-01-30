@@ -26,6 +26,10 @@ export interface Book {
   openLibraryKey?: string;
   createdAt?: string;
   completedAt?: string;
+  pageCount?: number;
+  isbn?: string;
+  description?: string;
+  categories?: string[];
 }
 
 export interface GoogleBook {
@@ -33,12 +37,19 @@ export interface GoogleBook {
   volumeInfo: {
     title: string;
     authors?: string[];
+    description?: string;
     imageLinks?: {
       thumbnail?: string;
       smallThumbnail?: string;
     };
     publishedDate?: string;
     infoLink?: string;
+    pageCount?: number;
+    categories?: string[];
+    industryIdentifiers?: Array<{
+      type: string;
+      identifier: string;
+    }>;
   };
 }
 
