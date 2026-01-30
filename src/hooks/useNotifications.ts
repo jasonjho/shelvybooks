@@ -15,6 +15,7 @@ interface NotificationData {
   newLikesCount: number;
   newLikes: NewLike[];
   likesPerBook: Record<string, number>;
+  totalLikesPerBook: Record<string, number>;
   lastSeenAt: Date | null;
   markAsSeen: () => Promise<void>;
   isLoading: boolean;
@@ -25,6 +26,7 @@ export function useNotifications(): NotificationData {
   const [newLikesCount, setNewLikesCount] = useState(0);
   const [newLikes, setNewLikes] = useState<NewLike[]>([]);
   const [likesPerBook, setLikesPerBook] = useState<Record<string, number>>({});
+  const [totalLikesPerBook, setTotalLikesPerBook] = useState<Record<string, number>>({});
   const [lastSeenAt, setLastSeenAt] = useState<Date | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -118,12 +120,19 @@ export function useNotifications(): NotificationData {
         };
       }));
 
-      // Count new likes per book
+      // Count new likes per book (for notification badges)
       const perBook: Record<string, number> = {};
       newLikesData.forEach(l => {
         perBook[l.book_id] = (perBook[l.book_id] || 0) + 1;
       });
       setLikesPerBook(perBook);
+
+      // Count ALL likes per book (for heart stickers - persists after mark as read)
+      const totalPerBook: Record<string, number> = {};
+      likes.forEach(l => {
+        totalPerBook[l.book_id] = (totalPerBook[l.book_id] || 0) + 1;
+      });
+      setTotalLikesPerBook(totalPerBook);
 
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -183,6 +192,7 @@ export function useNotifications(): NotificationData {
     newLikesCount,
     newLikes,
     likesPerBook,
+    totalLikesPerBook,
     lastSeenAt,
     markAsSeen,
     isLoading,
