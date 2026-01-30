@@ -111,15 +111,14 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const googleApiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY');
     
-    // Use service role client to validate the token
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+    // Use service role client to validate the token and for all operations
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
     
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
       console.log('Auth validation failed:', authError?.message || 'No user');
@@ -129,21 +128,46 @@ serve(async (req) => {
       );
     }
 
-    const userId = user.id;
-    console.log(`Processing backfill for user ${userId}`);
+    // Parse request body for optional targetUserId (admin only)
+    let targetUserId = user.id;
+    let batchSize = 10;
+    
+    try {
+      const body = await req.json();
+      if (body.targetUserId) {
+        // Check if caller is admin
+        const { data: isAdmin } = await supabase.rpc('has_role', {
+          _user_id: user.id,
+          _role: 'admin',
+        });
+        
+        if (!isAdmin) {
+          return new Response(
+            JSON.stringify({ error: 'Forbidden - Admin access required to backfill other users' }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
+        targetUserId = body.targetUserId;
+        console.log(`Admin ${user.id} backfilling for user ${targetUserId}`);
+      }
+      if (body.batchSize && typeof body.batchSize === 'number') {
+        batchSize = Math.min(body.batchSize, 50); // Cap at 50
+      }
+    } catch {
+      // No body or invalid JSON - use defaults
+    }
 
-    // Use service role for database operations
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    console.log(`Processing backfill for user ${targetUserId} (batch: ${batchSize})`);
 
-    // Find books missing metadata AND not yet attempted for this user
-    // Small batch to avoid timeout and rate limits
+    // Find books missing metadata AND not yet attempted for target user
     const { data: books, error: fetchError } = await supabase
       .from('books')
       .select('id, title, author, page_count, isbn, description, categories')
-      .eq('user_id', userId)
+      .eq('user_id', targetUserId)
       .is('metadata_attempted_at', null)
       .or('page_count.is.null,description.is.null,categories.is.null')
-      .limit(10); // Small batch per login
+      .limit(batchSize);
 
     if (fetchError) {
       throw new Error(`Failed to fetch books: ${fetchError.message}`);
@@ -156,7 +180,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`User ${userId}: Processing ${books.length} books for metadata`);
+    console.log(`User ${targetUserId}: Processing ${books.length} books for metadata`);
 
     let updated = 0;
     let noDataFound = 0;
@@ -213,11 +237,11 @@ serve(async (req) => {
       }
     }
 
-    // Check how many are still pending for this user
+    // Check how many are still pending for target user
     const { count: pendingCount } = await supabase
       .from('books')
       .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
+      .eq('user_id', targetUserId)
       .is('metadata_attempted_at', null)
       .or('page_count.is.null,description.is.null,categories.is.null');
 
