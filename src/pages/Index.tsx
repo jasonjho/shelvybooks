@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { useBooks } from '@/hooks/useBooks';
 import { useClubBooks } from '@/hooks/useBookClubs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/ProfileContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
 import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
@@ -84,6 +85,7 @@ export default function Index() {
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
   
   const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
+  const { profile } = useProfile();
   const { 
     books,
     loading: booksLoading,
@@ -302,6 +304,7 @@ export default function Index() {
                     onUpdateCompletedAt={user ? updateBookCompletedAt : undefined}
                     getBookClubInfo={user ? getBookClubInfo : undefined}
                     likesPerBook={user ? totalLikesPerBook : undefined}
+                    displayName={profile?.username}
                   />
                 )}
               </>

@@ -26,6 +26,8 @@ const DEFAULT_SETTINGS: ShelfSettingsType = {
   showWoodGrain: true,
   showAmbientLight: true,
   showPlant: true,
+  showNameplate: false,
+  showStackedBooks: false,
   decorDensity: 'balanced',
   backgroundTheme: 'office',
 };
