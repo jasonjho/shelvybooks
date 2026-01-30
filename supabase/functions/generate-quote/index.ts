@@ -17,12 +17,16 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    // Parse request body for excluded titles
+    // === INPUT VALIDATION ===
     let excludeTitles: string[] = [];
     try {
       const body = await req.json();
       if (Array.isArray(body?.excludeTitles)) {
-        excludeTitles = body.excludeTitles;
+        // Validate and sanitize: max 100 titles, max 200 chars each
+        excludeTitles = body.excludeTitles
+          .slice(0, 100)
+          .filter((t: unknown): t is string => typeof t === 'string')
+          .map((t: string) => t.slice(0, 200).trim().replace(/[<>]/g, ''));
       }
     } catch {
       // No body or invalid JSON, proceed without exclusions
