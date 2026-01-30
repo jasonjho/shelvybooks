@@ -420,6 +420,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_public_shelf_owner_username: {
+        Args: { _share_id: string }
+        Returns: string
+      }
       has_public_shelf: { Args: { _user_id: string }; Returns: boolean }
       is_club_member: {
         Args: { _club_id: string; _user_id: string }
