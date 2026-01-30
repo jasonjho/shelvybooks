@@ -413,10 +413,14 @@ export type Database = {
         Args: { _share_id: string }
         Returns: {
           author: string
+          categories: string[]
           color: string
           cover_url: string
           created_at: string
+          description: string
           id: string
+          isbn: string
+          page_count: number
           status: string
           title: string
         }[]
