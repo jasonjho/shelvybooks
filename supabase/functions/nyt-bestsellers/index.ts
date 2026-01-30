@@ -67,7 +67,27 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { listName = 'combined-print-and-e-book-fiction' } = await req.json().catch(() => ({}));
+    // === INPUT VALIDATION ===
+    const body = await req.json().catch(() => ({}));
+    let listName = body?.listName;
+    
+    // Validate listName - must be string, reasonable length, alphanumeric with dashes only
+    if (listName !== undefined) {
+      if (typeof listName !== 'string') {
+        return new Response(
+          JSON.stringify({ success: false, error: 'listName must be a string' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      // Sanitize: limit length, allow only alphanumeric and dashes
+      listName = listName.slice(0, 100).trim().toLowerCase();
+      if (!/^[a-z0-9-]+$/.test(listName)) {
+        listName = 'combined-print-and-e-book-fiction'; // Default to safe value
+      }
+    } else {
+      listName = 'combined-print-and-e-book-fiction';
+    }
 
     console.log('Fetching NYT bestsellers list:', listName);
 

@@ -47,25 +47,76 @@ serve(async (req) => {
       );
     }
 
-    const { books, mood } = await req.json() as RecommendationRequest;
+    const body = await req.json();
+    const { books, mood } = body as RecommendationRequest;
+    
+    // === INPUT VALIDATION ===
+    // Validate books array
+    if (!Array.isArray(books)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request: books must be an array' }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    if (books.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request: books array cannot be empty' }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    if (books.length > 100) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request: too many books (max 100)' }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Validate each book object and sanitize
+    const sanitizedBooks: BookInfo[] = [];
+    for (const book of books.slice(0, 100)) {
+      if (!book || typeof book !== 'object') continue;
+      
+      const title = typeof book.title === 'string' ? book.title.slice(0, 200).trim() : '';
+      const author = typeof book.author === 'string' ? book.author.slice(0, 100).trim() : '';
+      const status = typeof book.status === 'string' ? book.status.slice(0, 20).trim() : 'unknown';
+      
+      if (title && author) {
+        sanitizedBooks.push({ title, author, status });
+      }
+    }
+    
+    if (sanitizedBooks.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request: no valid books found' }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Validate and sanitize mood
+    const sanitizedMood = mood && typeof mood === 'string' 
+      ? mood.slice(0, 200).trim().replace(/[<>]/g, '') 
+      : '';
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Build context from user's bookshelf
-    const bookList = books.slice(0, 20).map((b, i) => 
+    // Build context from user's bookshelf (use sanitized data)
+    const bookList = sanitizedBooks.slice(0, 20).map((b, i) => 
       `${i + 1}. "${b.title}" by ${b.author} (${b.status})`
     ).join("\n");
 
     const readingStatus = {
-      reading: books.filter(b => b.status === 'reading').length,
-      read: books.filter(b => b.status === 'read').length,
-      wantToRead: books.filter(b => b.status === 'want-to-read').length,
+      reading: sanitizedBooks.filter(b => b.status === 'reading').length,
+      read: sanitizedBooks.filter(b => b.status === 'read').length,
+      wantToRead: sanitizedBooks.filter(b => b.status === 'want-to-read').length,
     };
 
-    const moodContext = mood ? `\n\nThe reader is currently in the mood for: ${mood}` : '';
+    const moodContext = sanitizedMood ? `\n\nThe reader is currently in the mood for: ${sanitizedMood}` : '';
 
     const systemPrompt = `You are a delightful book recommender with a touch of magic ✨. You analyze someone's bookshelf to understand their taste and suggest books they'd love.
 
@@ -86,7 +137,7 @@ Format your response as a JSON object with this structure:
 
 Provide exactly 10 recommendations. Make sure they're real, well-known books.`;
 
-    const userPrompt = `Here's my bookshelf (${books.length} total books):
+    const userPrompt = `Here's my bookshelf (${sanitizedBooks.length} total books):
 - Currently reading: ${readingStatus.reading}
 - Already read: ${readingStatus.read}  
 - Want to read: ${readingStatus.wantToRead}

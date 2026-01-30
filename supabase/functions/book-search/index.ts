@@ -151,14 +151,31 @@ serve(async (req) => {
       );
     }
 
-    const { query } = await req.json();
+    const body = await req.json();
     
-    if (!query || query.trim().length < 2) {
+    // === INPUT VALIDATION ===
+    let query = body?.query;
+    
+    // Type check
+    if (typeof query !== 'string') {
+      return new Response(
+        JSON.stringify({ items: [], source: 'none', error: 'Query must be a string' }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Sanitize and limit length
+    query = query.slice(0, 200).trim();
+    
+    if (query.length < 2) {
       return new Response(
         JSON.stringify({ items: [], source: 'none' }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    
+    // Remove potentially dangerous characters for URL injection
+    query = query.replace(/[<>'"`;\\]/g, '');
 
     const apiKey = Deno.env.get("GOOGLE_BOOKS_API_KEY");
     
