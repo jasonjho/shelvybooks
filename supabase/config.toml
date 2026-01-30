@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.backfill-all-metadata]
 verify_jwt = false
+
+[functions.isbndb-backfill]
+verify_jwt = false
