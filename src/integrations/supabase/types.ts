@@ -370,33 +370,7 @@ export type Database = {
       }
     }
     Views: {
-      shelf_settings_public: {
-        Row: {
-          created_at: string | null
-          display_name: string | null
-          id: string | null
-          is_public: boolean | null
-          share_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          display_name?: string | null
-          id?: string | null
-          is_public?: boolean | null
-          share_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          display_name?: string | null
-          id?: string | null
-          is_public?: boolean | null
-          share_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_public_shelf_books: {
