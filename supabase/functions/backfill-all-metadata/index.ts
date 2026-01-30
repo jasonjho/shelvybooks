@@ -191,39 +191,48 @@ serve(async (req) => {
     // Use service role for actual database operations
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Find books missing any key metadata AND not yet attempted
-    // Process small batch to complete within timeout
-    const { data: books, error: fetchError } = await supabase
+    // Find UNIQUE title+author combinations that haven't been attempted yet
+    // This deduplicates across all users - we only fetch metadata once per unique book
+    const { data: uniqueBooks, error: fetchError } = await supabase
       .from('books')
-      .select('id, title, author, page_count, isbn, description, categories, metadata_attempted_at')
+      .select('title, author')
       .is('metadata_attempted_at', null)
-      .or('description.is.null,page_count.is.null,categories.is.null,isbn.is.null')
-      .limit(30); // Slightly larger batch since we have retry logic
+      .or('description.is.null,page_count.is.null,categories.is.null,isbn.is.null');
 
     if (fetchError) {
       throw new Error(`Failed to fetch books: ${fetchError.message}`);
     }
 
-    if (!books || books.length === 0) {
+    if (!uniqueBooks || uniqueBooks.length === 0) {
       return new Response(
-        JSON.stringify({ message: 'All books already have metadata', updated: 0 }),
+        JSON.stringify({ message: 'All books already have metadata', updated: 0, uniqueBooksProcessed: 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`Found ${books.length} books needing metadata backfill`);
+    // Deduplicate by title+author (case-insensitive)
+    const seen = new Set<string>();
+    const deduped: Array<{ title: string; author: string }> = [];
+    for (const book of uniqueBooks) {
+      const key = `${book.title.toLowerCase()}|||${book.author.toLowerCase()}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduped.push(book);
+      }
+    }
+
+    // Process larger batch - up to 150 unique books per call
+    const batchSize = 150;
+    const batch = deduped.slice(0, batchSize);
+
+    console.log(`Found ${uniqueBooks.length} books needing metadata, ${deduped.length} unique title/author combos. Processing batch of ${batch.length}.`);
 
     let updated = 0;
     let noDataFound = 0;
     const errors: string[] = [];
     const notFound: string[] = [];
 
-    for (const book of books) {
-      // Skip if book already has all metadata
-      if (book.page_count && book.isbn && book.description && book.categories) {
-        continue;
-      }
-
+    for (const book of batch) {
       try {
         // Try Google Books first
         let metadata = await fetchGoogleBooksMetadata(book.title, book.author, googleApiKey);
@@ -241,49 +250,55 @@ serve(async (req) => {
           }
         }
 
-        // Always mark as attempted (whether we found data or not)
+        // Build update data - apply to ALL books with this title+author
         const updateData: Record<string, unknown> = {
           metadata_attempted_at: new Date().toISOString(),
         };
 
-        if (metadata && (metadata.pageCount || metadata.isbn || metadata.description || metadata.categories)) {
-          if (!book.page_count && metadata.pageCount) updateData.page_count = metadata.pageCount;
-          if (!book.isbn && metadata.isbn) updateData.isbn = metadata.isbn;
-          if (!book.description && metadata.description) updateData.description = metadata.description;
-          if (!book.categories && metadata.categories) updateData.categories = metadata.categories;
+        let hasNewData = false;
+        if (metadata) {
+          if (metadata.pageCount) { updateData.page_count = metadata.pageCount; hasNewData = true; }
+          if (metadata.isbn) { updateData.isbn = metadata.isbn; hasNewData = true; }
+          if (metadata.description) { updateData.description = metadata.description; hasNewData = true; }
+          if (metadata.categories) { updateData.categories = metadata.categories; hasNewData = true; }
         }
 
-        const { error: updateError } = await supabase
+        // Update ALL matching books (across all users) with this title+author
+        const { error: updateError, count } = await supabase
           .from('books')
           .update(updateData)
-          .eq('id', book.id);
+          .ilike('title', book.title)
+          .ilike('author', book.author)
+          .is('metadata_attempted_at', null);
 
         if (updateError) {
           errors.push(`Failed to update "${book.title}": ${updateError.message}`);
-        } else if (Object.keys(updateData).length > 1) {
-          // More than just metadata_attempted_at was updated
-          updated++;
-          console.log(`Updated: ${book.title}${updateData.isbn ? ` (ISBN: ${updateData.isbn})` : ''}`);
+        } else if (hasNewData) {
+          updated += count || 1;
+          console.log(`Updated ${count} copies of: ${book.title}${updateData.isbn ? ` (ISBN: ${updateData.isbn})` : ''}`);
         } else {
-          // Only metadata_attempted_at was set - no data found
           noDataFound++;
           notFound.push(`${book.title} by ${book.author}`);
-          console.log(`No metadata found for: ${book.title} by ${book.author}`);
+          console.log(`No metadata found for: ${book.title} by ${book.author} (marked ${count} copies as attempted)`);
         }
 
-        // Base rate limiting delay between books
-        await sleep(200);
+        // Base rate limiting delay between unique books
+        await sleep(150);
       } catch (err) {
         errors.push(`Error processing "${book.title}": ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
     }
 
+    // Calculate remaining unique books
+    const remaining = deduped.length - batch.length;
+
     return new Response(
       JSON.stringify({ 
         message: `Backfill complete`, 
-        total: books.length,
-        updated,
+        uniqueBooksProcessed: batch.length,
+        totalBooksUpdated: updated,
         noDataFound,
+        remaining,
         notFoundSamples: notFound.slice(0, 5),
         errors: errors.length > 0 ? errors.slice(0, 10) : undefined 
       }),

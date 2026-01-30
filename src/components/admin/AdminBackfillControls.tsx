@@ -17,9 +17,10 @@ interface UserWithBooks {
 
 interface BackfillAllResult {
   message: string;
-  total: number;
-  updated: number;
+  uniqueBooksProcessed: number;
+  totalBooksUpdated: number;
   noDataFound: number;
+  remaining: number;
   notFoundSamples?: string[];
   errors?: string[];
 }
@@ -182,7 +183,7 @@ export function AdminBackfillControls() {
     },
     onSuccess: (data) => {
       setAllResults(data);
-      toast.success(`Bulk backfill: ${data?.updated ?? 0} books enriched out of ${data?.total ?? 0} processed`);
+      toast.success(`Bulk backfill: ${data?.totalBooksUpdated ?? 0} books enriched from ${data?.uniqueBooksProcessed ?? 0} unique titles (${data?.remaining ?? 0} remaining)`);
       queryClient.invalidateQueries({ queryKey: ["admin-users-with-books"] });
       queryClient.invalidateQueries({ queryKey: ["admin-backfill-stats"] });
       refetch();
@@ -285,7 +286,7 @@ export function AdminBackfillControls() {
             Bulk Backfill All Users
           </CardTitle>
           <CardDescription>
-            Process all books missing metadata across all users (30 books per run)
+            Process unique title/author combos and apply metadata to all matching books (150 per run)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -310,18 +311,22 @@ export function AdminBackfillControls() {
           {allResults && (
             <div className="p-4 rounded-lg bg-muted/50 space-y-2 text-sm">
               <p className="font-medium">Last run results:</p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
-                  <span className="text-muted-foreground">Processed:</span>{" "}
-                  <span className="font-medium">{allResults.total}</span>
+                  <span className="text-muted-foreground">Unique titles:</span>{" "}
+                  <span className="font-medium">{allResults.uniqueBooksProcessed}</span>
                 </div>
                 <div>
-                  <span className="text-green-600">Updated:</span>{" "}
-                  <span className="font-medium text-green-600">{allResults.updated}</span>
+                  <span className="text-green-600">Books updated:</span>{" "}
+                  <span className="font-medium text-green-600">{allResults.totalBooksUpdated}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">No data:</span>{" "}
                   <span className="font-medium">{allResults.noDataFound}</span>
+                </div>
+                <div>
+                  <span className="text-amber-600">Remaining:</span>{" "}
+                  <span className="font-medium text-amber-600">{allResults.remaining}</span>
                 </div>
               </div>
               {allResults.notFoundSamples && allResults.notFoundSamples.length > 0 && (
@@ -348,7 +353,7 @@ export function AdminBackfillControls() {
           )}
 
           <p className="text-xs text-muted-foreground">
-            Uses exponential backoff on rate limits. Click multiple times to process more batches.
+            Deduplicates by title+author across all users. Uses exponential backoff on rate limits. Click to process the next batch of 150 unique books.
           </p>
         </CardContent>
       </Card>
