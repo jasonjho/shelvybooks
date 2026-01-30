@@ -13,6 +13,49 @@ interface BookMetadata {
   categories?: string[];
 }
 
+// Exponential backoff with jitter
+async function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry(
+  url: string,
+  maxRetries = 3,
+  baseDelay = 500
+): Promise<Response | null> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url);
+      
+      // If rate limited (429) or server error (5xx), retry with backoff
+      if (response.status === 429 || response.status >= 500) {
+        if (attempt === maxRetries) {
+          console.log(`Max retries reached for ${url}, status: ${response.status}`);
+          return null;
+        }
+        
+        // Exponential backoff with jitter: 500ms, 1s, 2s, 4s...
+        const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 200;
+        console.log(`Rate limited/error (${response.status}), retrying in ${Math.round(delay)}ms...`);
+        await sleep(delay);
+        continue;
+      }
+      
+      return response;
+    } catch (error) {
+      if (attempt === maxRetries) {
+        console.log(`Network error after ${maxRetries} retries: ${error}`);
+        return null;
+      }
+      
+      const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 200;
+      console.log(`Network error, retrying in ${Math.round(delay)}ms...`);
+      await sleep(delay);
+    }
+  }
+  return null;
+}
+
 // Clean title by removing series notation like "(Book #1)", "#2", etc.
 function cleanTitle(title: string): string {
   return title
@@ -42,10 +85,10 @@ async function fetchGoogleBooksMetadata(title: string, author: string, apiKey?: 
       url += `&key=${apiKey}`;
     }
 
+    const response = await fetchWithRetry(url);
+    if (!response || !response.ok) continue;
+    
     try {
-      const response = await fetch(url);
-      if (!response.ok) continue;
-      
       const data = await response.json();
       const book = data.items?.[0]?.volumeInfo;
       
@@ -77,10 +120,10 @@ async function fetchOpenLibraryMetadata(title: string, author: string): Promise<
   const query = `${cleanedTitle} ${author}`;
   const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=1&fields=key,title,author_name,number_of_pages_median,isbn,subject`;
 
+  const response = await fetchWithRetry(url);
+  if (!response || !response.ok) return null;
+  
   try {
-    const response = await fetch(url);
-    if (!response.ok) return null;
-    
     const data = await response.json();
     const doc = data.docs?.[0];
     
@@ -154,8 +197,8 @@ serve(async (req) => {
       .from('books')
       .select('id, title, author, page_count, isbn, description, categories, metadata_attempted_at')
       .is('metadata_attempted_at', null)
-      .or('description.is.null,page_count.is.null,categories.is.null')
-      .limit(20); // Small batch for reliability
+      .or('description.is.null,page_count.is.null,categories.is.null,isbn.is.null')
+      .limit(30); // Slightly larger batch since we have retry logic
 
     if (fetchError) {
       throw new Error(`Failed to fetch books: ${fetchError.message}`);
@@ -185,8 +228,8 @@ serve(async (req) => {
         // Try Google Books first
         let metadata = await fetchGoogleBooksMetadata(book.title, book.author, googleApiKey);
         
-        // Fallback to Open Library
-        if (!metadata?.pageCount && !metadata?.isbn) {
+        // Fallback to Open Library if Google didn't return ISBN
+        if (!metadata?.isbn) {
           const olMetadata = await fetchOpenLibraryMetadata(book.title, book.author);
           if (olMetadata) {
             metadata = {
@@ -220,7 +263,7 @@ serve(async (req) => {
         } else if (Object.keys(updateData).length > 1) {
           // More than just metadata_attempted_at was updated
           updated++;
-          console.log(`Updated: ${book.title}`);
+          console.log(`Updated: ${book.title}${updateData.isbn ? ` (ISBN: ${updateData.isbn})` : ''}`);
         } else {
           // Only metadata_attempted_at was set - no data found
           noDataFound++;
@@ -228,8 +271,8 @@ serve(async (req) => {
           console.log(`No metadata found for: ${book.title} by ${book.author}`);
         }
 
-        // Rate limiting delay
-        await new Promise(resolve => setTimeout(resolve, 150));
+        // Base rate limiting delay between books
+        await sleep(200);
       } catch (err) {
         errors.push(`Error processing "${book.title}": ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
