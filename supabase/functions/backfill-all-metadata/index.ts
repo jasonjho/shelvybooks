@@ -245,8 +245,9 @@ serve(async (req) => {
       }
     }
 
-    // Process larger batch - up to 150 unique books per call
-    const batchSize = 150;
+    // Google Books API limits: 100 requests/min, 1000/day per API key
+    // Each book can try up to 3 query strategies, so 30 books × 3 = 90 requests max per batch
+    const batchSize = 30;
     const batch = deduped.slice(0, batchSize);
 
     console.log(`Found ${uniqueBooks.length} books needing metadata, ${deduped.length} unique title/author combos. Processing batch of ${batch.length}.`);
