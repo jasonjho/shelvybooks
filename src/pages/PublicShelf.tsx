@@ -127,37 +127,26 @@ export default function PublicShelf() {
       }
 
       try {
-        // Fetch shelf settings using secure public view (excludes user_id)
-        // Using raw query since the view isn't in generated types
-        const { data: shelfData, error: shelfError } = await supabase
-          .from('shelf_settings_public' as 'shelf_settings')
-          .select('display_name, share_id, is_public')
-          .eq('share_id', shareId)
-          .maybeSingle();
+        // Fetch shelf info and owner username using secure RPC functions
+        // This prevents bulk enumeration of public shelves
+        const [shelfResult, usernameResult] = await Promise.all([
+          supabase.rpc('get_public_shelf_info', { _share_id: shareId }),
+          supabase.rpc('get_public_shelf_owner_username', { _share_id: shareId }),
+        ]);
 
-        if (shelfError) throw shelfError;
+        if (shelfResult.error) throw shelfResult.error;
         
+        const shelfData = shelfResult.data?.[0];
         if (!shelfData) {
           setError('Shelf not found');
           setLoading(false);
           return;
         }
 
-        // View already filters to is_public = true, but double-check
-        if (!shelfData.is_public) {
-          setError('This shelf is private');
-          setLoading(false);
-          return;
-        }
-
-        // Fetch owner username using secure RPC function
-        const { data: ownerUsername } = await supabase
-          .rpc('get_public_shelf_owner_username', { _share_id: shareId });
-
         setShelfOwner({
           display_name: shelfData.display_name,
           share_id: shelfData.share_id ?? shareId,
-          username: ownerUsername || null,
+          username: usernameResult.data || null,
         });
 
         // Fetch books using secure RPC function (avoids exposing user_id)

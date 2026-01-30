@@ -411,6 +411,14 @@ export type Database = {
           title: string
         }[]
       }
+      get_public_shelf_info: {
+        Args: { _share_id: string }
+        Returns: {
+          display_name: string
+          is_public: boolean
+          share_id: string
+        }[]
+      }
       get_public_shelf_info_for_users: {
         Args: { _user_ids: string[] }
         Returns: {
