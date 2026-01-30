@@ -13,6 +13,7 @@ import PublicShelf from "./pages/PublicShelf";
 import ClubPage from "./pages/ClubPage";
 import JoinClubPage from "./pages/JoinClubPage";
 import ProfilePage from "./pages/ProfilePage";
+import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
                   <Route path="/clubs/:clubId" element={<ClubPage />} />
                   <Route path="/clubs/join/:inviteCode" element={<JoinClubPage />} />
                   <Route path="/u/:username" element={<ProfilePage />} />
+                  <Route path="/admin" element={<AdminPage />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
