@@ -15,6 +15,7 @@ interface ISBNdbBook {
   publisher?: string;
   pages?: number;
   synopsis?: string;
+  overview?: string;
   subjects?: string[];
   date_published?: string;
   image?: string;
@@ -36,7 +37,22 @@ function cleanTitle(title: string): string {
     .trim();
 }
 
-// Sleep helper for rate limiting
+// Strip HTML tags from text
+function stripHtml(html: string | undefined): string | undefined {
+  if (!html) return undefined;
+  return html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Sleep helper for rate limiting - Pro plan allows 3 req/sec
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -61,12 +77,12 @@ async function searchISBNdb(
     });
     
     if (response.status === 429) {
-      console.log('Rate limited by ISBNdb');
+      console.log('Rate limited by ISBNdb, backing off...');
+      await sleep(2000);
       return null;
     }
     
     if (response.status === 404) {
-      // Book not found in ISBNdb
       return null;
     }
     
@@ -110,21 +126,16 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '') || '';
     
-    console.log(`Auth header present: ${!!authHeader}`);
-    
     let isCronCall = false;
     try {
       const payloadBase64 = token.split('.')[1];
       if (payloadBase64) {
         const payload = JSON.parse(atob(payloadBase64));
-        console.log(`JWT payload: role=${payload.role}, ref=${payload.ref}`);
         isCronCall = payload.role === 'anon' && payload.ref === 'gzzkaxivhqqoezfqtpsd';
       }
     } catch (e) {
-      console.log(`JWT decode error: ${e}`);
+      // JWT decode failed
     }
-    
-    console.log(`isCronCall: ${isCronCall}`);
     
     if (!isCronCall) {
       if (!authHeader?.startsWith('Bearer ')) {
@@ -166,14 +177,18 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Find books missing metadata that haven't been attempted via ISBNdb yet
-    // We use a separate column to track ISBNdb attempts vs Google Books
+    // Fetch books missing metadata, grouped by unique title+author
+    // Pro plan: 3 req/sec, so we can process ~150 books in 50 seconds (leaving buffer)
+    const BATCH_SIZE = 100;
+    const DELAY_MS = 350; // 3 requests per second
+
+    // Get unique title+author combinations that need processing
     const { data: books, error: fetchError } = await supabase
       .from('books')
       .select('id, title, author, page_count, isbn, description, categories')
       .is('isbndb_attempted_at', null)
       .or('page_count.is.null,isbn.is.null,description.is.null,categories.is.null')
-      .limit(3);
+      .limit(BATCH_SIZE);
 
     if (fetchError) {
       throw new Error(`Failed to fetch books: ${fetchError.message}`);
@@ -186,13 +201,23 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Processing ${books.length} books via ISBNdb`);
+    // Deduplicate by title+author (case-insensitive)
+    const uniqueBooks = new Map<string, typeof books[0]>();
+    for (const book of books) {
+      const key = `${book.title.toLowerCase()}|||${book.author.toLowerCase()}`;
+      if (!uniqueBooks.has(key)) {
+        uniqueBooks.set(key, book);
+      }
+    }
+
+    console.log(`Processing ${uniqueBooks.size} unique books (from ${books.length} total) via ISBNdb`);
 
     let updated = 0;
     let notFound = 0;
+    let propagated = 0;
     const errors: string[] = [];
 
-    for (const book of books) {
+    for (const [key, book] of uniqueBooks) {
       try {
         const isbndbBook = await searchISBNdb(book.title, book.author, isbndbApiKey);
         
@@ -208,8 +233,8 @@ serve(async (req) => {
           if (!book.isbn && (isbndbBook.isbn13 || isbndbBook.isbn)) {
             updateData.isbn = isbndbBook.isbn13 || isbndbBook.isbn;
           }
-          if (!book.description && isbndbBook.synopsis) {
-            updateData.description = isbndbBook.synopsis.slice(0, 2000);
+          if (!book.description && (isbndbBook.synopsis || isbndbBook.overview)) {
+            updateData.description = stripHtml(isbndbBook.synopsis || isbndbBook.overview)?.slice(0, 2000);
           }
           if (!book.categories && isbndbBook.subjects && isbndbBook.subjects.length > 0) {
             updateData.categories = isbndbBook.subjects.slice(0, 5);
@@ -220,25 +245,36 @@ serve(async (req) => {
             console.log(`Found: ${book.title}${updateData.isbn ? ` (ISBN: ${updateData.isbn})` : ''}`);
           } else {
             notFound++;
-            console.log(`No new data for: ${book.title}`);
           }
         } else {
           notFound++;
-          console.log(`Not found: ${book.title}`);
         }
 
-        // Update the book record (marks as attempted even if not found)
-        const { error: updateError } = await supabase
+        // Update ALL matching books with same title+author (case-insensitive propagation)
+        const { data: matchingBooks, error: matchError } = await supabase
           .from('books')
-          .update(updateData)
-          .eq('id', book.id);
+          .select('id')
+          .ilike('title', book.title)
+          .ilike('author', book.author);
 
-        if (updateError) {
-          errors.push(`Update failed for "${book.title}": ${updateError.message}`);
+        if (matchError) {
+          errors.push(`Match query failed for "${book.title}": ${matchError.message}`);
+        } else if (matchingBooks && matchingBooks.length > 0) {
+          const ids = matchingBooks.map(b => b.id);
+          const { error: updateError } = await supabase
+            .from('books')
+            .update(updateData)
+            .in('id', ids);
+
+          if (updateError) {
+            errors.push(`Update failed for "${book.title}": ${updateError.message}`);
+          } else {
+            propagated += matchingBooks.length - 1; // Don't count the original
+          }
         }
 
-        // Rate limit: 1 request per second for basic plan
-        await sleep(1100); // 1.1 seconds to be safe
+        // Rate limit: 3 requests per second for Pro plan
+        await sleep(DELAY_MS);
       } catch (err) {
         errors.push(`Error processing "${book.title}": ${err instanceof Error ? err.message : 'Unknown'}`);
       }
@@ -254,9 +290,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         message: 'ISBNdb backfill batch complete',
-        processed: books.length,
+        processed: uniqueBooks.size,
         updated,
         notFound,
+        propagated,
         remaining: remaining ?? 0,
         errors: errors.length > 0 ? errors.slice(0, 5) : undefined,
       }),
