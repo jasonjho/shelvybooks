@@ -62,14 +62,37 @@ export function useFollows() {
         .insert({ follower_id: user.id, following_id: targetUserId });
       
       if (error) throw error;
+      return targetUserId;
+    },
+    onMutate: async (targetUserId: string) => {
+      // Cancel outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: ['following', user?.id] });
+      
+      // Snapshot previous value
+      const previousFollowing = queryClient.getQueryData<Follow[]>(['following', user?.id]);
+      
+      // Optimistically update
+      queryClient.setQueryData<Follow[]>(['following', user?.id], (old = []) => [
+        ...old,
+        { id: 'optimistic', follower_id: user!.id, following_id: targetUserId, created_at: new Date().toISOString() }
+      ]);
+      
+      return { previousFollowing };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['following', user?.id] });
       toast.success('Now following this shelf');
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _targetUserId, context) => {
+      // Rollback on error
+      if (context?.previousFollowing) {
+        queryClient.setQueryData(['following', user?.id], context.previousFollowing);
+      }
       console.error('Follow error:', error);
       toast.error('Failed to follow');
+    },
+    onSettled: () => {
+      // Sync with server in background
+      queryClient.invalidateQueries({ queryKey: ['following', user?.id] });
     },
   });
 
@@ -85,14 +108,32 @@ export function useFollows() {
         .eq('following_id', targetUserId);
       
       if (error) throw error;
+      return targetUserId;
+    },
+    onMutate: async (targetUserId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['following', user?.id] });
+      
+      const previousFollowing = queryClient.getQueryData<Follow[]>(['following', user?.id]);
+      
+      // Optimistically remove
+      queryClient.setQueryData<Follow[]>(['following', user?.id], (old = []) =>
+        old.filter(f => f.following_id !== targetUserId)
+      );
+      
+      return { previousFollowing };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['following', user?.id] });
       toast.success('Unfollowed');
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _targetUserId, context) => {
+      if (context?.previousFollowing) {
+        queryClient.setQueryData(['following', user?.id], context.previousFollowing);
+      }
       console.error('Unfollow error:', error);
       toast.error('Failed to unfollow');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['following', user?.id] });
     },
   });
 
