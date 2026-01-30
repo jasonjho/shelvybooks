@@ -100,8 +100,8 @@ export default function Index() {
   // Get club books for highlighting
   const { getBookClubs } = useClubBooks();
 
-  // Get notifications for like badges
-  const { likesPerBook } = useNotifications();
+  // Get notifications for like badges (use totalLikesPerBook for persistent heart stickers)
+  const { totalLikesPerBook } = useNotifications();
 
   // Create a function that returns club info in the format BookSpine expects
   const getBookClubInfo = useCallback((title: string, author: string) => {
@@ -289,7 +289,7 @@ export default function Index() {
                     onRemoveBook={user ? removeBook : undefined}
                     onUpdateCompletedAt={user ? updateBookCompletedAt : undefined}
                     getBookClubInfo={user ? getBookClubInfo : undefined}
-                    likesPerBook={user ? likesPerBook : undefined}
+                    likesPerBook={user ? totalLikesPerBook : undefined}
                   />
                 ) : (
                   <Bookshelf
@@ -301,7 +301,7 @@ export default function Index() {
                     onRemoveBook={user ? removeBook : undefined}
                     onUpdateCompletedAt={user ? updateBookCompletedAt : undefined}
                     getBookClubInfo={user ? getBookClubInfo : undefined}
-                    likesPerBook={user ? likesPerBook : undefined}
+                    likesPerBook={user ? totalLikesPerBook : undefined}
                   />
                 )}
               </>
