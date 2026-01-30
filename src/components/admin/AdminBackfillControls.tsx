@@ -15,25 +15,39 @@ export function AdminBackfillControls() {
     queryFn: async () => {
       // IMPORTANT: never fetch all rows here (default API cap is 1000).
       // Use count queries so totals are accurate even with large datasets.
-      const [totalResult, withMetadataResult] = await Promise.all([
+      const [totalResult, withMetadataResult, attemptedResult, pendingResult] = await Promise.all([
         supabase.from("books").select("id", { count: "exact", head: true }),
         supabase
           .from("books")
           .select("id", { count: "exact", head: true })
           .or("description.not.is.null,categories.not.is.null,page_count.not.is.null"),
+        supabase
+          .from("books")
+          .select("id", { count: "exact", head: true })
+          .not("metadata_attempted_at", "is", null),
+        supabase
+          .from("books")
+          .select("id", { count: "exact", head: true })
+          .is("metadata_attempted_at", null)
+          .or("description.is.null,page_count.is.null,categories.is.null"),
       ]);
 
       if (totalResult.error) throw totalResult.error;
       if (withMetadataResult.error) throw withMetadataResult.error;
+      if (attemptedResult.error) throw attemptedResult.error;
+      if (pendingResult.error) throw pendingResult.error;
 
       const total = totalResult.count ?? 0;
       const withMetadata = withMetadataResult.count ?? 0;
-      const pending = total - withMetadata;
+      const attempted = attemptedResult.count ?? 0;
+      const pending = pendingResult.count ?? 0;
 
       return {
         total,
         withMetadata,
+        attempted,
         pending,
+        isComplete: pending === 0,
         percentage: total > 0 ? Math.round((withMetadata / total) * 100) : 0,
       };
     },
@@ -101,7 +115,19 @@ export function AdminBackfillControls() {
             <Progress value={stats?.percentage} className="h-3" />
           </div>
 
-          <div className="grid grid-cols-3 gap-4 text-center">
+          {stats?.isComplete && (
+            <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-3">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="font-medium text-green-700">Backfill Complete</p>
+                <p className="text-sm text-muted-foreground">
+                  All books have been checked. {stats.withMetadata} have metadata, {stats.attempted - stats.withMetadata} had no API data available.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-4 gap-4 text-center">
             <div className="p-4 rounded-lg bg-muted/50">
               <p className="text-2xl font-bold">{stats?.total.toLocaleString()}</p>
               <p className="text-sm text-muted-foreground">Total Books</p>
@@ -114,6 +140,12 @@ export function AdminBackfillControls() {
                 </p>
               </div>
               <p className="text-sm text-muted-foreground">With Metadata</p>
+            </div>
+            <div className="p-4 rounded-lg bg-blue-500/10">
+              <p className="text-2xl font-bold text-blue-600">
+                {stats?.attempted.toLocaleString()}
+              </p>
+              <p className="text-sm text-muted-foreground">Attempted</p>
             </div>
             <div className="p-4 rounded-lg bg-amber-500/10">
               <div className="flex items-center justify-center gap-1">
@@ -129,13 +161,18 @@ export function AdminBackfillControls() {
           <div className="flex gap-3">
             <Button
               onClick={() => triggerBackfill.mutate()}
-              disabled={triggerBackfill.isPending || isRunning}
+              disabled={triggerBackfill.isPending || isRunning || stats?.isComplete}
               className="gap-2"
             >
               {isRunning ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin" />
                   Running...
+                </>
+              ) : stats?.isComplete ? (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  Complete
                 </>
               ) : (
                 <>
@@ -163,13 +200,16 @@ export function AdminBackfillControls() {
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-2">
           <p>
-            • The backfill process fetches metadata from Google Books API for books missing descriptions, categories, or page counts.
+            • The backfill fetches metadata from Google Books API for books missing descriptions, categories, or page counts.
           </p>
           <p>
-            • Books are processed in batches to respect API rate limits (25 books per run).
+            • Books are processed in batches of 20 to respect API rate limits.
           </p>
           <p>
-            • Run multiple times to progressively backfill all books.
+            • Each book is marked as "attempted" so it won't be retried. The process completes when all books have been checked.
+          </p>
+          <p>
+            • Books without API data can still be enriched manually via the book detail dialog.
           </p>
         </CardContent>
       </Card>

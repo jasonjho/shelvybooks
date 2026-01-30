@@ -121,11 +121,12 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Find books missing any key metadata (description, page_count, or categories)
+    // Find books missing any key metadata AND not yet attempted
     // Process small batch to complete within timeout
     const { data: books, error: fetchError } = await supabase
       .from('books')
-      .select('id, title, author, page_count, isbn, description, categories')
+      .select('id, title, author, page_count, isbn, description, categories, metadata_attempted_at')
+      .is('metadata_attempted_at', null)
       .or('description.is.null,page_count.is.null,categories.is.null')
       .limit(20); // Small batch for reliability
 
@@ -170,28 +171,31 @@ serve(async (req) => {
           }
         }
 
+        // Always mark as attempted (whether we found data or not)
+        const updateData: Record<string, unknown> = {
+          metadata_attempted_at: new Date().toISOString(),
+        };
+
         if (metadata && (metadata.pageCount || metadata.isbn || metadata.description || metadata.categories)) {
-          const updateData: Record<string, unknown> = {};
           if (!book.page_count && metadata.pageCount) updateData.page_count = metadata.pageCount;
           if (!book.isbn && metadata.isbn) updateData.isbn = metadata.isbn;
           if (!book.description && metadata.description) updateData.description = metadata.description;
           if (!book.categories && metadata.categories) updateData.categories = metadata.categories;
+        }
 
-          if (Object.keys(updateData).length > 0) {
-            const { error: updateError } = await supabase
-              .from('books')
-              .update(updateData)
-              .eq('id', book.id);
+        const { error: updateError } = await supabase
+          .from('books')
+          .update(updateData)
+          .eq('id', book.id);
 
-            if (updateError) {
-              errors.push(`Failed to update "${book.title}": ${updateError.message}`);
-            } else {
-              updated++;
-              console.log(`Updated: ${book.title}`);
-            }
-          }
+        if (updateError) {
+          errors.push(`Failed to update "${book.title}": ${updateError.message}`);
+        } else if (Object.keys(updateData).length > 1) {
+          // More than just metadata_attempted_at was updated
+          updated++;
+          console.log(`Updated: ${book.title}`);
         } else {
-          // No metadata found from any source
+          // Only metadata_attempted_at was set - no data found
           noDataFound++;
           notFound.push(`${book.title} by ${book.author}`);
           console.log(`No metadata found for: ${book.title} by ${book.author}`);
