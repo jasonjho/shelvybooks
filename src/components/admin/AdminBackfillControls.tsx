@@ -20,53 +20,46 @@ export function AdminBackfillControls() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   // Fetch users with book counts
-  const { data: users, isLoading: usersLoading } = useQuery({
+  const { data: users, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
     queryKey: ["admin-users-with-books"],
     queryFn: async () => {
-      // Get all books grouped by user
-      const { data: books, error } = await supabase
-        .from("books")
-        .select("user_id, metadata_attempted_at, page_count, description, categories");
-
-      if (error) throw error;
-
-      // Group by user and calculate stats
-      const userMap = new Map<string, { total: number; pending: number }>();
+      // Get all users from admin function first
+      const { data: userData, error: userError } = await supabase.functions.invoke("admin-users");
       
-      for (const book of books || []) {
-        const userId = book.user_id;
-        if (!userMap.has(userId)) {
-          userMap.set(userId, { total: 0, pending: 0 });
-        }
-        const stats = userMap.get(userId)!;
-        stats.total++;
-        if (!book.metadata_attempted_at && (!book.page_count || !book.description || !book.categories)) {
-          stats.pending++;
-        }
-      }
-
-      // Get user emails via admin function
-      const userIds = Array.from(userMap.keys());
-      const { data: userData } = await supabase.functions.invoke("admin-users", {
-        body: { userIds },
-      });
-
-      const emailMap = new Map<string, string>();
-      if (userData?.users) {
-        for (const u of userData.users) {
-          emailMap.set(u.id, u.email || "Unknown");
-        }
-      }
-
-      // Build result
+      if (userError) throw userError;
+      
+      const allUsers: { id: string; email: string }[] = userData?.users || [];
+      
+      // For each user, get their book stats using individual queries (to avoid 1000 row limit)
       const result: UserWithBooks[] = [];
-      for (const [userId, stats] of userMap.entries()) {
-        result.push({
-          user_id: userId,
-          email: emailMap.get(userId) || userId.slice(0, 8) + "...",
-          book_count: stats.total,
-          pending_count: stats.pending,
-        });
+      
+      for (const user of allUsers) {
+        // Get total and pending counts for this user
+        const [totalResult, pendingResult] = await Promise.all([
+          supabase
+            .from("books")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id),
+          supabase
+            .from("books")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .is("metadata_attempted_at", null)
+            .or("description.is.null,page_count.is.null,categories.is.null"),
+        ]);
+        
+        const bookCount = totalResult.count ?? 0;
+        const pendingCount = pendingResult.count ?? 0;
+        
+        // Only include users who have books
+        if (bookCount > 0) {
+          result.push({
+            user_id: user.id,
+            email: user.email || user.id.slice(0, 8) + "...",
+            book_count: bookCount,
+            pending_count: pendingCount,
+          });
+        }
       }
 
       // Sort by pending count descending
