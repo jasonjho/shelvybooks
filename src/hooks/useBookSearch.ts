@@ -18,8 +18,9 @@ export function useBookSearch() {
     setError(null);
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('book-search', {
-        body: { query }
+      // Use ISBNdb for all book searches
+      const { data, error: fnError } = await supabase.functions.invoke('isbndb-search', {
+        body: { query, mode: 'search' }
       });
 
       if (fnError) {
@@ -54,7 +55,6 @@ export function useBookSearch() {
 }
 
 export function getCoverUrl(book: GoogleBook): string {
-  // Google Books returns HTTP URLs, convert to HTTPS
   const thumbnail = book.volumeInfo?.imageLinks?.thumbnail || 
                     book.volumeInfo?.imageLinks?.smallThumbnail;
   
@@ -62,28 +62,22 @@ export function getCoverUrl(book: GoogleBook): string {
     return '/placeholder.svg';
   }
   
-  // Replace HTTP with HTTPS and increase zoom for better quality
+  // Normalize the cover URL (works for both ISBNdb and Google Books)
   return normalizeCoverUrl(
     thumbnail.replace('http://', 'https://').replace('zoom=1', 'zoom=2')
   );
 }
 
-// Fetch cover URL for a book by title and author
+// Fetch cover URL for a book by title and author using ISBNdb
 export async function fetchCoverUrl(title: string, author: string): Promise<string> {
   try {
-    const query = `intitle:${title} inauthor:${author}`;
-    const response = await fetch(
-      `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=1&printType=books`
-    );
+    const { data, error } = await supabase.functions.invoke('isbndb-search', {
+      body: { query: `${title} ${author}`, mode: 'search' }
+    });
     
-    if (!response.ok) return '';
+    if (error || !data?.items?.[0]) return '';
     
-    const data = await response.json();
-    const book = data.items?.[0];
-    
-    if (!book) return '';
-    
-    return getCoverUrl(book);
+    return getCoverUrl(data.items[0]);
   } catch {
     return '';
   }
