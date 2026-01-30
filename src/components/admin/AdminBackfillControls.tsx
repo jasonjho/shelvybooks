@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ interface UserWithBooks {
 }
 
 export function AdminBackfillControls() {
+  const queryClient = useQueryClient();
   const [isRunning, setIsRunning] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
@@ -145,7 +146,11 @@ export function AdminBackfillControls() {
     },
     onSuccess: (data) => {
       toast.success(`Backfill complete: ${data?.updated ?? 0} books updated, ${data?.pending ?? 0} remaining`);
+      // Keep both overall stats and per-user pending counts in sync.
+      queryClient.invalidateQueries({ queryKey: ["admin-users-with-books"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-backfill-stats"] });
       refetch();
+      refetchUsers();
     },
     onError: (error) => {
       toast.error(`Backfill failed: ${error.message}`);
@@ -307,7 +312,9 @@ export function AdminBackfillControls() {
 
           <Button
             variant="outline"
-            onClick={() => refetch()}
+            onClick={async () => {
+              await Promise.all([refetch(), refetchUsers()]);
+            }}
             disabled={isLoading}
             className="gap-2"
           >
