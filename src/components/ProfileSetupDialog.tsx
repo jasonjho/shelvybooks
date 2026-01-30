@@ -20,7 +20,7 @@ interface ProfileSetupDialogProps {
 }
 
 export function ProfileSetupDialog({ open, onComplete }: ProfileSetupDialogProps) {
-  const { createProfile } = useProfile();
+  const { createProfile, refreshProfile } = useProfile();
   const { toast } = useToast();
   const [username, setUsername] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -84,6 +84,9 @@ export function ProfileSetupDialog({ open, onComplete }: ProfileSetupDialogProps
 
     // Close dialog immediately
     setDialogOpen(false);
+
+    // Refresh profile so AuthButton shows username
+    refreshProfile();
 
     toast({
       title: 'Profile created!',
