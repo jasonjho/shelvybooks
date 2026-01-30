@@ -150,9 +150,26 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const googleApiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY');
 
-    // Check if this is a cron job call (uses service role key in Authorization header)
+    // Check if this is a cron job call - the cron passes anon key JWT in the Authorization header
+    // We detect this by checking if the token is a JWT with "anon" role for our project
     const authHeader = req.headers.get('Authorization');
-    const isCronCall = authHeader?.includes(supabaseAnonKey);
+    const token = authHeader?.replace('Bearer ', '') || '';
+    
+    // Decode the JWT payload (base64) to check if it's the anon key
+    let isCronCall = false;
+    try {
+      const payloadBase64 = token.split('.')[1];
+      if (payloadBase64) {
+        const payload = JSON.parse(atob(payloadBase64));
+        console.log(`JWT payload: role=${payload.role}, ref=${payload.ref}`);
+        // If it's an anon role JWT for our project, it's the cron job
+        isCronCall = payload.role === 'anon' && payload.ref === 'gzzkaxivhqqoezfqtpsd';
+      }
+    } catch (e) {
+      console.log(`JWT decode error: ${e}`);
+    }
+    
+    console.log(`Auth check - isCronCall: ${isCronCall}`);
     
     if (isCronCall) {
       console.log('Cron job triggered backfill');
