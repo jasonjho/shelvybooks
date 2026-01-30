@@ -302,6 +302,27 @@ export type Database = {
         }
         Relationships: []
       }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       notification_settings: {
         Row: {
           created_at: string
@@ -441,6 +462,10 @@ export type Database = {
           share_id: string
           user_id: string
         }[]
+      }
+      get_public_shelf_owner_id: {
+        Args: { _share_id: string }
+        Returns: string
       }
       get_public_shelf_owner_username: {
         Args: { _share_id: string }
