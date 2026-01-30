@@ -7,6 +7,7 @@ import { BookDetailDialog } from '@/components/BookDetailDialog';
 import { ShelfControls } from '@/components/ShelfControls';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
+import { FollowButton } from '@/components/FollowButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBooks } from '@/hooks/useBooks';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -19,6 +20,7 @@ interface ShelfOwner {
   display_name: string | null;
   share_id: string;
   username: string | null;
+  user_id: string | null;
 }
 
 const DEFAULT_SETTINGS: ShelfSettingsType = {
@@ -127,11 +129,12 @@ export default function PublicShelf() {
       }
 
       try {
-        // Fetch shelf info and owner username using secure RPC functions
+        // Fetch shelf info, owner username, and owner user_id using secure RPC functions
         // This prevents bulk enumeration of public shelves
-        const [shelfResult, usernameResult] = await Promise.all([
+        const [shelfResult, usernameResult, ownerIdResult] = await Promise.all([
           supabase.rpc('get_public_shelf_info', { _share_id: shareId }),
           supabase.rpc('get_public_shelf_owner_username', { _share_id: shareId }),
+          supabase.rpc('get_public_shelf_owner_id', { _share_id: shareId }),
         ]);
 
         if (shelfResult.error) throw shelfResult.error;
@@ -147,6 +150,7 @@ export default function PublicShelf() {
           display_name: shelfData.display_name,
           share_id: shelfData.share_id ?? shareId,
           username: usernameResult.data || null,
+          user_id: ownerIdResult.data || null,
         });
 
         // Fetch books using secure RPC function (avoids exposing user_id)
@@ -270,9 +274,15 @@ export default function PublicShelf() {
         {/* Owner info */}
         <div className="text-center mb-8">
           <h2 className="text-2xl font-display mb-2">{shelfTitle}</h2>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-3">
             {books.length} book{books.length !== 1 ? 's' : ''} on the shelf
           </p>
+          {/* Follow button - only show if viewing someone else's shelf and we have their user_id */}
+          {shelfOwner?.user_id && user?.id !== shelfOwner.user_id && (
+            <div className="mb-4">
+              <FollowButton targetUserId={shelfOwner.user_id} />
+            </div>
+          )}
           {!user && (
             <div className="mt-6 max-w-md mx-auto">
               <p className="text-sm text-muted-foreground mb-4">
