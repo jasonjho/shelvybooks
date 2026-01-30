@@ -2,6 +2,35 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
+function clearPersistedAuthTokens() {
+  // Supabase v2 stores sessions in localStorage under keys like:
+  //   sb-<project-ref>-auth-token
+  //   sb-<project-ref>-auth-token-code-verifier
+  // In some environments the SDK signOut can fail/skip cleanup, so we force-remove.
+  const clearFrom = (storage: Storage) => {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
+      if (!key) continue;
+      if (key.startsWith('sb-') && key.includes('auth-token')) keysToRemove.push(key);
+      if (key === 'supabase.auth.token') keysToRemove.push(key); // legacy
+    }
+    keysToRemove.forEach((k) => storage.removeItem(k));
+  };
+
+  try {
+    clearFrom(localStorage);
+  } catch {
+    // ignore
+  }
+
+  try {
+    clearFrom(sessionStorage);
+  } catch {
+    // ignore
+  }
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -61,12 +90,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    // Use local scope to ensure localStorage is always cleared
-    // This doesn't make server calls, so it can't fail due to expired sessions
-    await supabase.auth.signOut({ scope: 'local' });
-    // Force clear state as safety net
-    setSession(null);
-    setUser(null);
+    try {
+      // Local scope should clear browser storage, but we still defensively purge below.
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch {
+      // Ignore: we still want to clear local state + storage even if the SDK errors.
+    } finally {
+      clearPersistedAuthTokens();
+      // Force clear state as safety net
+      setSession(null);
+      setUser(null);
+    }
   };
 
   return (
