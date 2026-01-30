@@ -309,15 +309,17 @@ export default function Index() {
           </>
         )}
       </main>
-
-      {/* Footer hint - only show for logged in users */}
-      {user && (
-        <footer className="relative z-10 py-6">
-          <div className="container text-center text-sm text-muted-foreground">
+      {/* Footer */}
+      <footer className="relative z-10 py-6 mt-auto">
+        <div className="container text-center text-sm text-muted-foreground space-y-1">
+          {user && (
             <p>Right-click a book to move it or remove it from your shelf</p>
-          </div>
-        </footer>
-      )}
+          )}
+          <p className="text-xs opacity-70">
+            Made with <span className="text-red-500">♥</span> in NYC
+          </p>
+        </div>
+      </footer>
 
       {/* Onboarding tips for new users */}
       {user && allBooks.length > 0 && <OnboardingTips />}
