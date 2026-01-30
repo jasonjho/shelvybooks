@@ -145,7 +145,12 @@ export function DailyQuote({ onAddBook, existingBooks }: DailyQuoteProps) {
   const fetchDynamicQuote = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-quote');
+      // Send existing book titles to avoid duplicates
+      const excludeTitles = existingBooks.map(b => b.title);
+      
+      const { data, error } = await supabase.functions.invoke('generate-quote', {
+        body: { excludeTitles },
+      });
       
       if (error) throw error;
       
@@ -168,7 +173,7 @@ export function DailyQuote({ onAddBook, existingBooks }: DailyQuoteProps) {
     } finally {
       setLoading(false);
     }
-  }, [localIndex]);
+  }, [localIndex, existingBooks]);
 
   const handleNextQuote = () => {
     // Always use AI for shuffle when logged in (more reliable covers)
