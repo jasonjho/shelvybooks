@@ -83,7 +83,7 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
       <PopoverContent className="w-80 max-h-[80vh] overflow-y-auto" align="end">
         <div className="space-y-4">
           <div className="space-y-1">
-            <h4 className="font-display font-medium text-sm">Shelf Customization</h4>
+            <h4 className="font-sans font-medium text-sm">Shelf Customization</h4>
             <p className="text-xs text-muted-foreground">
               Toggle decorative elements
             </p>
