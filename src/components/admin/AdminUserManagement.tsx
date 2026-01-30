@@ -13,6 +13,7 @@ type UserWithProfile = {
   id: string;
   user_id: string;
   username: string;
+  email: string;
   avatar_url: string | null;
   created_at: string;
   bookCount: number;
@@ -22,6 +23,7 @@ type UserWithProfile = {
 
 type UserWithoutProfile = {
   user_id: string;
+  email: string;
   bookCount: number;
   isPublic: boolean;
   firstBookDate: string;
@@ -36,6 +38,17 @@ export function AdminUserManagement() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users-all"],
     queryFn: async () => {
+      // Fetch auth users with emails from admin edge function
+      const { data: authData, error: authError } = await supabase.functions.invoke(
+        "admin-users"
+      );
+      
+      if (authError) throw authError;
+      
+      const authUsers = (authData?.users ?? []) as { id: string; email: string; created_at: string }[];
+      const emailMap = new Map<string, string>();
+      authUsers.forEach((u) => emailMap.set(u.id, u.email));
+
       // Get all users with profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
@@ -88,6 +101,7 @@ export function AdminUserManagement() {
       const profileUserIds = new Set(profiles?.map((p) => p.user_id) ?? []);
       const usersWithProfiles: UserWithProfile[] = (profiles ?? []).map((p) => ({
         ...p,
+        email: emailMap.get(p.user_id) ?? "",
         bookCount: bookCountMap.get(p.user_id) ?? 0,
         isPublic: publicMap.get(p.user_id) ?? false,
         hasProfile: true as const,
@@ -100,6 +114,7 @@ export function AdminUserManagement() {
         if (!profileUserIds.has(userId)) {
           usersWithoutProfiles.push({
             user_id: userId,
+            email: emailMap.get(userId) ?? "",
             bookCount: bookCountMap.get(userId) ?? 0,
             isPublic: publicMap.get(userId) ?? false,
             firstBookDate: firstBookMap.get(userId) ?? new Date().toISOString(),
@@ -123,11 +138,13 @@ export function AdminUserManagement() {
   });
 
   const filteredWithProfiles = data?.withProfiles.filter((u) =>
-    u.username.toLowerCase().includes(search.toLowerCase())
+    u.username.toLowerCase().includes(search.toLowerCase()) ||
+    u.email.toLowerCase().includes(search.toLowerCase())
   );
 
   const filteredWithoutProfiles = data?.withoutProfiles.filter((u) =>
-    u.user_id.toLowerCase().includes(search.toLowerCase())
+    u.user_id.toLowerCase().includes(search.toLowerCase()) ||
+    u.email.toLowerCase().includes(search.toLowerCase())
   );
 
   if (isLoading) {
@@ -192,9 +209,12 @@ export function AdminUserManagement() {
                         <User className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-medium">{user.username}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground truncate">
+                        {user.email}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
                         Joined {format(new Date(user.created_at), "MMM d, yyyy")}
                       </p>
                     </div>
@@ -234,11 +254,14 @@ export function AdminUserManagement() {
                         <UserX className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-medium font-mono text-sm">
-                        {user.user_id.slice(0, 8)}...
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm truncate">
+                        {user.email || <span className="font-mono">{user.user_id.slice(0, 8)}...</span>}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground font-mono">
+                        ID: {user.user_id.slice(0, 8)}...
+                      </p>
+                      <p className="text-xs text-muted-foreground">
                         First book {format(new Date(user.firstBookDate), "MMM d, yyyy")}
                       </p>
                     </div>
