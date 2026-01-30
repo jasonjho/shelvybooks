@@ -95,7 +95,7 @@ export function ProfileSetupDialog({ open, onComplete }: ProfileSetupDialogProps
 
   return (
     <Dialog open={dialogOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-md" hideCloseButton onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">Set up your profile</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
