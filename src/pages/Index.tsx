@@ -15,7 +15,7 @@ import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 
 import { useBooks } from '@/hooks/useBooks';
 import { useClubBooks } from '@/hooks/useBookClubs';
@@ -106,7 +106,7 @@ export default function Index() {
   const { totalLikesPerBook } = useNotifications();
 
   // Get ISBNdb-powered demo books for guests
-  const { books: isbndbDemoBooks, loading: demoLoading, source: demoSource } = useIsbndbDemoBooks();
+  const { books: isbndbDemoBooks, loading: demoLoading } = useIsbndbDemoBooks();
 
   // Create a function that returns club info in the format BookSpine expects
   const getBookClubInfo = useCallback((title: string, author: string) => {
@@ -223,16 +223,9 @@ export default function Index() {
         {/* Not signed in message */}
         {!authLoading && !user && !demoLoading && (
           <div className="py-4 mb-6 space-y-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-foreground/80 text-base">
-                <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites, and <span className="text-amber-700 dark:text-amber-500 font-medium">join Book Clubs</span> with friends.
-              </p>
-              {demoSource === 'isbndb' && (
-                <Badge variant="outline" className="text-xs bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30">
-                  Powered by ISBNdb
-                </Badge>
-              )}
-            </div>
+            <p className="text-foreground/80 text-base">
+              <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites, and <span className="text-amber-700 dark:text-amber-500 font-medium">join Book Clubs</span> with friends.
+            </p>
             <Button 
               onClick={() => setAuthDialogOpen(true)}
               className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md"
