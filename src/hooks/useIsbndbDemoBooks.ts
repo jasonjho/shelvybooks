@@ -45,8 +45,23 @@ const DEMO_BOOK_ISBNS = [
   { isbn: '9780451419439', status: 'read' as const },       // Les Misérables
 ];
 
-const CACHE_KEY = 'isbndb_demo_books_cache';
+const CACHE_KEY = 'isbndb_demo_books_v2'; // v2: with HTML stripped
 const CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+// Strip HTML tags and entities from text
+function stripHtml(html: string | undefined): string | undefined {
+  if (!html) return undefined;
+  return html
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+    .replace(/&amp;/g, '&')  // Replace &amp; with &
+    .replace(/&lt;/g, '<')   // Replace &lt; with <
+    .replace(/&gt;/g, '>')   // Replace &gt; with >
+    .replace(/&quot;/g, '"') // Replace &quot; with "
+    .replace(/&#39;/g, "'")  // Replace &#39; with '
+    .replace(/\s+/g, ' ')    // Collapse multiple spaces
+    .trim();
+}
 
 interface CachedData {
   books: Book[];
@@ -143,7 +158,7 @@ export function useIsbndbDemoBooks() {
             createdAt: new Date().toISOString(),
             pageCount: volumeInfo.pageCount,
             isbn: isbn,
-            description: volumeInfo.description,
+            description: stripHtml(volumeInfo.description),
             categories: volumeInfo.categories,
           });
         }
