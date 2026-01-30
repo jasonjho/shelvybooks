@@ -44,13 +44,25 @@ export function AdminUserManagement() {
 
       if (profilesError) throw profilesError;
 
-      // Get all unique user_ids from books
-      const { data: allBooks, error: booksError } = await supabase
-        .from("books")
-        .select("user_id, created_at")
-        .order("created_at", { ascending: true });
+      // Get all unique user_ids from books - paginate to get all
+      const allBooks: { user_id: string; created_at: string }[] = [];
+      let offset = 0;
+      const pageSize = 1000;
+      
+      while (true) {
+        const { data: booksPage, error: booksError } = await supabase
+          .from("books")
+          .select("user_id, created_at")
+          .order("created_at", { ascending: true })
+          .range(offset, offset + pageSize - 1);
 
-      if (booksError) throw booksError;
+        if (booksError) throw booksError;
+        if (!booksPage || booksPage.length === 0) break;
+        
+        allBooks.push(...booksPage);
+        if (booksPage.length < pageSize) break;
+        offset += pageSize;
+      }
 
       // Get all shelf settings
       const { data: allShelfSettings } = await supabase
@@ -65,7 +77,7 @@ export function AdminUserManagement() {
       // Build book counts and first book dates for all users
       const bookCountMap = new Map<string, number>();
       const firstBookMap = new Map<string, string>();
-      allBooks?.forEach((b) => {
+      allBooks.forEach((b) => {
         bookCountMap.set(b.user_id, (bookCountMap.get(b.user_id) ?? 0) + 1);
         if (!firstBookMap.has(b.user_id)) {
           firstBookMap.set(b.user_id, b.created_at);
@@ -82,7 +94,7 @@ export function AdminUserManagement() {
       }));
 
       // Users without profiles (have books but no profile)
-      const allUserIds = new Set(allBooks?.map((b) => b.user_id) ?? []);
+      const allUserIds = new Set(allBooks.map((b) => b.user_id));
       const usersWithoutProfiles: UserWithoutProfile[] = [];
       allUserIds.forEach((userId) => {
         if (!profileUserIds.has(userId)) {
@@ -105,6 +117,7 @@ export function AdminUserManagement() {
         withProfiles: usersWithProfiles,
         withoutProfiles: usersWithoutProfiles,
         totalUsers: usersWithProfiles.length + usersWithoutProfiles.length,
+        totalBooks: allBooks.length,
       };
     },
   });
