@@ -75,7 +75,7 @@ export function ClubsDropdown() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="gap-1.5">
+          <Button variant="outline" size="sm" className="gap-1.5 bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground">
             <Users className="w-4 h-4" />
             Clubs
             {clubs.length > 0 && (

@@ -19,9 +19,9 @@ export function NotificationBell() {
     <Popover>
       <PopoverTrigger asChild>
         <Button 
-          variant="ghost" 
+          variant="outline" 
           size="icon" 
-          className="relative"
+          className="relative bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground"
           aria-label={`Notifications${newLikesCount > 0 ? ` (${newLikesCount} new)` : ''}`}
         >
           <Bell className="h-5 w-5" />
