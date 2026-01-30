@@ -7,10 +7,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Settings, Lamp, Trees, BookmarkMinus, Sparkles, Check, Image, RefreshCw, Loader2 } from 'lucide-react';
+import { Settings, Lamp, Trees, BookmarkMinus, Sparkles, Check, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useBackfillMetadata } from '@/hooks/useBackfillMetadata';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface SettingsPanelProps {
   settings: ShelfSettings;
@@ -71,17 +69,6 @@ const backgroundOptions: { value: BackgroundTheme; label: string; emoji: string 
 ];
 
 export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinChange }: SettingsPanelProps) {
-  const { user } = useAuth();
-  const { backfillMetadata, isBackfilling } = useBackfillMetadata();
-
-  const handleBackfill = async () => {
-    const result = await backfillMetadata();
-    if (result && result.updated > 0) {
-      // Reload the page to fetch updated books
-      window.location.reload();
-    }
-  };
-
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -215,37 +202,6 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
                   </button>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Backfill Metadata - only show for logged in users */}
-          {user && (
-            <div className="space-y-2 pt-2 border-t border-border">
-              <div className="space-y-1">
-                <span className="text-sm font-medium">Book Metadata</span>
-                <p className="text-xs text-muted-foreground">
-                  Fetch page counts, ISBNs, and descriptions for existing books
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBackfill}
-                disabled={isBackfilling}
-                className="w-full gap-2"
-              >
-                {isBackfilling ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Fetching metadata...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-4 h-4" />
-                    Update Book Metadata
-                  </>
-                )}
-              </Button>
             </div>
           )}
         </div>

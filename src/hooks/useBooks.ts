@@ -59,21 +59,60 @@ export function useBooks() {
           variant: 'destructive',
         });
       } else {
-        setBooks(
-          data.map((row) => ({
-            id: row.id,
-            title: row.title,
-            author: row.author,
-            coverUrl: row.cover_url || '',
-            status: row.status as BookStatus,
-            openLibraryKey: undefined,
-            completedAt: row.completed_at || undefined,
-            pageCount: row.page_count || undefined,
-            isbn: row.isbn || undefined,
-            description: row.description || undefined,
-            categories: row.categories || undefined,
-          }))
+        const mappedBooks = data.map((row) => ({
+          id: row.id,
+          title: row.title,
+          author: row.author,
+          coverUrl: row.cover_url || '',
+          status: row.status as BookStatus,
+          openLibraryKey: undefined,
+          completedAt: row.completed_at || undefined,
+          pageCount: row.page_count || undefined,
+          isbn: row.isbn || undefined,
+          description: row.description || undefined,
+          categories: row.categories || undefined,
+        }));
+        setBooks(mappedBooks);
+        
+        // Auto-backfill metadata for books missing it (runs silently in background)
+        const needsBackfill = mappedBooks.some(
+          (book) => !book.pageCount && !book.isbn && !book.description
         );
+        if (needsBackfill && mappedBooks.length > 0) {
+          // Run backfill in background without blocking UI
+          supabase.functions.invoke('backfill-metadata').then(({ data: result }) => {
+            if (result?.updated > 0) {
+              console.log(`Auto-backfilled metadata for ${result.updated} books`);
+              // Refetch books to get updated metadata
+              supabase
+                .from('books')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: true })
+                .then(({ data: refreshedData }) => {
+                  if (refreshedData) {
+                    setBooks(
+                      refreshedData.map((row) => ({
+                        id: row.id,
+                        title: row.title,
+                        author: row.author,
+                        coverUrl: row.cover_url || '',
+                        status: row.status as BookStatus,
+                        openLibraryKey: undefined,
+                        completedAt: row.completed_at || undefined,
+                        pageCount: row.page_count || undefined,
+                        isbn: row.isbn || undefined,
+                        description: row.description || undefined,
+                        categories: row.categories || undefined,
+                      }))
+                    );
+                  }
+                });
+            }
+          }).catch((err) => {
+            console.error('Auto-backfill failed:', err);
+          });
+        }
       }
       setLoading(false);
     };
