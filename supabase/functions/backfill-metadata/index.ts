@@ -103,8 +103,9 @@ serve(async (req) => {
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
+      console.log('No auth header provided');
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized - No token' }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -114,19 +115,24 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const googleApiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY');
     
-    // Verify the user's JWT
+    // Use getClaims for faster local JWT validation (no network call)
     const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
     
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
     
-    if (authError || !user) {
+    if (claimsError || !claimsData?.claims?.sub) {
+      console.log('Claims validation failed:', claimsError?.message || 'No claims');
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized - Invalid token' }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const userId = claimsData.claims.sub;
+    console.log(`Processing backfill for user ${userId}`);
 
     // Use service role for database operations
     const supabase = createClient(supabaseUrl, serviceRoleKey);
@@ -136,7 +142,7 @@ serve(async (req) => {
     const { data: books, error: fetchError } = await supabase
       .from('books')
       .select('id, title, author, page_count, isbn, description, categories')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .is('metadata_attempted_at', null)
       .or('page_count.is.null,description.is.null,categories.is.null')
       .limit(10); // Small batch per login
@@ -152,7 +158,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`User ${user.id}: Processing ${books.length} books for metadata`);
+    console.log(`User ${userId}: Processing ${books.length} books for metadata`);
 
     let updated = 0;
     let noDataFound = 0;
@@ -213,7 +219,7 @@ serve(async (req) => {
     const { count: pendingCount } = await supabase
       .from('books')
       .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .is('metadata_attempted_at', null)
       .or('page_count.is.null,description.is.null,categories.is.null');
 
