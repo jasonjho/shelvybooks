@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
-import { Library, ArrowLeft, BookOpen, User, ExternalLink } from 'lucide-react';
+import { FollowingList } from '@/components/FollowingList';
+import { Library, ArrowLeft, BookOpen, User, ExternalLink, Users } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import type { Profile } from '@/hooks/useProfile';
+import { Separator } from '@/components/ui/separator';
 
 interface PublicShelfInfo {
   shareId: string;
@@ -16,6 +19,7 @@ interface PublicShelfInfo {
 }
 
 export default function ProfilePage() {
+  const { user } = useAuth();
   const { username } = useParams<{ username: string }>();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [shelfInfo, setShelfInfo] = useState<PublicShelfInfo | null>(null);
@@ -124,6 +128,9 @@ export default function ProfilePage() {
     month: 'long',
   });
 
+  // Check if this is the current user's own profile
+  const isOwnProfile = user?.id === profile.userId;
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-20">
@@ -172,6 +179,20 @@ export default function ProfilePage() {
             </p>
           )}
         </div>
+
+        {/* Following Section - Only shown on own profile */}
+        {isOwnProfile && (
+          <>
+            <Separator className="my-10 max-w-lg mx-auto" />
+            <div className="max-w-md mx-auto">
+              <div className="flex items-center gap-2 mb-4">
+                <Users className="w-5 h-5 text-muted-foreground" />
+                <h2 className="text-lg font-sans font-semibold">Following</h2>
+              </div>
+              <FollowingList />
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

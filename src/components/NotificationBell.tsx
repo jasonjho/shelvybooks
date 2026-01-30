@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FollowingListCompact } from '@/components/FollowingList';
 
 export function NotificationBell() {
   const [activeTab, setActiveTab] = useState<'likes' | 'following'>('likes');
@@ -202,6 +203,7 @@ export function NotificationBell() {
                 </div>
               )}
             </ScrollArea>
+            <FollowingListCompact />
           </TabsContent>
         </Tabs>
       </PopoverContent>
