@@ -13,8 +13,6 @@ export interface ShelfSettings {
   showBookends: boolean;
   showAmbientLight: boolean;
   showWoodGrain: boolean;
-  showNameplate: boolean;
-  showStackedBooks: boolean;
   decorDensity: DecorDensity;
   backgroundTheme: BackgroundTheme;
 }

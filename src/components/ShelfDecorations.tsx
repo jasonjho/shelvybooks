@@ -16,9 +16,7 @@ export type DecorationType =
   | 'vase'
   | 'clock'
   | 'books-stack'
-  | 'lantern'
-  | 'nameplate'
-  | 'horizontal-stack';
+  | 'lantern';
 
 interface DecorationProps {
   type: DecorationType;
@@ -412,95 +410,6 @@ function BooksStackDecor({ seed }: { seed: number }) {
   );
 }
 
-// Nameplate decoration - brass/wood with engraved name
-function NameplateDecor({ seed, displayName }: { seed: number; displayName?: string }) {
-  const styles = [
-    { bg: 'linear-gradient(135deg, hsl(35,50%,45%), hsl(35,40%,35%))', text: 'hsl(35,20%,15%)', border: 'hsl(35,45%,30%)' },
-    { bg: 'linear-gradient(135deg, hsl(45,60%,50%), hsl(45,50%,40%))', text: 'hsl(45,30%,20%)', border: 'hsl(45,55%,35%)' },
-    { bg: 'linear-gradient(135deg, hsl(25,30%,25%), hsl(25,25%,18%))', text: 'hsl(45,60%,65%)', border: 'hsl(25,25%,15%)' },
-  ];
-  const style = styles[seed % styles.length];
-  const name = displayName || 'My Shelf';
-  
-  return (
-    <div className="flex flex-col items-center">
-      <div 
-        className="px-3 py-1.5 rounded-sm shadow-md relative overflow-hidden"
-        style={{ 
-          background: style.bg,
-          border: `1px solid ${style.border}`,
-        }}
-      >
-        {/* Metallic sheen */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-black/10 pointer-events-none" />
-        
-        {/* Engraved text */}
-        <span 
-          className="text-[9px] font-serif font-medium tracking-wide relative z-10"
-          style={{ 
-            color: style.text,
-            textShadow: '0 0.5px 0 rgba(255,255,255,0.3)',
-          }}
-        >
-          {name.length > 12 ? name.slice(0, 12) + '…' : name}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// Horizontal stacked books - lying flat with visible spines
-function HorizontalStackDecor({ seed }: { seed: number }) {
-  const stackConfigs = [
-    [
-      { color: 'hsl(350,50%,40%)', width: 32, height: 8 },
-      { color: 'hsl(200,45%,35%)', width: 28, height: 6 },
-      { color: 'hsl(45,60%,45%)', width: 30, height: 7 },
-    ],
-    [
-      { color: 'hsl(140,40%,35%)', width: 30, height: 7 },
-      { color: 'hsl(280,35%,40%)', width: 26, height: 5 },
-      { color: 'hsl(30,55%,40%)', width: 32, height: 8 },
-      { color: 'hsl(190,40%,38%)', width: 24, height: 5 },
-    ],
-    [
-      { color: 'hsl(10,50%,42%)', width: 28, height: 6 },
-      { color: 'hsl(220,40%,38%)', width: 34, height: 9 },
-    ],
-  ];
-  const stack = stackConfigs[seed % stackConfigs.length];
-  
-  return (
-    <div className="flex flex-col items-center justify-end">
-      <div className="flex flex-col-reverse items-center">
-        {stack.map((book, i) => (
-          <div 
-            key={i}
-            className="rounded-[1px] shadow-sm relative"
-            style={{ 
-              width: book.width,
-              height: book.height,
-              background: `linear-gradient(180deg, ${book.color}, hsl(0,0%,20%))`,
-              transform: `translateX(${(i % 2 === 0 ? 1 : -1) * (seed % 3)}px)`,
-            }}
-          >
-            {/* Spine detail */}
-            <div 
-              className="absolute left-0 top-0 bottom-0 w-[2px] rounded-l-[1px]"
-              style={{ background: 'rgba(255,255,255,0.15)' }}
-            />
-            {/* Page edges */}
-            <div 
-              className="absolute right-[1px] top-[1px] bottom-[1px] w-[1px]"
-              style={{ background: 'hsl(45,20%,90%)' }}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function LanternDecor({ seed }: { seed: number }) {
   const metalColors = ['hsl(35,30%,25%)', 'hsl(220,10%,30%)', 'hsl(45,50%,40%)'];
   const metal = metalColors[seed % metalColors.length];
@@ -523,12 +432,8 @@ function LanternDecor({ seed }: { seed: number }) {
   );
 }
 
-interface DecorationInternalProps extends DecorationProps {
-  displayName?: string;
-}
-
-const Decoration = forwardRef<HTMLDivElement, DecorationInternalProps>(
-  ({ type, seed, displayName }, ref) => {
+const Decoration = forwardRef<HTMLDivElement, DecorationProps>(
+  ({ type, seed }, ref) => {
   const content = (() => {
   switch (type) {
     case 'trailing-plant':
@@ -563,10 +468,6 @@ const Decoration = forwardRef<HTMLDivElement, DecorationInternalProps>(
       return <BooksStackDecor seed={seed} />;
     case 'lantern':
       return <LanternDecor seed={seed} />;
-    case 'nameplate':
-      return <NameplateDecor seed={seed} displayName={displayName} />;
-    case 'horizontal-stack':
-      return <HorizontalStackDecor seed={seed} />;
     default:
       return null;
   }
@@ -610,13 +511,10 @@ const OTHER_DECORATION_TYPES: DecorationType[] = [
 // Full decoration mix: plants + objects
 export const DECORATION_TYPES: DecorationType[] = [...PLANT_TYPES, ...OTHER_DECORATION_TYPES];
 
-export function ShelfDecoration({ type, seed, displayName }: { type: DecorationType; seed: number; displayName?: string }) {
+export function ShelfDecoration({ type, seed }: { type: DecorationType; seed: number }) {
   return (
     <div className="shelf-decoration flex items-end justify-center animate-fade-in scale-[1.35] origin-bottom">
-      <Decoration type={type} seed={seed} displayName={displayName} />
+      <Decoration type={type} seed={seed} />
     </div>
   );
 }
-
-// Standalone exports for use outside of random decoration system
-export { NameplateDecor, HorizontalStackDecor };

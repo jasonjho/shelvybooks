@@ -14,8 +14,6 @@ const defaultSettings: ShelfSettings = {
   showBookends: true,
   showAmbientLight: true,
   showWoodGrain: true,
-  showNameplate: true,
-  showStackedBooks: true,
   decorDensity: 'balanced',
   backgroundTheme: 'office',
 };

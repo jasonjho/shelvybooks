@@ -7,7 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Settings, Lamp, Trees, BookmarkMinus, Sparkles, Check, Image, Tag, Layers } from 'lucide-react';
+import { Settings, Lamp, Trees, BookmarkMinus, Sparkles, Check, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SettingsPanelProps {
@@ -48,20 +48,6 @@ const toggleSettings = [
     label: 'Decor',
     description: 'Plants and decorative items',
     icon: Trees,
-  },
-  {
-    key: 'showNameplate' as const,
-    label: 'Nameplate',
-    description: 'Brass nameplate on shelf',
-    icon: Tag,
-    isNew: true,
-  },
-  {
-    key: 'showStackedBooks' as const,
-    label: 'Stacked Books',
-    description: 'Books lying flat',
-    icon: Layers,
-    isNew: true,
   },
 ];
 
@@ -116,14 +102,9 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
                   <div className="space-y-0.5">
                     <Label 
                       htmlFor={setting.key}
-                      className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
+                      className="text-sm font-medium cursor-pointer"
                     >
                       {setting.label}
-                      {'isNew' in setting && setting.isNew && (
-                        <span className="text-[10px] font-semibold bg-amber-500/20 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">
-                          NEW
-                        </span>
-                      )}
                     </Label>
                     <p className="text-xs text-muted-foreground">
                       {setting.description}
