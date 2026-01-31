@@ -81,8 +81,8 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
           <Settings className="w-4 h-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <ScrollArea className="max-h-[70vh] p-4">
+      <PopoverContent className="w-80 p-0 max-h-[85vh]" align="end">
+        <ScrollArea className="max-h-[85vh] p-4">
           <div className="space-y-4">
             <div className="space-y-1">
               <h4 className="font-sans font-medium text-sm">Shelf Customization</h4>
