@@ -100,16 +100,7 @@ export default function Index() {
     isViewingFriend, 
     viewedBooks, 
     loadingViewedBooks,
-    viewedAppearance,
   } = useViewedShelf();
-
-  // Determine which appearance settings to use (friend's or own)
-  const activeShelfSkin = isViewingFriend && viewedAppearance 
-    ? viewedAppearance.shelfSkin 
-    : undefined; // Will be set from useBooks
-  const activeSettings = isViewingFriend && viewedAppearance 
-    ? viewedAppearance.settings 
-    : undefined; // Will be set from useBooks
 
   const {
     books,
@@ -221,11 +212,7 @@ export default function Index() {
     }
   };
 
-  // Use friend's settings ONLY for shelf rendering, keep page layout stable
-  const shelfDisplaySettings = activeSettings || settings;
-  const shelfDisplaySkin = activeShelfSkin || shelfSkin;
-
-  // Page background/ambient always uses YOUR settings (stable during shelf switches)
+  // Page always uses YOUR settings - only books change when viewing friends
   const ambientGradient = getAmbientGradient(settings.backgroundTheme);
 
   return (
@@ -379,8 +366,8 @@ export default function Index() {
                   isMobile ? (
                     <MobileBookshelf
                       books={sortedBooks}
-                      skin={shelfDisplaySkin}
-                      settings={shelfDisplaySettings}
+                      skin={shelfSkin}
+                      settings={settings}
                       activeFilters={activeFilters}
                       onMoveBook={user && !isViewingFriend ? moveBook : undefined}
                       onRemoveBook={user && !isViewingFriend ? removeBook : undefined}
@@ -391,8 +378,8 @@ export default function Index() {
                   ) : (
                     <Bookshelf
                       books={sortedBooks}
-                      skin={shelfDisplaySkin}
-                      settings={shelfDisplaySettings}
+                      skin={shelfSkin}
+                      settings={settings}
                       activeFilters={activeFilters}
                       onMoveBook={user && !isViewingFriend ? moveBook : undefined}
                       onRemoveBook={user && !isViewingFriend ? removeBook : undefined}
