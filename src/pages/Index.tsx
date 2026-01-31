@@ -231,7 +231,7 @@ export default function Index() {
               <Library className="w-7 h-7 text-amber-100" />
             </div>
             <div>
-              <h1 className="text-4xl font-normal tracking-wide leading-[1.15] bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
+              <h1 className="text-4xl font-normal tracking-wide leading-[1.2] bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
                 Shelvy
               </h1>
               <p className="text-sm text-muted-foreground hidden sm:block">Your personal bookshelf, beautifully organized</p>
