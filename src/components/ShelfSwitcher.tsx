@@ -129,7 +129,7 @@ export function ShelfSwitcher({ viewedUser, onSelectUser, onSelectOwnShelf }: Sh
                   <div className="flex items-center gap-2">
                     <Avatar className="w-5 h-5">
                       <AvatarImage src={u.avatarUrl || undefined} alt={u.username} />
-                      <AvatarFallback className="text-[10px]">
+                      <AvatarFallback className="text-[10px] bg-primary/15 text-primary">
                         {u.username.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
