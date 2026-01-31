@@ -281,7 +281,7 @@ export default function Index() {
                 {/* Daily Quote */}
                 {user && <DailyQuote onAddBook={addBook} existingBooks={allBooks} />}
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                   <ShelfControls
                     activeFilters={activeFilters}
                     onFilterChange={setActiveFilters}
@@ -295,7 +295,7 @@ export default function Index() {
                   />
                   
                   {user && (
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <div className="flex items-center gap-2">
                       <MagicRecommender books={allBooks} onAddBook={addBook} />
                       <SocialActionsDropdown />
                       <BookActionsDropdown onAddBook={addBook} existingBooks={allBooks} />
