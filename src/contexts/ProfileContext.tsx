@@ -21,7 +21,19 @@ interface ProfileContextType {
   refreshProfile: () => void;
 }
 
-export const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
+// Keep the same Context instance across Vite HMR updates.
+// Otherwise, consumers can end up reading from a different context instance than the provider,
+// causing `useProfile` to throw even though the tree *looks* correctly wrapped.
+const PROFILE_CONTEXT_HMR_KEY = '__shelvy_profile_context__';
+
+export const ProfileContext: ReturnType<typeof createContext<ProfileContextType | undefined>> =
+  ((globalThis as any)[PROFILE_CONTEXT_HMR_KEY] as
+    | ReturnType<typeof createContext<ProfileContextType | undefined>>
+    | undefined) ?? createContext<ProfileContextType | undefined>(undefined);
+
+if (!(globalThis as any)[PROFILE_CONTEXT_HMR_KEY]) {
+  (globalThis as any)[PROFILE_CONTEXT_HMR_KEY] = ProfileContext;
+}
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
