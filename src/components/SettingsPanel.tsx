@@ -91,18 +91,11 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0 max-h-[85vh]" align="end">
-        <ScrollArea className="max-h-[85vh] p-4">
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <h4 className="font-sans font-medium text-sm">Shelf Customization</h4>
-              <p className="text-xs text-muted-foreground">
-                Personalize your bookshelf
-              </p>
-            </div>
-
-            {/* Wood Finish - moved here under Shelf Customization */}
+        <ScrollArea className="max-h-[85vh] p-3">
+          <div className="space-y-3">
+            {/* Wood Finish */}
             {currentSkin && onSkinChange && (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <span className="text-sm font-medium">Wood Finish</span>
                 <div className="flex gap-3 py-1 px-1">
                   {skins.map((skin) => (
