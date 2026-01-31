@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Book, BookStatus } from '@/types/book';
 import {
   Dialog,
@@ -7,13 +7,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { BookInteractions } from '@/components/BookInteractions';
+import { BookNoteDialog } from '@/components/BookNoteDialog';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBookNotes } from '@/hooks/useBookNotes';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
 import { getAmazonBookUrl } from '@/lib/amazonLinks';
 import { format } from 'date-fns';
-import { CalendarCheck, BookMarked, Check, BookOpen, Hash, Tag, CheckCircle, Trash2 } from 'lucide-react';
+import { CalendarCheck, BookMarked, Check, BookOpen, Hash, Tag, CheckCircle, Trash2, StickyNote } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -47,6 +49,12 @@ const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode 
 export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt, onAddToShelf, isOnShelf, onMove, onRemove }: BookDetailDialogProps) {
   const { user, setAuthDialogOpen } = useAuth();
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [noteDialogOpen, setNoteDialogOpen] = useState(false);
+
+  // Get notes for this book
+  const bookIds = useMemo(() => (book ? [book.id] : []), [book?.id]);
+  const { getNote, saveNote, deleteNote } = useBookNotes(bookIds);
+  const existingNote = book ? getNote(book.id) : undefined;
   
   if (!book) return null;
 
@@ -239,6 +247,15 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
                     {opt.label}
                   </Button>
                 ))}
+              <Button
+                size="sm"
+                variant="secondary"
+                className="gap-1 h-7 px-2 text-xs"
+                onClick={() => setNoteDialogOpen(true)}
+              >
+                <StickyNote className="w-3.5 h-3.5" />
+                Add Note
+              </Button>
               {onRemove && (
                 <Button
                   size="sm"
@@ -254,6 +271,14 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
                 </Button>
               )}
             </div>
+            <BookNoteDialog
+              open={noteDialogOpen}
+              onOpenChange={setNoteDialogOpen}
+              bookTitle={book.title}
+              existingNote={existingNote}
+              onSave={(content, color) => saveNote(book.id, content, color)}
+              onDelete={existingNote ? () => deleteNote(book.id) : undefined}
+            />
           </div>
         )}
 
