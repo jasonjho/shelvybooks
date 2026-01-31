@@ -851,8 +851,8 @@
     @apply relative mx-2;
     height: 115px;
     background: linear-gradient(180deg, 
-      hsl(var(--shelf-oak-dark) / 0.3) 0%, 
-      transparent 30%
+      hsl(var(--shelf-oak-dark)) 0%, 
+      hsl(var(--shelf-oak)) 100%
     );
     border-radius: 4px;
     overflow: visible;
@@ -862,9 +862,8 @@
   .mini-shelf-back {
     @apply absolute inset-0;
     background: linear-gradient(180deg, 
-      hsl(var(--shelf-oak-dark) / 0.2) 0%, 
-      hsl(var(--shelf-oak) / 0.1) 50%,
-      transparent 100%
+      hsl(var(--shelf-oak-dark) / 0.4) 0%, 
+      transparent 60%
     );
     border-radius: 4px 4px 0 0;
   }
@@ -926,15 +925,14 @@
   /* Skin variants for mini-shelf */
   .skin-walnut .mini-shelf {
     background: linear-gradient(180deg, 
-      hsl(var(--shelf-walnut-dark) / 0.3) 0%, 
-      transparent 30%
+      hsl(var(--shelf-walnut-dark)) 0%, 
+      hsl(var(--shelf-walnut)) 100%
     );
   }
   .skin-walnut .mini-shelf-back {
     background: linear-gradient(180deg, 
-      hsl(var(--shelf-walnut-dark) / 0.2) 0%, 
-      hsl(var(--shelf-walnut) / 0.1) 50%,
-      transparent 100%
+      hsl(var(--shelf-walnut-dark) / 0.4) 0%, 
+      transparent 60%
     );
   }
   .skin-walnut .mini-shelf-surface,
@@ -950,15 +948,14 @@
 
   .skin-dark .mini-shelf {
     background: linear-gradient(180deg, 
-      hsl(var(--shelf-dark-dark) / 0.4) 0%, 
-      transparent 30%
+      hsl(var(--shelf-dark-dark)) 0%, 
+      hsl(var(--shelf-dark)) 100%
     );
   }
   .skin-dark .mini-shelf-back {
     background: linear-gradient(180deg, 
-      hsl(var(--shelf-dark-dark) / 0.25) 0%, 
-      hsl(var(--shelf-dark) / 0.15) 50%,
-      transparent 100%
+      hsl(var(--shelf-dark-dark) / 0.5) 0%, 
+      transparent 60%
     );
   }
   .skin-dark .mini-shelf-surface,
@@ -974,15 +971,14 @@
 
   .skin-white .mini-shelf {
     background: linear-gradient(180deg, 
-      hsl(var(--shelf-white-dark) / 0.3) 0%, 
-      transparent 30%
+      hsl(var(--shelf-white-dark)) 0%, 
+      hsl(var(--shelf-white)) 100%
     );
   }
   .skin-white .mini-shelf-back {
     background: linear-gradient(180deg, 
-      hsl(var(--shelf-white-dark) / 0.2) 0%, 
-      hsl(var(--shelf-white) / 0.1) 50%,
-      transparent 100%
+      hsl(var(--shelf-white-dark) / 0.3) 0%, 
+      transparent 60%
     );
   }
   .skin-white .mini-shelf-surface,
