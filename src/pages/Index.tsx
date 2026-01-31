@@ -13,6 +13,8 @@ import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
 import { ShareNudge } from '@/components/ShareNudge';
+import { ShelfPrivacyIndicator } from '@/components/ShelfPrivacyIndicator';
+import { ShareShelfDialog } from '@/components/ShareShelfDialog';
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { Button } from '@/components/ui/button';
 
@@ -83,6 +85,7 @@ export default function Index() {
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
+  const [mobileShareOpen, setMobileShareOpen] = useState(false);
   
   const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
 
@@ -297,10 +300,12 @@ export default function Index() {
                         <SocialActionsDropdown />
                         <BookActionsDropdown onAddBook={addBook} existingBooks={allBooks} />
                       </div>
-                      {/* Mobile: unified FAB menu */}
-                      <div className="sm:hidden">
+                      {/* Mobile: unified FAB menu with privacy indicator */}
+                      <div className="sm:hidden flex items-center gap-2">
+                        <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />
                         <MobileActionsMenu onAddBook={addBook} existingBooks={allBooks} />
                       </div>
+                      <ShareShelfDialog open={mobileShareOpen} onOpenChange={setMobileShareOpen} />
                     </>
                   )}
                 </div>
