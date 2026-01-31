@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFollows } from '@/hooks/useFollows';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { ViewedShelfUser } from '@/hooks/useViewedShelf';
 import {
   Select,
@@ -32,6 +33,7 @@ interface ShelfSwitcherProps {
 export function ShelfSwitcher({ viewedUser, onSelectUser, onSelectOwnShelf }: ShelfSwitcherProps) {
   const { user } = useAuth();
   const { following, loadingFollowing } = useFollows();
+  const isMobile = useIsMobile();
   const [findFriendsOpen, setFindFriendsOpen] = useState(false);
 
   // Fetch profile and shelf info for followed users
@@ -101,10 +103,12 @@ export function ShelfSwitcher({ viewedUser, onSelectUser, onSelectOwnShelf }: Sh
   return (
     <>
       <Select value={currentValue} onValueChange={handleValueChange}>
-        <SelectTrigger className="w-auto gap-2 bg-background/80 border-input h-9 px-3 text-sm font-medium">
+        <SelectTrigger className="w-auto gap-1.5 bg-background/80 border-input h-9 px-2.5 sm:px-3 text-sm font-medium">
           <BookOpen className="w-4 h-4 shrink-0" />
           <SelectValue>
-            {viewedUser ? `@${viewedUser.username}` : 'Your shelf'}
+            {isMobile 
+              ? (viewedUser ? viewedUser.username.slice(0, 8) : 'You')
+              : (viewedUser ? `@${viewedUser.username}` : 'Your shelf')}
           </SelectValue>
         </SelectTrigger>
         <SelectContent className="min-w-[180px]">

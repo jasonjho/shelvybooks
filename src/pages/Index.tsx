@@ -303,12 +303,13 @@ export default function Index() {
                   <ViewingFriendPill viewedUser={viewedUser} onClose={clearViewedShelf} />
                 )}
 
+                 {/* Controls row - all on one line with compact icons on mobile */}
                  <div className={cn(
-                   "flex flex-wrap items-center gap-3 mb-6",
+                   "flex items-center gap-2 mb-6",
                    user ? "justify-between" : "justify-start"
                  )}>
                   {/* Left side: Shelf Switcher + ShelfControls */}
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2">
                     <ShelfSwitcher 
                       viewedUser={viewedUser}
                       onSelectUser={viewShelf}
@@ -324,20 +325,21 @@ export default function Index() {
                       availableCategories={availableCategories}
                       activeCategoryFilters={activeCategoryFilters}
                       onCategoryFilterChange={setActiveCategoryFilters}
+                      compact={isMobile}
                     />
                   </div>
                   
                   {/* Right side: action buttons */}
                   {user && (
-                    <>
-                       {/* Desktop: separate dropdowns */}
-                       <div className="hidden sm:flex items-center gap-2">
-                         <SocialActionsDropdown />
-                         <BookActionsDropdown onAddBook={addBook} existingBooks={ownBooks} />
-                       </div>
-                      {/* Mobile: unified FAB menu with privacy indicator + shelf switcher */}
-                      <div className="sm:hidden flex items-center gap-2">
-                         <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />
+                    <div className="flex items-center gap-2">
+                      {/* Desktop: separate dropdowns */}
+                      <div className="hidden sm:flex items-center gap-2">
+                        <SocialActionsDropdown />
+                        <BookActionsDropdown onAddBook={addBook} existingBooks={ownBooks} />
+                      </div>
+                      {/* Mobile: privacy indicator + FAB */}
+                      <div className="sm:hidden flex items-center gap-1.5">
+                        <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />
                         <MobileActionsMenu 
                           onAddBook={addBook} 
                           existingBooks={ownBooks}
@@ -347,7 +349,7 @@ export default function Index() {
                         />
                       </div>
                       <ShareShelfDialog open={mobileShareOpen} onOpenChange={setMobileShareOpen} />
-                    </>
+                    </div>
                   )}
                 </div>
 
