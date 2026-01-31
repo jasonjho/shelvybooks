@@ -221,17 +221,18 @@ export default function Index() {
     }
   };
 
-  // Determine which settings to use for rendering
-  const displaySettings = activeSettings || settings;
-  const displaySkin = activeShelfSkin || shelfSkin;
+  // Use friend's settings ONLY for shelf rendering, keep page layout stable
+  const shelfDisplaySettings = activeSettings || settings;
+  const shelfDisplaySkin = activeShelfSkin || shelfSkin;
 
-  const ambientGradient = getAmbientGradient(displaySettings.backgroundTheme);
+  // Page background/ambient always uses YOUR settings (stable during shelf switches)
+  const ambientGradient = getAmbientGradient(settings.backgroundTheme);
 
   return (
-    <div className={cn("min-h-screen overflow-x-hidden overscroll-x-none", getBackgroundClass(displaySettings.backgroundTheme))}>
+    <div className={cn("min-h-screen overflow-x-hidden overscroll-x-none", getBackgroundClass(settings.backgroundTheme))}>
 
-      {/* Ambient top light */}
-      {displaySettings.showAmbientLight && ambientGradient && (
+      {/* Ambient top light - uses YOUR settings for stable page layout */}
+      {settings.showAmbientLight && ambientGradient && (
         <div 
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] pointer-events-none transition-opacity duration-500"
           style={{ background: ambientGradient }}
@@ -378,8 +379,8 @@ export default function Index() {
                   isMobile ? (
                     <MobileBookshelf
                       books={sortedBooks}
-                      skin={displaySkin}
-                      settings={displaySettings}
+                      skin={shelfDisplaySkin}
+                      settings={shelfDisplaySettings}
                       activeFilters={activeFilters}
                       onMoveBook={user && !isViewingFriend ? moveBook : undefined}
                       onRemoveBook={user && !isViewingFriend ? removeBook : undefined}
@@ -390,8 +391,8 @@ export default function Index() {
                   ) : (
                     <Bookshelf
                       books={sortedBooks}
-                      skin={displaySkin}
-                      settings={displaySettings}
+                      skin={shelfDisplaySkin}
+                      settings={shelfDisplaySettings}
                       activeFilters={activeFilters}
                       onMoveBook={user && !isViewingFriend ? moveBook : undefined}
                       onRemoveBook={user && !isViewingFriend ? removeBook : undefined}
