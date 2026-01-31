@@ -15,6 +15,7 @@ import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
 import { FindFriendsDialog } from '@/components/FindFriendsDialog';
+import { ShareNudge } from '@/components/ShareNudge';
 import { Button } from '@/components/ui/button';
 
 
@@ -353,6 +354,9 @@ export default function Index() {
 
       {/* Onboarding tips for new users */}
       {user && allBooks.length > 0 && <OnboardingTips />}
+      
+      {/* Share nudge after 5+ books */}
+      {user && <ShareNudge bookCount={allBooks.length} />}
     </div>
   );
 }
