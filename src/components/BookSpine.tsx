@@ -1,5 +1,5 @@
 import { Book, BookStatus } from '@/types/book';
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState, useRef, useCallback } from 'react';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -62,11 +62,24 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
   const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState<'above' | 'below'>('above');
+  const bookRef = useRef<HTMLDivElement>(null);
   const amazonUrl = getAmazonBookUrl(book.title, book.author, book.isbn);
   const hasClubInfo = clubInfo && clubInfo.length > 0;
   const isCurrentlyReading = clubInfo?.some(c => c.status === 'reading');
   const showPlaceholder = !book.coverUrl || book.coverUrl === '/placeholder.svg' || imageError;
   const coverSrc = normalizeCoverUrl(book.coverUrl);
+
+  // Check if tooltip would be clipped at top and adjust position
+  const updateTooltipPosition = useCallback(() => {
+    if (bookRef.current) {
+      const rect = bookRef.current.getBoundingClientRect();
+      // If book is within 280px of viewport top, show tooltip below
+      // 280px accounts for tooltip height (~220px) + padding
+      const shouldShowBelow = rect.top < 280;
+      setTooltipPosition(shouldShowBelow ? 'below' : 'above');
+    }
+  }, []);
 
   // Reset image state when we render a different book / URL
   useEffect(() => {
@@ -109,13 +122,14 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
 
   return (
     <div 
-      ref={ref} 
+      ref={bookRef} 
       className={cn(
         'book-spine group/book relative hover:z-50 focus-within:z-50',
         isGrayed && 'book-grayed',
         isWobbling && 'book-wobble',
         isSparkle && 'book-sparkle'
       )}
+      onMouseEnter={updateTooltipPosition}
     >
       {/* Post-it note decoration - positioned at bottom-right like a shelf talker */}
       {note && (
@@ -239,15 +253,28 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
         )}
       </div>
       
-      {/* Hover tooltip with metadata - pb-4 creates invisible bridge to prevent hover gap */}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 pb-4 opacity-0 group-hover/book:opacity-100 transition-opacity duration-200 z-30 hidden sm:block pointer-events-none group-hover/book:pointer-events-auto">
+      {/* Hover tooltip with metadata - dynamically positions above or below based on viewport */}
+      <div 
+        className={cn(
+          "absolute left-1/2 -translate-x-1/2 opacity-0 group-hover/book:opacity-100 transition-opacity duration-200 z-30 hidden sm:block pointer-events-none group-hover/book:pointer-events-auto",
+          tooltipPosition === 'above' ? 'bottom-full pb-4' : 'top-full pt-4'
+        )}
+      >
         <BookHoverPreview 
           book={book} 
           amazonUrl={amazonUrl} 
           onSelect={onSelect}
           clubInfo={clubInfo}
         />
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 border-[8px] border-transparent border-t-popover" />
+        {/* Arrow pointing to book */}
+        <div 
+          className={cn(
+            "absolute left-1/2 -translate-x-1/2 border-[8px] border-transparent",
+            tooltipPosition === 'above' 
+              ? 'bottom-4 border-t-popover' 
+              : 'top-4 border-b-popover'
+          )} 
+        />
       </div>
     </div>
   );
