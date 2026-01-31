@@ -7,6 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Settings, Lamp, Trees, BookmarkMinus, Sparkles, Check, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -80,10 +81,11 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
           <Settings className="w-4 h-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 max-h-[80vh] overflow-y-auto" align="end">
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <h4 className="font-sans font-medium text-sm">Shelf Customization</h4>
+      <PopoverContent className="w-80 p-0" align="end">
+        <ScrollArea className="max-h-[70vh] p-4">
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <h4 className="font-sans font-medium text-sm">Shelf Customization</h4>
             <p className="text-xs text-muted-foreground">
               Toggle decorative elements
             </p>
@@ -204,7 +206,8 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
               </div>
             </div>
           )}
-        </div>
+          </div>
+        </ScrollArea>
       </PopoverContent>
     </Popover>
   );
