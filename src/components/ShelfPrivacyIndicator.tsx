@@ -1,5 +1,6 @@
 import { Globe, Lock } from 'lucide-react';
 import { useShelfSettings } from '@/hooks/useShelfSettings';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import {
   Tooltip,
@@ -14,6 +15,7 @@ interface ShelfPrivacyIndicatorProps {
 
 export function ShelfPrivacyIndicator({ onClick, className }: ShelfPrivacyIndicatorProps) {
   const { settings, loading } = useShelfSettings();
+  const isMobile = useIsMobile();
 
   if (loading || !settings) return null;
 
@@ -25,7 +27,8 @@ export function ShelfPrivacyIndicator({ onClick, className }: ShelfPrivacyIndica
         <button
           onClick={onClick}
           className={cn(
-            'inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors',
+            'inline-flex items-center gap-1.5 rounded-full text-xs font-medium transition-colors',
+            isMobile ? 'p-1.5' : 'px-2 py-1',
             isPublic
               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
               : 'bg-muted text-muted-foreground',
@@ -35,13 +38,13 @@ export function ShelfPrivacyIndicator({ onClick, className }: ShelfPrivacyIndica
         >
           {isPublic ? (
             <>
-              <Globe className="w-3 h-3" />
-              <span>Public</span>
+              <Globe className="w-3.5 h-3.5" />
+              {!isMobile && <span>Public</span>}
             </>
           ) : (
             <>
-              <Lock className="w-3 h-3" />
-              <span>Private</span>
+              <Lock className="w-3.5 h-3.5" />
+              {!isMobile && <span>Private</span>}
             </>
           )}
         </button>
