@@ -189,11 +189,11 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
             )}
             onClick={onSelect}
           >
-            {/* Loading skeleton - fades out as image loads */}
+            {/* Loading skeleton - subtle shimmer, fades out as image loads */}
             {!showPlaceholder && (
-              <Skeleton 
+              <div 
                 className={cn(
-                  "absolute inset-0 w-full h-full rounded-none transition-opacity duration-300",
+                  "absolute inset-0 w-full h-full bg-muted animate-shimmer-subtle transition-opacity duration-300",
                   imageLoaded ? "opacity-0" : "opacity-100"
                 )} 
               />
