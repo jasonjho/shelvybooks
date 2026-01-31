@@ -61,8 +61,11 @@ export function DailyQuote({ }: DailyQuoteProps) {
     >
       <Quote className="w-3.5 h-3.5 text-amber-400/70 flex-shrink-0" />
       
-      <p className="flex-1 min-w-0 text-sm text-foreground/80 truncate italic">
-        {quote.quote}
+      <p className="flex-1 min-w-0 text-sm text-foreground/80 truncate">
+        <span className="italic">"{quote.quote}"</span>
+        <span className="text-muted-foreground ml-2">
+          — {quote.book.title}, {quote.book.author}
+        </span>
       </p>
 
       <DropdownMenu>
