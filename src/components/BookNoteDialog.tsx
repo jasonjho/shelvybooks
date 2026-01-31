@@ -7,12 +7,21 @@ import {
   DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+} from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { NoteColor, BookNote } from '@/hooks/useBookNotes';
 import { Trash2 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BookNoteDialogProps {
   open: boolean;
@@ -38,6 +47,7 @@ export function BookNoteDialog({
   onSave,
   onDelete,
 }: BookNoteDialogProps) {
+  const isMobile = useIsMobile();
   const [content, setContent] = useState('');
   const [color, setColor] = useState<NoteColor>('yellow');
   const [saving, setSaving] = useState(false);
@@ -72,6 +82,96 @@ export function BookNoteDialog({
   const charCount = content.trim().length;
   const isOverLimit = charCount > 200;
 
+  const formContent = (
+    <div className="space-y-4 px-4 sm:px-0">
+      {/* Note content */}
+      <div className="space-y-2">
+        <Label htmlFor="note-content">Your note</Label>
+        <Textarea
+          id="note-content"
+          placeholder="A must-read! The characters are unforgettable..."
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="min-h-[100px] resize-none"
+          style={{ fontFamily: "'Caveat', cursive", fontSize: '18px' }}
+        />
+        <p className={cn('text-xs text-right', isOverLimit ? 'text-destructive' : 'text-muted-foreground')}>
+          {charCount}/200
+        </p>
+      </div>
+
+      {/* Color picker */}
+      <div className="space-y-2">
+        <Label>Post-it color</Label>
+        <div className="flex gap-2">
+          {colorOptions.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setColor(opt.value)}
+              className={cn(
+                'w-8 h-8 rounded-md border-2 transition-all',
+                opt.bgClass,
+                color === opt.value ? 'border-foreground scale-110' : 'border-transparent'
+              )}
+              aria-label={opt.label}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const footerContent = (
+    <div className="flex flex-row justify-between sm:justify-between gap-2 w-full">
+      {existingNote && onDelete && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleDelete}
+          disabled={saving}
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="w-4 h-4 mr-1" />
+          Remove
+        </Button>
+      )}
+      <div className="flex gap-2 ml-auto">
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+          Cancel
+        </Button>
+        <Button type="button" onClick={handleSave} disabled={saving || isOverLimit || !content.trim()}>
+          {saving ? 'Saving...' : 'Save Note'}
+        </Button>
+      </div>
+    </div>
+  );
+
+  // Use Drawer on mobile for better keyboard handling
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent>
+          <DrawerHeader className="text-left">
+            <DrawerTitle className="font-sans">
+              {existingNote ? 'Edit Note' : 'Add Recommendation Note'}
+            </DrawerTitle>
+            <DrawerDescription className="text-sm text-muted-foreground">
+              Share why you love <span className="font-medium">{bookTitle}</span>
+            </DrawerDescription>
+          </DrawerHeader>
+          
+          {formContent}
+          
+          <DrawerFooter className="pt-4">
+            {footerContent}
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -84,66 +184,10 @@ export function BookNoteDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Note content */}
-          <div className="space-y-2">
-            <Label htmlFor="note-content">Your note</Label>
-            <Textarea
-              id="note-content"
-              placeholder="A must-read! The characters are unforgettable..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="min-h-[100px] resize-none"
-              style={{ fontFamily: "'Caveat', cursive", fontSize: '18px' }}
-            />
-            <p className={cn('text-xs text-right', isOverLimit ? 'text-destructive' : 'text-muted-foreground')}>
-              {charCount}/200
-            </p>
-          </div>
-
-          {/* Color picker */}
-          <div className="space-y-2">
-            <Label>Post-it color</Label>
-            <div className="flex gap-2">
-              {colorOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setColor(opt.value)}
-                  className={cn(
-                    'w-8 h-8 rounded-md border-2 transition-all',
-                    opt.bgClass,
-                    color === opt.value ? 'border-foreground scale-110' : 'border-transparent'
-                  )}
-                  aria-label={opt.label}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+        {formContent}
 
         <DialogFooter className="flex-row justify-between sm:justify-between gap-2">
-          {existingNote && onDelete && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-              disabled={saving}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            >
-              <Trash2 className="w-4 h-4 mr-1" />
-              Remove
-            </Button>
-          )}
-          <div className="flex gap-2 ml-auto">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-              Cancel
-            </Button>
-            <Button type="button" onClick={handleSave} disabled={saving || isOverLimit || !content.trim()}>
-              {saving ? 'Saving...' : 'Save Note'}
-            </Button>
-          </div>
+          {footerContent}
         </DialogFooter>
       </DialogContent>
     </Dialog>
