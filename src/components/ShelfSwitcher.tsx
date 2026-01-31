@@ -103,7 +103,7 @@ export function ShelfSwitcher({ viewedUser, onSelectUser, onSelectOwnShelf }: Sh
   return (
     <>
       <Select value={currentValue} onValueChange={handleValueChange}>
-        <SelectTrigger className="max-w-[120px] sm:max-w-none w-auto gap-1.5 bg-background/80 border-input h-9 px-2.5 sm:px-3 text-sm font-medium focus:ring-0 focus:ring-offset-0 shrink-0">
+        <SelectTrigger className="max-w-[120px] sm:max-w-none w-auto gap-1.5 bg-background/80 border-input h-8 px-2.5 sm:px-3 text-sm font-medium focus:ring-0 focus:ring-offset-0 shrink-0">
           <BookOpen className="w-4 h-4 shrink-0" />
           <SelectValue>
             <span className="truncate">
