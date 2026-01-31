@@ -298,44 +298,27 @@ export default function Index() {
                  {user && <DailyQuote />}
 
 
-                 {/* Controls - clean two-row layout */}
-                 <div className="space-y-3 mb-6">
-                  {/* Row 1: Navigation + Actions grouped together */}
-                  <div className="flex items-center gap-2">
+                 {/* Controls - single row layout */}
+                 <div className="flex items-center justify-between gap-2 mb-6">
+                  {/* Left: Shelf switcher, filters, privacy */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <ShelfSwitcher 
                       viewedUser={viewedUser}
                       onSelectUser={viewShelf}
                       onSelectOwnShelf={clearViewedShelf}
                     />
-                    
-                      {user && (
-                        <MobileActionsMenu 
-                          onAddBook={addBook} 
-                          existingBooks={ownBooks}
-                          viewedUser={viewedUser}
-                          onSelectUser={viewShelf}
-                          onSelectOwnShelf={clearViewedShelf}
-                        />
-                      )}
-                  </div>
-                  
-                  {/* Row 2: Filters & Sorting (left) + Privacy indicator (right) */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <ShelfControls
-                        activeFilters={activeFilters}
-                        onFilterChange={setActiveFilters}
-                        sortOption={sortOption}
-                        onSortChange={setSortOption}
-                        onShuffle={handleShuffle}
-                        bookCounts={bookCounts}
-                        availableCategories={availableCategories}
-                        activeCategoryFilters={activeCategoryFilters}
-                        onCategoryFilterChange={setActiveCategoryFilters}
-                        compact={isMobile}
-                      />
-                    </div>
-                    
+                    <ShelfControls
+                      activeFilters={activeFilters}
+                      onFilterChange={setActiveFilters}
+                      sortOption={sortOption}
+                      onSortChange={setSortOption}
+                      onShuffle={handleShuffle}
+                      bookCounts={bookCounts}
+                      availableCategories={availableCategories}
+                      activeCategoryFilters={activeCategoryFilters}
+                      onCategoryFilterChange={setActiveCategoryFilters}
+                      compact={isMobile}
+                    />
                     {user && (
                       <>
                         <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />
@@ -343,6 +326,17 @@ export default function Index() {
                       </>
                     )}
                   </div>
+                  
+                  {/* Right: + button */}
+                  {user && (
+                    <MobileActionsMenu 
+                      onAddBook={addBook} 
+                      existingBooks={ownBooks}
+                      viewedUser={viewedUser}
+                      onSelectUser={viewShelf}
+                      onSelectOwnShelf={clearViewedShelf}
+                    />
+                  )}
                 </div>
 
                  {isMobile ? (
