@@ -299,13 +299,10 @@ export default function Index() {
                  {user && <DailyQuote />}
 
 
-                 {/* Controls row - single line */}
-                 <div className={cn(
-                   "flex items-center gap-2 mb-6",
-                   user ? "justify-between" : "justify-start"
-                 )}>
+                 {/* Controls row - wraps on tablet/mobile */}
+                 <div className="flex flex-wrap items-center gap-2 mb-6">
                   {/* Left side: Shelf Switcher + ShelfControls */}
-                  <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <ShelfSwitcher 
                       viewedUser={viewedUser}
                       onSelectUser={viewShelf}
@@ -325,15 +322,15 @@ export default function Index() {
                     />
                   </div>
                   
-                  {/* Right side: action buttons */}
+                  {/* Right side: action buttons - push to right with ml-auto */}
                   {user && (
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {/* Desktop: separate dropdowns */}
+                    <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                      {/* Desktop/Tablet: separate dropdowns */}
                       <div className="hidden sm:flex items-center gap-2">
                         <SocialActionsDropdown />
                         <BookActionsDropdown onAddBook={addBook} existingBooks={ownBooks} />
                       </div>
-                      {/* Mobile: privacy indicator + FAB */}
+                      {/* Mobile only: privacy indicator + FAB */}
                       <div className="sm:hidden flex items-center gap-1.5">
                         <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />
                         <MobileActionsMenu 
