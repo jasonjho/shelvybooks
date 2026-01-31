@@ -72,8 +72,16 @@ function stripHtml(html: string | undefined): string | undefined {
     .trim();
 }
 
-// Search Google Books for a cover (FALLBACK)
-async function searchGoogleBooksCover(title: string, author: string, apiKey?: string): Promise<string | null> {
+// Search Google Books for full metadata (FALLBACK)
+interface GoogleBooksResult {
+  coverUrl?: string;
+  pageCount?: number;
+  description?: string;
+  categories?: string[];
+  isbn?: string;
+}
+
+async function searchGoogleBooks(title: string, author: string, apiKey?: string): Promise<GoogleBooksResult | null> {
   const query = `${title} ${author}`;
   let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=3&printType=books`;
   
@@ -89,7 +97,13 @@ async function searchGoogleBooksCover(title: string, author: string, apiKey?: st
     const items = data.items || [];
     
     for (const book of items) {
-      const thumbnail = book.volumeInfo?.imageLinks?.thumbnail;
+      const volumeInfo = book.volumeInfo;
+      if (!volumeInfo) continue;
+      
+      const result: GoogleBooksResult = {};
+      
+      // Get cover
+      const thumbnail = volumeInfo.imageLinks?.thumbnail;
       if (thumbnail) {
         const httpsThumb = thumbnail.replace('http://', 'https://').replace('zoom=1', 'zoom=2');
         try {
@@ -98,12 +112,40 @@ async function searchGoogleBooksCover(title: string, author: string, apiKey?: st
             if (!u.searchParams.get('edge')) u.searchParams.set('edge', 'curl');
             const zoom = u.searchParams.get('zoom');
             if (!zoom || zoom === '1') u.searchParams.set('zoom', '2');
-            return u.toString();
+            result.coverUrl = u.toString();
+          } else {
+            result.coverUrl = httpsThumb;
           }
         } catch {
-          // ignore
+          result.coverUrl = httpsThumb;
         }
-        return httpsThumb;
+      }
+      
+      // Get page count
+      if (volumeInfo.pageCount) {
+        result.pageCount = volumeInfo.pageCount;
+      }
+      
+      // Get description
+      if (volumeInfo.description) {
+        result.description = stripHtml(volumeInfo.description)?.slice(0, 2000);
+      }
+      
+      // Get categories
+      if (volumeInfo.categories && volumeInfo.categories.length > 0) {
+        result.categories = volumeInfo.categories.slice(0, 5);
+      }
+      
+      // Get ISBN
+      if (volumeInfo.industryIdentifiers) {
+        const isbn13 = volumeInfo.industryIdentifiers.find((id: any) => id.type === 'ISBN_13');
+        const isbn10 = volumeInfo.industryIdentifiers.find((id: any) => id.type === 'ISBN_10');
+        result.isbn = isbn13?.identifier || isbn10?.identifier;
+      }
+      
+      // Return first book with at least some useful data
+      if (result.coverUrl || result.pageCount || result.description) {
+        return result;
       }
     }
   } catch (e) {
@@ -228,14 +270,31 @@ serve(async (req) => {
       }
     }
 
-    // If ISBNdb didn't return a cover, try Google Books as fallback
-    if (!result.coverUrl) {
+    // If ISBNdb didn't return full metadata, try Google Books as fallback
+    if (!result.pageCount || !result.description || !result.coverUrl) {
       const googleApiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY');
-      const googleCover = await searchGoogleBooksCover(safeTitle, safeAuthor, googleApiKey);
-      if (googleCover) {
-        result.coverUrl = googleCover;
-        if (!result.source) result.source = 'google';
-        console.log('Using Google Books cover as fallback');
+      const googleData = await searchGoogleBooks(safeTitle, safeAuthor, googleApiKey);
+      if (googleData) {
+        // Fill in missing fields from Google Books
+        if (!result.pageCount && googleData.pageCount) {
+          result.pageCount = googleData.pageCount;
+        }
+        if (!result.description && googleData.description) {
+          result.description = googleData.description;
+        }
+        if (!result.categories && googleData.categories) {
+          result.categories = googleData.categories;
+        }
+        if (!result.isbn && googleData.isbn) {
+          result.isbn = googleData.isbn;
+        }
+        if (!result.coverUrl && googleData.coverUrl) {
+          result.coverUrl = googleData.coverUrl;
+        }
+        if (!result.source && (googleData.pageCount || googleData.description || googleData.coverUrl)) {
+          result.source = 'google';
+        }
+        console.log('Filled in missing data from Google Books');
       }
     }
 
