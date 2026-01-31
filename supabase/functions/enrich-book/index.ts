@@ -83,18 +83,26 @@ interface GoogleBooksResult {
 
 async function searchGoogleBooks(title: string, author: string, apiKey?: string): Promise<GoogleBooksResult | null> {
   const query = `${title} ${author}`;
-  let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=3&printType=books`;
+  let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=5&printType=books`;
   
   if (apiKey) {
     url += `&key=${apiKey}`;
   }
 
+  console.log(`Google Books fallback: searching for "${query}"`);
+
   try {
     const response = await fetch(url);
-    if (!response.ok) return null;
+    console.log(`Google Books response status: ${response.status}`);
+    
+    if (!response.ok) {
+      console.log(`Google Books error: ${response.status}`);
+      return null;
+    }
     
     const data = await response.json();
     const items = data.items || [];
+    console.log(`Google Books found ${items.length} results`);
     
     for (const book of items) {
       const volumeInfo = book.volumeInfo;
@@ -145,9 +153,12 @@ async function searchGoogleBooks(title: string, author: string, apiKey?: string)
       
       // Return first book with at least some useful data
       if (result.coverUrl || result.pageCount || result.description) {
+        console.log(`Google Books: found usable data for "${volumeInfo.title}"`);
         return result;
       }
     }
+    
+    console.log('Google Books: no books with usable data found');
   } catch (e) {
     console.error("Google Books error:", e);
   }
@@ -155,7 +166,72 @@ async function searchGoogleBooks(title: string, author: string, apiKey?: string)
   return null;
 }
 
-// Search ISBNdb for a book by title and author
+// Search Open Library for full metadata (FALLBACK)
+interface OpenLibraryResult {
+  coverUrl?: string;
+  pageCount?: number;
+  description?: string;
+  categories?: string[];
+  isbn?: string;
+}
+
+async function searchOpenLibrary(title: string, author: string): Promise<OpenLibraryResult | null> {
+  const query = `${title} ${author}`;
+  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=5&fields=key,title,author_name,cover_i,first_publish_year,subject,number_of_pages_median,isbn`;
+  
+  console.log(`Open Library fallback: searching for "${query}"`);
+
+  try {
+    const response = await fetch(url);
+    console.log(`Open Library response status: ${response.status}`);
+    
+    if (!response.ok) {
+      console.log(`Open Library error: ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    const docs = data.docs || [];
+    console.log(`Open Library found ${docs.length} results`);
+    
+    for (const doc of docs) {
+      const result: OpenLibraryResult = {};
+      
+      // Get cover
+      if (doc.cover_i) {
+        result.coverUrl = `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`;
+      }
+      
+      // Get page count
+      if (doc.number_of_pages_median) {
+        result.pageCount = doc.number_of_pages_median;
+      }
+      
+      // Get categories
+      if (doc.subject && doc.subject.length > 0) {
+        result.categories = doc.subject.slice(0, 5);
+      }
+      
+      // Get ISBN
+      if (doc.isbn && doc.isbn.length > 0) {
+        result.isbn = doc.isbn[0];
+      }
+      
+      // Return first doc with at least some useful data
+      if (result.coverUrl || result.pageCount) {
+        console.log(`Open Library: found usable data for "${doc.title}"`);
+        return result;
+      }
+    }
+    
+    console.log('Open Library: no books with usable data found');
+  } catch (e) {
+    console.error("Open Library error:", e);
+  }
+  
+  return null;
+}
+
 async function searchISBNdb(
   title: string, 
   author: string, 
@@ -295,6 +371,30 @@ serve(async (req) => {
           result.source = 'google';
         }
         console.log('Filled in missing data from Google Books');
+      }
+    }
+
+    // If still missing data, try Open Library as final fallback
+    if (!result.pageCount || !result.coverUrl) {
+      const openLibraryData = await searchOpenLibrary(safeTitle, safeAuthor);
+      if (openLibraryData) {
+        // Fill in missing fields from Open Library
+        if (!result.pageCount && openLibraryData.pageCount) {
+          result.pageCount = openLibraryData.pageCount;
+        }
+        if (!result.categories && openLibraryData.categories) {
+          result.categories = openLibraryData.categories;
+        }
+        if (!result.isbn && openLibraryData.isbn) {
+          result.isbn = openLibraryData.isbn;
+        }
+        if (!result.coverUrl && openLibraryData.coverUrl) {
+          result.coverUrl = openLibraryData.coverUrl;
+        }
+        if (!result.source && (openLibraryData.pageCount || openLibraryData.coverUrl)) {
+          result.source = 'openlibrary';
+        }
+        console.log('Filled in missing data from Open Library');
       }
     }
 
