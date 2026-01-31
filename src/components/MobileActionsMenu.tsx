@@ -132,7 +132,7 @@ export function MobileActionsMenu({ onAddBook, existingBooks }: MobileActionsMen
         open={addBookOpen} 
         onOpenChange={setAddBookOpen} 
         onAddBook={onAddBook} 
-        defaultStatus="reading" 
+        defaultStatus="want-to-read" 
       />
       <MagicRecommender 
         open={recommenderOpen}
