@@ -892,9 +892,9 @@
     transform: translateY(-6px);
   }
 
-  /* Scale down decorations on mobile */
+  /* Scale decorations on mobile to stay proportionate to books */
   .mobile-decoration {
-    transform: scale(0.7);
+    transform: scale(0.85);
     transform-origin: bottom center;
   }
 
