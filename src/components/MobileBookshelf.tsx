@@ -3,6 +3,7 @@ import { BookSpine, ClubInfo } from './BookSpine';
 import { BookDetailDialog } from './BookDetailDialog';
 import { BookNoteDialog } from './BookNoteDialog';
 import { ShelfDecoration, DECORATION_TYPES, DecorationType } from './ShelfDecorations';
+import { ShelfRibbon } from './ShelfRibbon';
 import { cn } from '@/lib/utils';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useBookNotes, BookNote, NoteColor } from '@/hooks/useBookNotes';
@@ -20,6 +21,8 @@ interface MobileBookshelfProps {
   onSelectBook?: (book: Book) => void;
   /** Count of new likes per book ID */
   likesPerBook?: Record<string, number>;
+  /** Username to display on ribbon when viewing someone else's shelf */
+  viewingUsername?: string;
 }
 
 const BOOK_WIDTH = 55; // Width of mobile book covers
@@ -249,6 +252,7 @@ export function MobileBookshelf({
   getBookClubInfo,
   onSelectBook,
   likesPerBook,
+  viewingUsername,
 }: MobileBookshelfProps) {
   const [internalSelectedBook, setInternalSelectedBook] = useState<Book | null>(null);
   const [noteBook, setNoteBook] = useState<Book | null>(null);
@@ -326,7 +330,10 @@ export function MobileBookshelf({
   }, [books, booksPerRow]);
 
   return (
-    <div ref={containerRef} className={cn('mobile-bookcase', skinClass, grainClass)}>
+    <div ref={containerRef} className={cn('mobile-bookcase relative', skinClass, grainClass)}>
+      {/* Ribbon indicator when viewing someone else's shelf */}
+      {viewingUsername && <ShelfRibbon username={viewingUsername} className="-top-2" />}
+      
       {books.length === 0 ? (
         <div className="flex items-center justify-center py-12 text-muted-foreground text-sm italic">
           Add some books to your shelf...

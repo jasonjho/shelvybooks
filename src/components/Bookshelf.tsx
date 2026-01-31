@@ -4,9 +4,9 @@ import { BookSpine, ClubInfo } from './BookSpine';
 import { BookDetailDialog } from './BookDetailDialog';
 import { BookNoteDialog } from './BookNoteDialog';
 import { ShelfDecoration, DECORATION_TYPES, DecorationType } from './ShelfDecorations';
+import { ShelfRibbon } from './ShelfRibbon';
 import { cn } from '@/lib/utils';
 import { useBookNotes, BookNote, NoteColor } from '@/hooks/useBookNotes';
-
 interface BookshelfProps {
   books: Book[];
   skin: ShelfSkin;
@@ -20,6 +20,8 @@ interface BookshelfProps {
   onSelectBook?: (book: Book) => void;
   /** Count of new likes per book ID */
   likesPerBook?: Record<string, number>;
+  /** Username to display on ribbon when viewing someone else's shelf */
+  viewingUsername?: string;
 }
 
 function Bookend() {
@@ -253,7 +255,7 @@ function ShelfRow({
   );
 }
 
-export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo, onSelectBook, likesPerBook }: BookshelfProps) {
+export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo, onSelectBook, likesPerBook, viewingUsername }: BookshelfProps) {
   const [internalSelectedBook, setInternalSelectedBook] = useState<Book | null>(null);
   const [noteBook, setNoteBook] = useState<Book | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -341,6 +343,9 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
 
   return (
     <div ref={containerRef} className={cn('bookcase p-4 pt-6 pb-8 flex flex-col gap-0', skinClass, grainClass)}>
+      {/* Ribbon indicator when viewing someone else's shelf */}
+      {viewingUsername && <ShelfRibbon username={viewingUsername} />}
+      
       {/* Decorative trim elements */}
       <div className="bookcase-crown" />
       <div className="bookcase-base" />
