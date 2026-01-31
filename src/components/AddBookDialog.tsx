@@ -21,15 +21,21 @@ interface AddBookDialogProps {
     categories?: string[];
   }) => void;
   defaultStatus: BookStatus;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function AddBookDialog({ onAddBook, defaultStatus }: AddBookDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AddBookDialog({ onAddBook, defaultStatus, open: controlledOpen, onOpenChange: controlledOnOpenChange }: AddBookDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [manualTitle, setManualTitle] = useState('');
   const [manualAuthor, setManualAuthor] = useState('');
   const { results, isLoading, error, searchBooks, clearResults } = useBookSearch();
+
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
 
   // Debounced search
   useEffect(() => {
@@ -92,23 +98,16 @@ export function AddBookDialog({ onAddBook, defaultStatus }: AddBookDialogProps) 
     resetForm();
   };
 
-  return (
-    <Dialog open={open} onOpenChange={(isOpen) => isOpen ? setOpen(true) : handleClose()}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1.5">
-          <Plus className="w-4 h-4" />
-          Add Book
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="font-sans text-lg font-semibold">Add a Book</DialogTitle>
-          <DialogDescription className="sr-only">
-            Search for a book or add one manually
-          </DialogDescription>
-        </DialogHeader>
-        
-        {!showManualEntry ? (
+  const dialogContent = (
+    <DialogContent className="max-w-lg">
+      <DialogHeader>
+        <DialogTitle className="font-sans text-lg font-semibold">Add a Book</DialogTitle>
+        <DialogDescription className="sr-only">
+          Search for a book or add one manually
+        </DialogDescription>
+      </DialogHeader>
+      
+      {!showManualEntry ? (
           <>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -260,7 +259,28 @@ export function AddBookDialog({ onAddBook, defaultStatus }: AddBookDialogProps) 
             </div>
           </div>
         )}
-      </DialogContent>
+    </DialogContent>
+  );
+
+  // When controlled (no trigger needed), just render the dialog
+  if (isControlled) {
+    return (
+      <Dialog open={open} onOpenChange={(isOpen) => isOpen ? setOpen(true) : handleClose()}>
+        {dialogContent}
+      </Dialog>
+    );
+  }
+
+  // Uncontrolled: include the trigger button
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => isOpen ? setOpen(true) : handleClose()}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1.5">
+          <Plus className="w-4 h-4" />
+          Add Book
+        </Button>
+      </DialogTrigger>
+      {dialogContent}
     </Dialog>
   );
 }

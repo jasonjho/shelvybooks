@@ -5,7 +5,8 @@ import { SettingsPanel } from '@/components/SettingsPanel';
 import { ShelfControls } from '@/components/ShelfControls';
 import { AddBookDialog } from '@/components/AddBookDialog';
 import { ImportBooksDialog } from '@/components/ImportBooksDialog';
-import { ShareShelfDialog } from '@/components/ShareShelfDialog';
+import { SocialActionsDropdown } from '@/components/SocialActionsDropdown';
+import { BookActionsDropdown } from '@/components/BookActionsDropdown';
 import { AuthButton } from '@/components/AuthButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MagicRecommender } from '@/components/MagicRecommender';
@@ -14,7 +15,6 @@ import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
-import { FindFriendsDialog } from '@/components/FindFriendsDialog';
 import { ShareNudge } from '@/components/ShareNudge';
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { Button } from '@/components/ui/button';
@@ -269,10 +269,7 @@ export default function Index() {
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <p className="text-muted-foreground">Your shelf is empty. Browse collections below or add a book manually.</p>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <ImportBooksDialog onAddBook={addBook} existingBooks={allBooks} />
-                    <AddBookDialog onAddBook={addBook} defaultStatus="reading" />
-                  </div>
+                  <BookActionsDropdown onAddBook={addBook} existingBooks={allBooks} />
                 </div>
                 <DiscoverCollections 
                   onAddBook={addBook} 
@@ -300,10 +297,8 @@ export default function Index() {
                   {user && (
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                       <MagicRecommender books={allBooks} onAddBook={addBook} />
-                      <FindFriendsDialog />
-                      <ShareShelfDialog />
-                      <ImportBooksDialog onAddBook={addBook} existingBooks={allBooks} />
-                      <AddBookDialog onAddBook={addBook} defaultStatus="reading" />
+                      <SocialActionsDropdown />
+                      <BookActionsDropdown onAddBook={addBook} existingBooks={allBooks} />
                     </div>
                   )}
                 </div>
