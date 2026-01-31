@@ -16,6 +16,8 @@ import { ShareNudge } from '@/components/ShareNudge';
 import { ShelfPrivacyIndicator } from '@/components/ShelfPrivacyIndicator';
 import { ShareShelfDialog } from '@/components/ShareShelfDialog';
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
+import { ShelfSwitcher } from '@/components/ShelfSwitcher';
+import { ViewingFriendPill } from '@/components/ViewingFriendPill';
 import { Button } from '@/components/ui/button';
 
 import { useBooks } from '@/hooks/useBooks';
@@ -24,8 +26,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useIsbndbDemoBooks } from '@/hooks/useIsbndbDemoBooks';
+import { useViewedShelf } from '@/hooks/useViewedShelf';
 import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
-import { Library } from 'lucide-react';
+import { Library, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Seeded random for consistent shuffle per session
@@ -89,6 +92,16 @@ export default function Index() {
   
   const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
 
+  // Shelf viewing state (for browsing friends' shelves)
+  const { 
+    viewedUser, 
+    viewShelf, 
+    clearViewedShelf, 
+    isViewingFriend, 
+    viewedBooks, 
+    loadingViewedBooks 
+  } = useViewedShelf();
+
   const {
     books,
     loading: booksLoading,
@@ -120,15 +133,20 @@ export default function Index() {
     }));
   }, [getBookClubs]);
 
-  // Get all books - ISBNdb demo for guests, real for authenticated users
-  const allBooks = useMemo(() => {
+  // Get all books - friend's books when viewing, ISBNdb demo for guests, real for authenticated users
+  const ownBooks = useMemo(() => {
     return user ? books : isbndbDemoBooks;
   }, [user, books, isbndbDemoBooks]);
 
-  // Extract unique categories from all books, sorted by frequency
+  // Display books: friend's shelf when viewing, otherwise own books
+  const displayBooks = useMemo(() => {
+    return isViewingFriend ? viewedBooks : ownBooks;
+  }, [isViewingFriend, viewedBooks, ownBooks]);
+
+  // Extract unique categories from displayed books, sorted by frequency
   const availableCategories = useMemo(() => {
     const categoryCount = new Map<string, number>();
-    allBooks.forEach(book => {
+    displayBooks.forEach(book => {
       book.categories?.forEach(cat => {
         categoryCount.set(cat, (categoryCount.get(cat) || 0) + 1);
       });
@@ -137,15 +155,15 @@ export default function Index() {
     return Array.from(categoryCount.entries())
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
       .map(([cat]) => cat);
-  }, [allBooks]);
+  }, [displayBooks]);
 
   // Filter books by category
   const categoryFilteredBooks = useMemo(() => {
-    if (activeCategoryFilters.length === 0) return allBooks;
-    return allBooks.filter(book => 
+    if (activeCategoryFilters.length === 0) return displayBooks;
+    return displayBooks.filter(book => 
       book.categories?.some(cat => activeCategoryFilters.includes(cat))
     );
-  }, [allBooks, activeCategoryFilters]);
+  }, [displayBooks, activeCategoryFilters]);
 
   // Sort books
   const sortedBooks = useMemo(() => {
@@ -264,11 +282,11 @@ export default function Index() {
         {!authLoading && !booksLoading && (user || !demoLoading) && (
           <div className="animate-fade-in">
             {/* Empty shelf - show collection suggestions prominently */}
-            {user && allBooks.length === 0 ? (
+            {user && !isViewingFriend && ownBooks.length === 0 ? (
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <p className="text-muted-foreground">Your shelf is empty. Browse collections below or add a book manually.</p>
-                  <BookActionsDropdown onAddBook={addBook} existingBooks={allBooks} />
+                  <BookActionsDropdown onAddBook={addBook} existingBooks={ownBooks} />
                 </div>
                 <DiscoverCollections 
                   onAddBook={addBook} 
@@ -277,63 +295,98 @@ export default function Index() {
               </div>
             ) : (
               <>
-                {/* Daily Quote */}
-                {user && <DailyQuote />}
+                {/* Daily Quote - only on own shelf */}
+                {user && !isViewingFriend && <DailyQuote />}
+
+                {/* Viewing Friend Pill */}
+                {viewedUser && (
+                  <ViewingFriendPill viewedUser={viewedUser} onClose={clearViewedShelf} />
+                )}
+
+                {/* Loading indicator when fetching friend's books */}
+                {isViewingFriend && loadingViewedBooks && (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                  </div>
+                )}
 
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-                  <ShelfControls
-                    activeFilters={activeFilters}
-                    onFilterChange={setActiveFilters}
-                    sortOption={sortOption}
-                    onSortChange={setSortOption}
-                    onShuffle={handleShuffle}
-                    bookCounts={bookCounts}
-                    availableCategories={availableCategories}
-                    activeCategoryFilters={activeCategoryFilters}
-                    onCategoryFilterChange={setActiveCategoryFilters}
-                  />
+                  {/* Left side: Shelf Switcher (desktop only) + ShelfControls */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Desktop shelf switcher */}
+                    <div className="hidden sm:block">
+                      <ShelfSwitcher 
+                        viewedUser={viewedUser}
+                        onSelectUser={viewShelf}
+                        onSelectOwnShelf={clearViewedShelf}
+                      />
+                    </div>
+                    <ShelfControls
+                      activeFilters={activeFilters}
+                      onFilterChange={setActiveFilters}
+                      sortOption={sortOption}
+                      onSortChange={setSortOption}
+                      onShuffle={handleShuffle}
+                      bookCounts={bookCounts}
+                      availableCategories={availableCategories}
+                      activeCategoryFilters={activeCategoryFilters}
+                      onCategoryFilterChange={setActiveCategoryFilters}
+                    />
+                  </div>
                   
+                  {/* Right side: action buttons */}
                   {user && (
                     <>
-                      {/* Desktop: separate dropdowns */}
-                      <div className="hidden sm:flex items-center gap-2">
-                        <SocialActionsDropdown />
-                        <BookActionsDropdown onAddBook={addBook} existingBooks={allBooks} />
-                      </div>
-                      {/* Mobile: unified FAB menu with privacy indicator */}
+                      {/* Desktop: separate dropdowns - hide when viewing friend's shelf */}
+                      {!isViewingFriend && (
+                        <div className="hidden sm:flex items-center gap-2">
+                          <SocialActionsDropdown />
+                          <BookActionsDropdown onAddBook={addBook} existingBooks={ownBooks} />
+                        </div>
+                      )}
+                      {/* Mobile: unified FAB menu with privacy indicator + shelf switcher */}
                       <div className="sm:hidden flex items-center gap-2">
-                        <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />
-                        <MobileActionsMenu onAddBook={addBook} existingBooks={allBooks} />
+                        {!isViewingFriend && <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />}
+                        <MobileActionsMenu 
+                          onAddBook={addBook} 
+                          existingBooks={ownBooks}
+                          viewedUser={viewedUser}
+                          onSelectUser={viewShelf}
+                          onSelectOwnShelf={clearViewedShelf}
+                        />
                       </div>
                       <ShareShelfDialog open={mobileShareOpen} onOpenChange={setMobileShareOpen} />
                     </>
                   )}
                 </div>
 
-                {isMobile ? (
-                  <MobileBookshelf
-                    books={sortedBooks}
-                    skin={shelfSkin}
-                    settings={settings}
-                    activeFilters={activeFilters}
-                    onMoveBook={user ? moveBook : undefined}
-                    onRemoveBook={user ? removeBook : undefined}
-                    onUpdateCompletedAt={user ? updateBookCompletedAt : undefined}
-                    getBookClubInfo={user ? getBookClubInfo : undefined}
-                    likesPerBook={user ? totalLikesPerBook : undefined}
-                  />
-                ) : (
-                  <Bookshelf
-                    books={sortedBooks}
-                    skin={shelfSkin}
-                    settings={settings}
-                    activeFilters={activeFilters}
-                    onMoveBook={user ? moveBook : undefined}
-                    onRemoveBook={user ? removeBook : undefined}
-                    onUpdateCompletedAt={user ? updateBookCompletedAt : undefined}
-                    getBookClubInfo={user ? getBookClubInfo : undefined}
-                    likesPerBook={user ? totalLikesPerBook : undefined}
-                  />
+                {/* Hide shelf while loading friend's books */}
+                {(!isViewingFriend || !loadingViewedBooks) && (
+                  isMobile ? (
+                    <MobileBookshelf
+                      books={sortedBooks}
+                      skin={shelfSkin}
+                      settings={settings}
+                      activeFilters={activeFilters}
+                      onMoveBook={user && !isViewingFriend ? moveBook : undefined}
+                      onRemoveBook={user && !isViewingFriend ? removeBook : undefined}
+                      onUpdateCompletedAt={user && !isViewingFriend ? updateBookCompletedAt : undefined}
+                      getBookClubInfo={user && !isViewingFriend ? getBookClubInfo : undefined}
+                      likesPerBook={user && !isViewingFriend ? totalLikesPerBook : undefined}
+                    />
+                  ) : (
+                    <Bookshelf
+                      books={sortedBooks}
+                      skin={shelfSkin}
+                      settings={settings}
+                      activeFilters={activeFilters}
+                      onMoveBook={user && !isViewingFriend ? moveBook : undefined}
+                      onRemoveBook={user && !isViewingFriend ? removeBook : undefined}
+                      onUpdateCompletedAt={user && !isViewingFriend ? updateBookCompletedAt : undefined}
+                      getBookClubInfo={user && !isViewingFriend ? getBookClubInfo : undefined}
+                      likesPerBook={user && !isViewingFriend ? totalLikesPerBook : undefined}
+                    />
+                  )
                 )}
               </>
             )}
@@ -350,10 +403,10 @@ export default function Index() {
       </footer>
 
       {/* Onboarding tips for new users */}
-      {user && allBooks.length > 0 && <OnboardingTips />}
+      {user && ownBooks.length > 0 && !isViewingFriend && <OnboardingTips />}
       
       {/* Share nudge after 5+ books */}
-      {user && <ShareNudge bookCount={allBooks.length} />}
+      {user && !isViewingFriend && <ShareNudge bookCount={ownBooks.length} />}
     </div>
   );
 }

@@ -6,6 +6,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { 
@@ -17,8 +20,11 @@ import {
   Users, 
   Share2, 
   Search, 
-  Mail 
+  Mail,
+  BookOpen,
+  Loader2,
 } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ImportBooksDialog } from '@/components/ImportBooksDialog';
 import { AddBookDialog } from '@/components/AddBookDialog';
 import { MagicRecommender } from '@/components/MagicRecommender';
@@ -26,13 +32,36 @@ import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { FindFriendsDialog } from '@/components/FindFriendsDialog';
 import { ShareShelfDialog } from '@/components/ShareShelfDialog';
 import { Book } from '@/types/book';
+import { useFollows } from '@/hooks/useFollows';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { ViewedShelfUser } from '@/hooks/useViewedShelf';
+
+interface FollowedUserWithShelf {
+  userId: string;
+  username: string;
+  avatarUrl: string | null;
+  shareId: string | null;
+}
 
 interface MobileActionsMenuProps {
   onAddBook: (book: Omit<Book, 'id'>) => Promise<void>;
   existingBooks: Book[];
+  viewedUser?: ViewedShelfUser | null;
+  onSelectUser?: (user: ViewedShelfUser) => void;
+  onSelectOwnShelf?: () => void;
 }
 
-export function MobileActionsMenu({ onAddBook, existingBooks }: MobileActionsMenuProps) {
+export function MobileActionsMenu({ 
+  onAddBook, 
+  existingBooks,
+  viewedUser,
+  onSelectUser,
+  onSelectOwnShelf,
+}: MobileActionsMenuProps) {
+  const { user } = useAuth();
+  const { following, loadingFollowing } = useFollows();
   const [importOpen, setImportOpen] = useState(false);
   const [addBookOpen, setAddBookOpen] = useState(false);
   const [recommenderOpen, setRecommenderOpen] = useState(false);
@@ -40,6 +69,41 @@ export function MobileActionsMenu({ onAddBook, existingBooks }: MobileActionsMen
   const [findFriendsOpen, setFindFriendsOpen] = useState(false);
   const [inviteFriendsOpen, setInviteFriendsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+
+  // Fetch profile and shelf info for followed users (for Browse Shelves)
+  const { data: followedUsers = [], isLoading: loadingUsers } = useQuery({
+    queryKey: ['followed-users-for-mobile-switcher', following.map(f => f.following_id)],
+    queryFn: async (): Promise<FollowedUserWithShelf[]> => {
+      if (following.length === 0) return [];
+
+      const userIds = following.map(f => f.following_id);
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, username, avatar_url')
+        .in('user_id', userIds);
+
+      if (!profiles || profiles.length === 0) return [];
+
+      const { data: shelfInfos } = await supabase
+        .rpc('get_public_shelf_info_for_users', { _user_ids: userIds });
+
+      const shelfMap = new Map(
+        (shelfInfos || []).map((s: { user_id: string; share_id: string }) => [s.user_id, s.share_id])
+      );
+
+      return profiles.map(p => ({
+        userId: p.user_id,
+        username: p.username,
+        avatarUrl: p.avatar_url,
+        shareId: shelfMap.get(p.user_id) || null,
+      }));
+    },
+    enabled: !!user && following.length > 0 && !!onSelectUser,
+  });
+
+  const usersWithShelves = followedUsers.filter(u => u.shareId);
+  const showBrowseShelves = !!onSelectUser && (following.length > 0 || loadingFollowing);
 
   return (
     <>
@@ -90,13 +154,64 @@ export function MobileActionsMenu({ onAddBook, existingBooks }: MobileActionsMen
             Import from CSV
           </DropdownMenuItem>
           
-          <DropdownMenuSeparator />
-          
           {/* Social section */}
           <DropdownMenuLabel className="text-xs text-muted-foreground font-normal flex items-center gap-1.5">
             <Users className="w-3 h-3" />
             Social
           </DropdownMenuLabel>
+          
+          {/* Browse Shelves submenu */}
+          {showBrowseShelves && (
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="gap-2 cursor-pointer">
+                <BookOpen className="w-4 h-4" />
+                Browse Shelves
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="w-48">
+                {viewedUser && (
+                  <>
+                    <DropdownMenuItem 
+                      onClick={onSelectOwnShelf}
+                      className="gap-2 cursor-pointer"
+                    >
+                      <span className="font-medium">Your shelf</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                {loadingFollowing || loadingUsers ? (
+                  <div className="flex items-center justify-center py-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  </div>
+                ) : usersWithShelves.length === 0 ? (
+                  <div className="px-2 py-2 text-xs text-muted-foreground">
+                    No friends with public shelves
+                  </div>
+                ) : (
+                  usersWithShelves.map((u) => (
+                    <DropdownMenuItem
+                      key={u.userId}
+                      onClick={() => u.shareId && onSelectUser?.({
+                        userId: u.userId,
+                        username: u.username,
+                        avatarUrl: u.avatarUrl,
+                        shareId: u.shareId,
+                      })}
+                      className="gap-2 cursor-pointer"
+                    >
+                      <Avatar className="w-5 h-5">
+                        <AvatarImage src={u.avatarUrl || undefined} alt={u.username} />
+                        <AvatarFallback className="text-[10px]">
+                          {u.username.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>@{u.username}</span>
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          )}
           <DropdownMenuItem 
             onClick={() => setFindFriendsOpen(true)}
             className="gap-2 cursor-pointer"
