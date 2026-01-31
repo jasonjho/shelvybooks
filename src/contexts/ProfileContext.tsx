@@ -21,7 +21,7 @@ interface ProfileContextType {
   refreshProfile: () => void;
 }
 
-const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
+export const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
