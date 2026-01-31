@@ -299,36 +299,18 @@ export default function Index() {
                  {user && <DailyQuote />}
 
 
-                 {/* Controls - two rows on mobile, single row on desktop */}
-                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-6">
-                  {/* Row 1 (mobile) / Left side (desktop): Shelf Switcher + actions on mobile */}
-                  <div className={cn(
-                    "flex items-center gap-2",
-                    user ? "justify-between" : "justify-start",
-                    "sm:flex-1 sm:min-w-0"
-                  )}>
+                 {/* Controls row - single line */}
+                 <div className={cn(
+                   "flex items-center gap-2 mb-6",
+                   user ? "justify-between" : "justify-start"
+                 )}>
+                  {/* Left side: Shelf Switcher + ShelfControls */}
+                  <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap min-w-0 flex-1">
                     <ShelfSwitcher 
                       viewedUser={viewedUser}
                       onSelectUser={viewShelf}
                       onSelectOwnShelf={clearViewedShelf}
                     />
-                    {/* Mobile: action buttons on first row */}
-                    {user && (
-                      <div className="sm:hidden flex items-center gap-1.5 shrink-0">
-                        <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />
-                        <MobileActionsMenu 
-                          onAddBook={addBook} 
-                          existingBooks={ownBooks}
-                          viewedUser={viewedUser}
-                          onSelectUser={viewShelf}
-                          onSelectOwnShelf={clearViewedShelf}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Row 2 (mobile) / continues left side (desktop): Filters and controls */}
-                  <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto scrollbar-hide">
                     <ShelfControls
                       activeFilters={activeFilters}
                       onFilterChange={setActiveFilters}
@@ -343,14 +325,28 @@ export default function Index() {
                     />
                   </div>
                   
-                  {/* Desktop only: action buttons on right */}
+                  {/* Right side: action buttons */}
                   {user && (
-                    <div className="hidden sm:flex items-center gap-2 shrink-0">
-                      <SocialActionsDropdown />
-                      <BookActionsDropdown onAddBook={addBook} existingBooks={ownBooks} />
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {/* Desktop: separate dropdowns */}
+                      <div className="hidden sm:flex items-center gap-2">
+                        <SocialActionsDropdown />
+                        <BookActionsDropdown onAddBook={addBook} existingBooks={ownBooks} />
+                      </div>
+                      {/* Mobile: privacy indicator + FAB */}
+                      <div className="sm:hidden flex items-center gap-1.5">
+                        <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />
+                        <MobileActionsMenu 
+                          onAddBook={addBook} 
+                          existingBooks={ownBooks}
+                          viewedUser={viewedUser}
+                          onSelectUser={viewShelf}
+                          onSelectOwnShelf={clearViewedShelf}
+                        />
+                      </div>
+                      <ShareShelfDialog open={mobileShareOpen} onOpenChange={setMobileShareOpen} />
                     </div>
                   )}
-                  <ShareShelfDialog open={mobileShareOpen} onOpenChange={setMobileShareOpen} />
                 </div>
 
                  {isMobile ? (
@@ -364,6 +360,7 @@ export default function Index() {
                      onUpdateCompletedAt={user && !isViewingFriend ? updateBookCompletedAt : undefined}
                      getBookClubInfo={user && !isViewingFriend ? getBookClubInfo : undefined}
                      likesPerBook={user && !isViewingFriend ? totalLikesPerBook : undefined}
+                     viewingUsername={viewedUser?.username}
                    />
                  ) : (
                    <Bookshelf
@@ -376,6 +373,7 @@ export default function Index() {
                      onUpdateCompletedAt={user && !isViewingFriend ? updateBookCompletedAt : undefined}
                      getBookClubInfo={user && !isViewingFriend ? getBookClubInfo : undefined}
                      likesPerBook={user && !isViewingFriend ? totalLikesPerBook : undefined}
+                     viewingUsername={viewedUser?.username}
                    />
                  )}
               </>
