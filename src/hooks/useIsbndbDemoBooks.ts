@@ -100,20 +100,20 @@ function setCachedBooks(books: Book[]): void {
 }
 
 export function useIsbndbDemoBooks() {
-  const [books, setBooks] = useState<Book[]>(fallbackDemoBooks);
-  const [loading, setLoading] = useState(true);
-  const [source, setSource] = useState<'isbndb' | 'fallback'>('fallback');
+  // Initialize from cache or fallback immediately - no loading state needed
+  const initialBooks = getCachedBooks() ?? fallbackDemoBooks;
+  const initialSource = getCachedBooks() ? 'isbndb' : 'fallback';
+  
+  const [books, setBooks] = useState<Book[]>(initialBooks);
+  const [loading, setLoading] = useState(false); // Start as not loading - we have fallback
+  const [source, setSource] = useState<'isbndb' | 'fallback'>(initialSource);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchFromIsbndb() {
-      // Check cache first
-      const cached = getCachedBooks();
-      if (cached && cached.length > 0) {
+      // If we already have cached books, no need to fetch
+      if (getCachedBooks()) {
         console.log('[ISBNdb Demo] Using cached books');
-        setBooks(cached);
-        setSource('isbndb');
-        setLoading(false);
         return;
       }
 
