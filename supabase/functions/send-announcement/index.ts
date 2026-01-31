@@ -23,7 +23,7 @@ const getEmailHtml = () => `
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
   <div style="background: #fef9e7; border-radius: 12px; padding: 32px;">
-    <h2 style="color: #78350f; margin: 0 0 20px 0; font-weight: 700; font-size: 24px;">New on Shelvy! 📚✨</h2>
+    <h2 style="color: #78350f; margin: 0 0 20px 0; font-weight: 700; font-size: 24px;">New on Shelvy! ✨</h2>
     
     <p style="margin: 0 0 20px 0; font-size: 16px; color: #374151;">
       We've been busy making Shelvy even better for you. Here's what's new:
