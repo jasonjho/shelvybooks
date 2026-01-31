@@ -151,7 +151,7 @@ export function ShelfSwitcher({ viewedUser, onSelectUser, onSelectOwnShelf }: Sh
           
           <SelectSeparator />
           <SelectItem value="find-friends" className="gap-2">
-            <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="flex items-center gap-2">
               <Search className="w-4 h-4" />
               <span>Find friends...</span>
             </div>
