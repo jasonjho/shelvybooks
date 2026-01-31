@@ -16,7 +16,7 @@ import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
 import { FindFriendsDialog } from '@/components/FindFriendsDialog';
 import { ShareNudge } from '@/components/ShareNudge';
-import { ShelfSkeleton, ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
+import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { Button } from '@/components/ui/button';
 
 import { useBooks } from '@/hooks/useBooks';
@@ -238,12 +238,11 @@ export default function Index() {
 
       {/* Main Content */}
       <main className="container py-8 relative z-10">
-        {/* Loading state - show skeleton placeholders */}
+        {/* Loading state - show skeleton placeholders for controls */}
         {(authLoading || booksLoading || (!user && demoLoading)) && (
           <div className="space-y-6">
             <QuoteSkeleton />
             <ControlsSkeleton />
-            <ShelfSkeleton isMobile={isMobile} />
           </div>
         )}
 
