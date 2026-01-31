@@ -88,9 +88,9 @@ const handler = async (req: Request): Promise<Response> => {
       // User already exists - send "wants to connect" email
       emailSubject = `${senderName} wants to connect with you on Shelvy!`;
       
-      const shelfLink = shelfUrl 
-        ? `<p style="margin: 20px 0;"><a href="${shelfUrl}" style="background: #92400e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-family: 'Inter', sans-serif; font-weight: 500;">View ${senderName}'s Shelf</a></p>` 
-        : "";
+      // Single CTA: prioritize shelf link if available, otherwise link to app
+      const ctaUrl = shelfUrl || appUrl;
+      const ctaText = shelfUrl ? `View ${senderName}'s Shelf` : "Open Shelvy";
 
       emailHtml = `
         <!DOCTYPE html>
@@ -100,23 +100,21 @@ const handler = async (req: Request): Promise<Response> => {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           ${fontLink}
         </head>
-        <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #92400e; font-size: 32px; margin: 0; font-weight: 700;">Shelvy</h1>
-            <p style="font-family: 'Inter', sans-serif; color: #6b7280; margin: 8px 0 0 0; font-size: 14px;">Your personal bookshelf, beautifully organized</p>
+            <h1 style="font-family: Georgia, 'Times New Roman', serif; color: #92400e; font-size: 36px; margin: 0; font-weight: 400; letter-spacing: -0.5px;">Shelvy</h1>
+            <p style="color: #6b7280; margin: 8px 0 0 0; font-size: 14px;">Your personal bookshelf, beautifully organized</p>
           </div>
           
           <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
-            <h2 style="font-family: 'Inter', sans-serif; color: #92400e; margin-top: 0; font-weight: 600;">Hey there! 👋</h2>
-            <p style="font-family: 'Inter', sans-serif;"><strong>${senderName}</strong> wants to connect with you on Shelvy! They thought you'd enjoy checking out their bookshelf and sharing reading recommendations.</p>
-            ${shelfLink}
+            <h2 style="color: #92400e; margin-top: 0; font-weight: 600; font-size: 20px;">Hey there! 👋</h2>
+            <p><strong>${senderName}</strong> wants to connect with you on Shelvy! They thought you'd enjoy checking out their bookshelf and sharing reading recommendations.</p>
+            <p style="margin: 24px 0 0 0;">
+              <a href="${ctaUrl}" style="background: #92400e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">${ctaText}</a>
+            </p>
           </div>
           
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${appUrl}" style="background: #92400e; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-family: 'Inter', sans-serif; font-weight: 500;">Open Shelvy</a>
-          </div>
-          
-          <p style="font-family: 'Inter', sans-serif; color: #9ca3af; font-size: 12px; text-align: center; margin-top: 40px;">
+          <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 40px;">
             You received this email because ${senderName} wants to connect with you on Shelvy.
           </p>
         </body>
@@ -126,9 +124,9 @@ const handler = async (req: Request): Promise<Response> => {
       // New user - send invite to join email
       emailSubject = `${senderName} invited you to join Shelvy!`;
       
-      const shelfLink = shelfUrl 
-        ? `<p style="margin: 20px 0;"><a href="${shelfUrl}" style="background: #92400e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-family: 'Inter', sans-serif; font-weight: 500;">View ${senderName}'s Shelf</a></p>` 
-        : "";
+      // Single CTA: prioritize shelf link if available, otherwise link to app
+      const ctaUrl = shelfUrl || appUrl;
+      const ctaText = shelfUrl ? `View ${senderName}'s Shelf` : "Start Your Shelf";
 
       emailHtml = `
         <!DOCTYPE html>
@@ -138,23 +136,21 @@ const handler = async (req: Request): Promise<Response> => {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           ${fontLink}
         </head>
-        <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #92400e; font-size: 32px; margin: 0; font-weight: 700;">Shelvy</h1>
-            <p style="font-family: 'Inter', sans-serif; color: #6b7280; margin: 8px 0 0 0; font-size: 14px;">Your personal bookshelf, beautifully organized</p>
+            <h1 style="font-family: Georgia, 'Times New Roman', serif; color: #92400e; font-size: 36px; margin: 0; font-weight: 400; letter-spacing: -0.5px;">Shelvy</h1>
+            <p style="color: #6b7280; margin: 8px 0 0 0; font-size: 14px;">Your personal bookshelf, beautifully organized</p>
           </div>
           
           <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
-            <h2 style="font-family: 'Inter', sans-serif; color: #92400e; margin-top: 0; font-weight: 600;">Hey there! 👋</h2>
-            <p style="font-family: 'Inter', sans-serif;"><strong>${senderName}</strong> thinks you'd love Shelvy — a beautiful way to track your reading journey, organize your books, and discover new favorites.</p>
-            ${shelfLink}
+            <h2 style="color: #92400e; margin-top: 0; font-weight: 600; font-size: 20px;">Hey there! 👋</h2>
+            <p><strong>${senderName}</strong> thinks you'd love Shelvy — a beautiful way to track your reading journey, organize your books, and discover new favorites.</p>
+            <p style="margin: 24px 0 0 0;">
+              <a href="${ctaUrl}" style="background: #92400e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">${ctaText}</a>
+            </p>
           </div>
           
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${appUrl}" style="background: #92400e; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-family: 'Inter', sans-serif; font-weight: 500;">Start Your Shelf</a>
-          </div>
-          
-          <p style="font-family: 'Inter', sans-serif; color: #9ca3af; font-size: 12px; text-align: center; margin-top: 40px;">
+          <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 40px;">
             You received this email because ${senderName} invited you to join Shelvy.
           </p>
         </body>
