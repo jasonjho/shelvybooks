@@ -81,12 +81,15 @@ const handler = async (req: Request): Promise<Response> => {
     let emailHtml: string;
     let emailSubject: string;
 
+    // Google Fonts link for Playfair Display
+    const fontLink = `<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">`;
+    
     if (existingUser) {
       // User already exists - send "wants to connect" email
       emailSubject = `${senderName} wants to connect with you on Shelvy!`;
       
       const shelfLink = shelfUrl 
-        ? `<p style="margin: 20px 0;"><a href="${shelfUrl}" style="background: linear-gradient(to right, #b45309, #92400e); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">View ${senderName}'s Shelf</a></p>` 
+        ? `<p style="margin: 20px 0;"><a href="${shelfUrl}" style="background: #92400e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-family: 'Inter', sans-serif; font-weight: 500;">View ${senderName}'s Shelf</a></p>` 
         : "";
 
       emailHtml = `
@@ -95,28 +98,25 @@ const handler = async (req: Request): Promise<Response> => {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          ${fontLink}
         </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #92400e; font-size: 28px; margin: 0;">📚 Shelvy</h1>
-            <p style="color: #6b7280; margin: 5px 0;">Your personal bookshelf, beautifully organized</p>
+            <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #92400e; font-size: 32px; margin: 0; font-weight: 700;">📚 Shelvy</h1>
+            <p style="font-family: 'Inter', sans-serif; color: #6b7280; margin: 8px 0 0 0; font-size: 14px;">Your personal bookshelf, beautifully organized</p>
           </div>
           
           <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
-            <h2 style="color: #92400e; margin-top: 0;">Hey there! 👋</h2>
-            <p><strong>${senderName}</strong> wants to connect with you on Shelvy! They thought you'd enjoy checking out their bookshelf and sharing reading recommendations.</p>
+            <h2 style="font-family: 'Inter', sans-serif; color: #92400e; margin-top: 0; font-weight: 600;">Hey there! 👋</h2>
+            <p style="font-family: 'Inter', sans-serif;"><strong>${senderName}</strong> wants to connect with you on Shelvy! They thought you'd enjoy checking out their bookshelf and sharing reading recommendations.</p>
             ${shelfLink}
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${appUrl}" style="background: linear-gradient(to right, #b45309, #92400e); color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">Open Shelvy</a>
+            <a href="${appUrl}" style="background: #92400e; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-family: 'Inter', sans-serif; font-weight: 500;">Open Shelvy</a>
           </div>
           
-          <p style="color: #6b7280; font-size: 14px; text-align: center;">
-            Use the <strong>Find Friends</strong> feature to find and follow ${senderName} back!
-          </p>
-          
-          <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 40px;">
+          <p style="font-family: 'Inter', sans-serif; color: #9ca3af; font-size: 12px; text-align: center; margin-top: 40px;">
             You received this email because ${senderName} wants to connect with you on Shelvy.
           </p>
         </body>
@@ -127,7 +127,7 @@ const handler = async (req: Request): Promise<Response> => {
       emailSubject = `${senderName} invited you to join Shelvy!`;
       
       const shelfLink = shelfUrl 
-        ? `<p style="margin: 20px 0;"><a href="${shelfUrl}" style="background: linear-gradient(to right, #b45309, #92400e); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">View ${senderName}'s Shelf</a></p>` 
+        ? `<p style="margin: 20px 0;"><a href="${shelfUrl}" style="background: #92400e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-family: 'Inter', sans-serif; font-weight: 500;">View ${senderName}'s Shelf</a></p>` 
         : "";
 
       emailHtml = `
@@ -136,35 +136,25 @@ const handler = async (req: Request): Promise<Response> => {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          ${fontLink}
         </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #92400e; font-size: 28px; margin: 0;">📚 Shelvy</h1>
-            <p style="color: #6b7280; margin: 5px 0;">Your personal bookshelf, beautifully organized</p>
+            <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #92400e; font-size: 32px; margin: 0; font-weight: 700;">📚 Shelvy</h1>
+            <p style="font-family: 'Inter', sans-serif; color: #6b7280; margin: 8px 0 0 0; font-size: 14px;">Your personal bookshelf, beautifully organized</p>
           </div>
           
           <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
-            <h2 style="color: #92400e; margin-top: 0;">Hey there! 👋</h2>
-            <p><strong>${senderName}</strong> thinks you'd love Shelvy — a beautiful way to track your reading journey, organize your books, and discover new favorites.</p>
+            <h2 style="font-family: 'Inter', sans-serif; color: #92400e; margin-top: 0; font-weight: 600;">Hey there! 👋</h2>
+            <p style="font-family: 'Inter', sans-serif;"><strong>${senderName}</strong> thinks you'd love Shelvy — a beautiful way to track your reading journey, organize your books, and discover new favorites.</p>
             ${shelfLink}
           </div>
           
-          <div style="margin-bottom: 24px;">
-            <h3 style="color: #1f2937;">What you can do with Shelvy:</h3>
-            <ul style="padding-left: 20px;">
-              <li>📖 Track what you're reading, want to read, and have read</li>
-              <li>🎨 Display your books on a beautiful virtual bookshelf</li>
-              <li>👥 Join Book Clubs with friends</li>
-              <li>✨ Get personalized recommendations</li>
-              <li>🔗 Share your shelf with others</li>
-            </ul>
-          </div>
-          
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${appUrl}" style="background: linear-gradient(to right, #b45309, #92400e); color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">Start Your Shelf</a>
+            <a href="${appUrl}" style="background: #92400e; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-family: 'Inter', sans-serif; font-weight: 500;">Start Your Shelf</a>
           </div>
           
-          <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 40px;">
+          <p style="font-family: 'Inter', sans-serif; color: #9ca3af; font-size: 12px; text-align: center; margin-top: 40px;">
             You received this email because ${senderName} invited you to join Shelvy.
           </p>
         </body>
