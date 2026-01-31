@@ -16,8 +16,8 @@ import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
 import { FindFriendsDialog } from '@/components/FindFriendsDialog';
 import { ShareNudge } from '@/components/ShareNudge';
+import { ShelfSkeleton, ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { Button } from '@/components/ui/button';
-
 
 import { useBooks } from '@/hooks/useBooks';
 import { useClubBooks } from '@/hooks/useBookClubs';
@@ -26,7 +26,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useIsbndbDemoBooks } from '@/hooks/useIsbndbDemoBooks';
 import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
-import { Library, Loader2 } from 'lucide-react';
+import { Library } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Seeded random for consistent shuffle per session
@@ -238,10 +238,12 @@ export default function Index() {
 
       {/* Main Content */}
       <main className="container py-8 relative z-10">
-        {/* Loading state */}
+        {/* Loading state - show skeleton placeholders */}
         {(authLoading || booksLoading || (!user && demoLoading)) && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          <div className="space-y-6">
+            <QuoteSkeleton />
+            <ControlsSkeleton />
+            <ShelfSkeleton isMobile={isMobile} />
           </div>
         )}
 
@@ -260,9 +262,9 @@ export default function Index() {
           </div>
         )}
 
-        {/* Shelf Controls & Bookshelf */}
-        {!authLoading && !booksLoading && (
-          <>
+        {/* Shelf Controls & Bookshelf - fade in when loaded */}
+        {!authLoading && !booksLoading && (user || !demoLoading) && (
+          <div className="animate-fade-in">
             {/* Empty shelf - show collection suggestions prominently */}
             {user && allBooks.length === 0 ? (
               <div className="space-y-6">
@@ -340,7 +342,7 @@ export default function Index() {
                 )}
               </>
             )}
-          </>
+          </div>
         )}
       </main>
       {/* Footer */}
