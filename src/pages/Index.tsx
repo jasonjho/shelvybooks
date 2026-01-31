@@ -28,7 +28,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useIsbndbDemoBooks } from '@/hooks/useIsbndbDemoBooks';
 import { useViewedShelf } from '@/hooks/useViewedShelf';
 import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
-import { Library, Loader2 } from 'lucide-react';
+import { Library } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Seeded random for consistent shuffle per session
@@ -98,8 +98,7 @@ export default function Index() {
     viewShelf, 
     clearViewedShelf, 
     isViewingFriend, 
-    viewedBooks, 
-    loadingViewedBooks,
+    viewedBooks,
   } = useViewedShelf();
 
   const {
@@ -296,26 +295,18 @@ export default function Index() {
               </div>
             ) : (
               <>
-                {/* Daily Quote - only on own shelf */}
-                {user && !isViewingFriend && <DailyQuote />}
+                 {/* Daily Quote - keep stable when switching shelves */}
+                 {user && <DailyQuote />}
 
                 {/* Viewing Friend Pill */}
                 {viewedUser && (
                   <ViewingFriendPill viewedUser={viewedUser} onClose={clearViewedShelf} />
                 )}
 
-                {/* Loading indicator when fetching friend's books */}
-                {isViewingFriend && loadingViewedBooks && (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                  </div>
-                )}
-
-                <div className={cn(
-                  "flex flex-wrap items-center gap-3 mb-6",
-                  // Only justify-between when we have right-side controls
-                  user && !isViewingFriend ? "justify-between" : "justify-start"
-                )}>
+                 <div className={cn(
+                   "flex flex-wrap items-center gap-3 mb-6",
+                   user ? "justify-between" : "justify-start"
+                 )}>
                   {/* Left side: Shelf Switcher (desktop only) + ShelfControls */}
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Desktop shelf switcher */}
@@ -342,16 +333,14 @@ export default function Index() {
                   {/* Right side: action buttons */}
                   {user && (
                     <>
-                      {/* Desktop: separate dropdowns - hide when viewing friend's shelf */}
-                      {!isViewingFriend && (
-                        <div className="hidden sm:flex items-center gap-2">
-                          <SocialActionsDropdown />
-                          <BookActionsDropdown onAddBook={addBook} existingBooks={ownBooks} />
-                        </div>
-                      )}
+                       {/* Desktop: separate dropdowns */}
+                       <div className="hidden sm:flex items-center gap-2">
+                         <SocialActionsDropdown />
+                         <BookActionsDropdown onAddBook={addBook} existingBooks={ownBooks} />
+                       </div>
                       {/* Mobile: unified FAB menu with privacy indicator + shelf switcher */}
                       <div className="sm:hidden flex items-center gap-2">
-                        {!isViewingFriend && <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />}
+                         <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />
                         <MobileActionsMenu 
                           onAddBook={addBook} 
                           existingBooks={ownBooks}
@@ -365,34 +354,31 @@ export default function Index() {
                   )}
                 </div>
 
-                {/* Hide shelf while loading friend's books */}
-                {(!isViewingFriend || !loadingViewedBooks) && (
-                  isMobile ? (
-                    <MobileBookshelf
-                      books={sortedBooks}
-                      skin={shelfSkin}
-                      settings={settings}
-                      activeFilters={activeFilters}
-                      onMoveBook={user && !isViewingFriend ? moveBook : undefined}
-                      onRemoveBook={user && !isViewingFriend ? removeBook : undefined}
-                      onUpdateCompletedAt={user && !isViewingFriend ? updateBookCompletedAt : undefined}
-                      getBookClubInfo={user && !isViewingFriend ? getBookClubInfo : undefined}
-                      likesPerBook={user && !isViewingFriend ? totalLikesPerBook : undefined}
-                    />
-                  ) : (
-                    <Bookshelf
-                      books={sortedBooks}
-                      skin={shelfSkin}
-                      settings={settings}
-                      activeFilters={activeFilters}
-                      onMoveBook={user && !isViewingFriend ? moveBook : undefined}
-                      onRemoveBook={user && !isViewingFriend ? removeBook : undefined}
-                      onUpdateCompletedAt={user && !isViewingFriend ? updateBookCompletedAt : undefined}
-                      getBookClubInfo={user && !isViewingFriend ? getBookClubInfo : undefined}
-                      likesPerBook={user && !isViewingFriend ? totalLikesPerBook : undefined}
-                    />
-                  )
-                )}
+                 {isMobile ? (
+                   <MobileBookshelf
+                     books={sortedBooks}
+                     skin={shelfSkin}
+                     settings={settings}
+                     activeFilters={activeFilters}
+                     onMoveBook={user && !isViewingFriend ? moveBook : undefined}
+                     onRemoveBook={user && !isViewingFriend ? removeBook : undefined}
+                     onUpdateCompletedAt={user && !isViewingFriend ? updateBookCompletedAt : undefined}
+                     getBookClubInfo={user && !isViewingFriend ? getBookClubInfo : undefined}
+                     likesPerBook={user && !isViewingFriend ? totalLikesPerBook : undefined}
+                   />
+                 ) : (
+                   <Bookshelf
+                     books={sortedBooks}
+                     skin={shelfSkin}
+                     settings={settings}
+                     activeFilters={activeFilters}
+                     onMoveBook={user && !isViewingFriend ? moveBook : undefined}
+                     onRemoveBook={user && !isViewingFriend ? removeBook : undefined}
+                     onUpdateCompletedAt={user && !isViewingFriend ? updateBookCompletedAt : undefined}
+                     getBookClubInfo={user && !isViewingFriend ? getBookClubInfo : undefined}
+                     likesPerBook={user && !isViewingFriend ? totalLikesPerBook : undefined}
+                   />
+                 )}
               </>
             )}
           </div>

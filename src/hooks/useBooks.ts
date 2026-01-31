@@ -81,7 +81,7 @@ export function useBooks() {
     fetchBooks();
   }, [user, toast]);
 
-  // Persist settings to localStorage and sync to database
+  // Persist settings to localStorage
   useEffect(() => {
     localStorage.setItem(SKIN_KEY, shelfSkin);
   }, [shelfSkin]);
@@ -89,37 +89,6 @@ export function useBooks() {
   useEffect(() => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   }, [settings]);
-
-  // Sync appearance settings to database when user is logged in and settings change
-  useEffect(() => {
-    if (!user) return;
-    
-    const syncAppearanceToDb = async () => {
-      try {
-        await supabase
-          .from('shelf_settings')
-          .upsert({
-            user_id: user.id,
-            shelf_skin: shelfSkin,
-            background_theme: settings.backgroundTheme,
-            show_bookends: settings.showBookends,
-            show_wood_grain: settings.showWoodGrain,
-            show_ambient_light: settings.showAmbientLight,
-            show_plant: settings.showPlant,
-            decor_density: settings.decorDensity,
-          }, { 
-            onConflict: 'user_id',
-            ignoreDuplicates: false 
-          });
-      } catch (err) {
-        console.error('Failed to sync appearance settings:', err);
-      }
-    };
-
-    // Debounce the sync to avoid too many requests
-    const timeout = setTimeout(syncAppearanceToDb, 500);
-    return () => clearTimeout(timeout);
-  }, [user, shelfSkin, settings]);
 
   // Enrich book with ISBNdb metadata before saving
   const enrichBook = useCallback(
