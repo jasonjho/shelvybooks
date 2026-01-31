@@ -301,8 +301,8 @@ export default function Index() {
 
                  {/* Controls - clean two-row layout */}
                  <div className="space-y-3 mb-6">
-                  {/* Row 1: Navigation + Actions */}
-                  <div className="flex items-center justify-between">
+                  {/* Row 1: Navigation + Actions grouped together */}
+                  <div className="flex items-center gap-2">
                     <ShelfSwitcher 
                       viewedUser={viewedUser}
                       onSelectUser={viewShelf}
@@ -310,15 +310,14 @@ export default function Index() {
                     />
                     
                     {user && (
-                      <div className="flex items-center gap-2">
+                      <>
                         {/* Desktop/Tablet: full dropdowns */}
                         <div className="hidden sm:flex items-center gap-2">
                           <SocialActionsDropdown />
                           <BookActionsDropdown onAddBook={addBook} existingBooks={ownBooks} />
                         </div>
                         {/* Mobile: compact menu */}
-                        <div className="sm:hidden flex items-center gap-1.5">
-                          <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />
+                        <div className="sm:hidden">
                           <MobileActionsMenu 
                             onAddBook={addBook} 
                             existingBooks={ownBooks}
@@ -327,25 +326,33 @@ export default function Index() {
                             onSelectOwnShelf={clearViewedShelf}
                           />
                         </div>
-                        <ShareShelfDialog open={mobileShareOpen} onOpenChange={setMobileShareOpen} />
-                      </div>
+                      </>
                     )}
                   </div>
                   
-                  {/* Row 2: Filters & Sorting */}
-                  <div className="flex items-center gap-1.5">
-                    <ShelfControls
-                      activeFilters={activeFilters}
-                      onFilterChange={setActiveFilters}
-                      sortOption={sortOption}
-                      onSortChange={setSortOption}
-                      onShuffle={handleShuffle}
-                      bookCounts={bookCounts}
-                      availableCategories={availableCategories}
-                      activeCategoryFilters={activeCategoryFilters}
-                      onCategoryFilterChange={setActiveCategoryFilters}
-                      compact={isMobile}
-                    />
+                  {/* Row 2: Filters & Sorting (left) + Privacy indicator (right) */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <ShelfControls
+                        activeFilters={activeFilters}
+                        onFilterChange={setActiveFilters}
+                        sortOption={sortOption}
+                        onSortChange={setSortOption}
+                        onShuffle={handleShuffle}
+                        bookCounts={bookCounts}
+                        availableCategories={availableCategories}
+                        activeCategoryFilters={activeCategoryFilters}
+                        onCategoryFilterChange={setActiveCategoryFilters}
+                        compact={isMobile}
+                      />
+                    </div>
+                    
+                    {user && (
+                      <>
+                        <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />
+                        <ShareShelfDialog open={mobileShareOpen} onOpenChange={setMobileShareOpen} />
+                      </>
+                    )}
                   </div>
                 </div>
 
