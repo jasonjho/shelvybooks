@@ -109,18 +109,20 @@ export function useOpenLibraryCollections() {
   }, []);
 
   const fetchGoogleBooks = useCallback(async (query: string, limit: number): Promise<CollectionBook[]> => {
-    const response = await fetch(
-      `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=${limit}&printType=books&orderBy=relevance`
-    );
-    
-    if (!response.ok) {
+    // Use the book-search edge function to avoid rate limiting (has API key)
+    const { data, error } = await supabase.functions.invoke('book-search', {
+      body: { query },
+    });
+
+    if (error) {
       throw new Error('Failed to fetch collection');
     }
 
-    const data = await response.json();
+    const items = data?.items || [];
     
-    return (data.items || [])
-      .filter((item: { volumeInfo: { authors?: string[] } }) => item.volumeInfo.authors?.length > 0)
+    return items
+      .filter((item: { volumeInfo: { authors?: string[] } }) => item.volumeInfo?.authors?.length > 0)
+      .slice(0, limit)
       .map((item: {
         id: string;
         volumeInfo: {
