@@ -44,28 +44,48 @@ export function ShelfSwitcher({ viewedUser, onSelectUser, onSelectOwnShelf }: Sh
 
       const userIds = following.map(f => f.following_id);
 
-      // Fetch profiles
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, username, avatar_url')
-        .in('user_id', userIds);
-
-      if (!profiles || profiles.length === 0) return [];
-
-      // Fetch public shelf info using RPC
+      // Fetch public shelf info using RPC - this is the source of truth for public shelves
       const { data: shelfInfos } = await supabase
         .rpc('get_public_shelf_info_for_users', { _user_ids: userIds });
 
+      if (!shelfInfos || shelfInfos.length === 0) return [];
+
+      // Create a map of user_id -> shelf info (including display_name as fallback)
       const shelfMap = new Map(
-        (shelfInfos || []).map((s: { user_id: string; share_id: string }) => [s.user_id, s.share_id])
+        shelfInfos.map((s: { user_id: string; share_id: string; display_name: string | null }) => [
+          s.user_id, 
+          { shareId: s.share_id, displayName: s.display_name }
+        ])
       );
 
-      return profiles.map(p => ({
-        userId: p.user_id,
-        username: p.username,
-        avatarUrl: p.avatar_url,
-        shareId: shelfMap.get(p.user_id) || null,
-      }));
+      // Fetch profiles for users who have public shelves
+      const usersWithShelves = shelfInfos.map((s: { user_id: string }) => s.user_id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, username, avatar_url')
+        .in('user_id', usersWithShelves);
+
+      const profileMap = new Map(
+        (profiles || []).map(p => [p.user_id, { username: p.username, avatarUrl: p.avatar_url }])
+      );
+
+      // Build the result - use shelf display_name as fallback if no profile exists
+      return usersWithShelves.map(userId => {
+        const shelf = shelfMap.get(userId);
+        const profile = profileMap.get(userId);
+        
+        // Use profile username, or extract name from display_name, or fallback to "Unknown"
+        const username = profile?.username || 
+          (shelf?.displayName?.replace(/'s Bookshelf$/i, '').replace(/'s Shelf$/i, '')) || 
+          'Unknown';
+        
+        return {
+          userId,
+          username,
+          avatarUrl: profile?.avatarUrl || null,
+          shareId: shelf?.shareId || null,
+        };
+      });
     },
     enabled: !!user && following.length > 0,
   });
