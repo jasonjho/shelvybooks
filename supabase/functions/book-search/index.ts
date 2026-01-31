@@ -26,10 +26,11 @@ interface BookResult {
   };
 }
 
-// Search Google Books API
+// Search Google Books API with title-focused query
 async function searchGoogleBooks(query: string, apiKey?: string): Promise<BookResult[]> {
-  // Request additional fields for metadata
-  let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=12&printType=books`;
+  // Use intitle: prefix to prioritize title matches, fall back to regular search
+  const titleQuery = `intitle:${query}`;
+  let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(titleQuery)}&maxResults=12&printType=books`;
   
   if (apiKey) {
     url += `&key=${apiKey}`;
@@ -43,7 +44,30 @@ async function searchGoogleBooks(query: string, apiKey?: string): Promise<BookRe
   }
 
   const data = await response.json();
-  return data.items || [];
+  const titleResults = data.items || [];
+  
+  // If title search returns few results, also do a general search
+  if (titleResults.length < 4) {
+    let generalUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=12&printType=books`;
+    if (apiKey) {
+      generalUrl += `&key=${apiKey}`;
+    }
+    const generalResponse = await fetch(generalUrl);
+    if (generalResponse.ok) {
+      const generalData = await generalResponse.json();
+      const generalResults = generalData.items || [];
+      // Combine, prioritizing title matches
+      const seen = new Set(titleResults.map((r: BookResult) => r.id));
+      for (const book of generalResults) {
+        if (!seen.has(book.id)) {
+          titleResults.push(book);
+          seen.add(book.id);
+        }
+      }
+    }
+  }
+  
+  return titleResults;
 }
 
 // Search Open Library - better for fiction/novels
@@ -94,40 +118,60 @@ function hasCoveredResults(results: BookResult[]): boolean {
   return withCovers.length >= 3;
 }
 
-// Merge results, prioritizing ones with covers
-function mergeResults(primary: BookResult[], secondary: BookResult[]): BookResult[] {
+// Score how well a book title matches the query (higher = better match)
+function scoreTitleMatch(bookTitle: string, query: string): number {
+  const normalizedTitle = bookTitle.toLowerCase().trim();
+  const normalizedQuery = query.toLowerCase().trim();
+  
+  // Exact match gets highest score
+  if (normalizedTitle === normalizedQuery) return 100;
+  
+  // Title starts with query
+  if (normalizedTitle.startsWith(normalizedQuery)) return 80;
+  
+  // Title contains query as a complete phrase
+  if (normalizedTitle.includes(normalizedQuery)) return 60;
+  
+  // Query words all appear in title
+  const queryWords = normalizedQuery.split(/\s+/).filter(w => w.length > 2);
+  const titleWords = normalizedTitle.split(/\s+/);
+  const matchingWords = queryWords.filter(qw => 
+    titleWords.some(tw => tw.includes(qw) || qw.includes(tw))
+  );
+  if (matchingWords.length === queryWords.length) return 40;
+  
+  // Partial word match
+  if (matchingWords.length > 0) return 20 * (matchingWords.length / queryWords.length);
+  
+  return 0;
+}
+
+// Merge results, prioritizing exact title matches and ones with covers
+function mergeResults(primary: BookResult[], secondary: BookResult[], query: string): BookResult[] {
   const seen = new Set<string>();
-  const results: BookResult[] = [];
+  const allBooks: Array<{ book: BookResult; score: number; hasCover: boolean }> = [];
   
-  // Add primary results with covers first
-  for (const book of primary) {
-    const key = book.volumeInfo?.title?.toLowerCase().trim();
-    if (key && !seen.has(key) && book.volumeInfo?.imageLinks?.thumbnail) {
-      seen.add(key);
-      results.push(book);
-    }
-  }
-  
-  // Add secondary results with covers
-  for (const book of secondary) {
-    const key = book.volumeInfo?.title?.toLowerCase().trim();
-    if (key && !seen.has(key) && book.volumeInfo?.imageLinks?.thumbnail) {
-      seen.add(key);
-      results.push(book);
-    }
-  }
-  
-  // Fill remaining slots with results without covers
+  // Score all books
   for (const book of [...primary, ...secondary]) {
     const key = book.volumeInfo?.title?.toLowerCase().trim();
     if (key && !seen.has(key)) {
       seen.add(key);
-      results.push(book);
+      const score = scoreTitleMatch(book.volumeInfo?.title || '', query);
+      const hasCover = !!book.volumeInfo?.imageLinks?.thumbnail;
+      allBooks.push({ book, score, hasCover });
     }
-    if (results.length >= 12) break;
   }
   
-  return results.slice(0, 12);
+  // Sort by: exact match score (desc), has cover (desc)
+  allBooks.sort((a, b) => {
+    // First by title match score
+    if (b.score !== a.score) return b.score - a.score;
+    // Then by cover availability
+    if (a.hasCover !== b.hasCover) return a.hasCover ? -1 : 1;
+    return 0;
+  });
+  
+  return allBooks.slice(0, 12).map(item => item.book);
 }
 
 serve(async (req) => {
@@ -178,7 +222,7 @@ serve(async (req) => {
     
     // Merge results, prioritizing books with covers
     // Open Library often has better fiction coverage, Google has better covers
-    const mergedResults = mergeResults(openLibraryResults, googleResults);
+    const mergedResults = mergeResults(openLibraryResults, googleResults, query);
     
     const source = openLibraryResults.length > 0 && googleResults.length > 0 
       ? 'combined' 
