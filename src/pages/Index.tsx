@@ -14,6 +14,7 @@ import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
+import { FindFriendsDialog } from '@/components/FindFriendsDialog';
 import { Button } from '@/components/ui/button';
 
 
@@ -221,6 +222,7 @@ export default function Index() {
           </div>
           <div className="flex items-center gap-2">
             {user && <ClubsDropdown />}
+            {user && <FindFriendsDialog />}
             {user && <NotificationBell />}
             <ThemeToggle />
             <SettingsPanel 
