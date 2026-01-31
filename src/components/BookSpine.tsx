@@ -189,9 +189,14 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
             )}
             onClick={onSelect}
           >
-            {/* Loading skeleton */}
-            {!imageLoaded && !showPlaceholder && (
-              <Skeleton className="absolute inset-0 w-full h-full rounded-none" />
+            {/* Loading skeleton - fades out as image loads */}
+            {!showPlaceholder && (
+              <Skeleton 
+                className={cn(
+                  "absolute inset-0 w-full h-full rounded-none transition-opacity duration-300",
+                  imageLoaded ? "opacity-0" : "opacity-100"
+                )} 
+              />
             )}
             
             {/* Actual cover image */}
