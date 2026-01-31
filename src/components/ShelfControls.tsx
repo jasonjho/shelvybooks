@@ -115,12 +115,12 @@ export function ShelfControls({
             variant="outline" 
             size="sm" 
             className={cn(
-              "gap-2",
+              "gap-1.5 sm:gap-2",
               !isAllSelected && "border-primary/50 bg-primary/5"
             )}
           >
             <Filter className="w-4 h-4" />
-            <span>{getFilterLabel()}</span>
+            <span className="hidden sm:inline">{getFilterLabel()}</span>
             <span className="text-xs opacity-70">({getFilterCount()})</span>
             <ChevronDown className={cn(
               "w-3 h-3 transition-transform",
@@ -168,12 +168,12 @@ export function ShelfControls({
               variant="outline" 
               size="sm" 
               className={cn(
-                "gap-2",
+                "gap-1.5 sm:gap-2",
                 activeCategoryFilters.length > 0 && "border-primary/50 bg-primary/5"
               )}
             >
               <Tag className="w-4 h-4" />
-              <span>{getCategoryLabel()}</span>
+              <span className="hidden sm:inline">{getCategoryLabel()}</span>
               {activeCategoryFilters.length > 0 && (
                 <span className="text-xs opacity-70">({activeCategoryFilters.length})</span>
               )}
