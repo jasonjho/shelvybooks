@@ -299,7 +299,7 @@ export default function Index() {
 
 
                  {/* Controls - filters on left, + button on right */}
-                 <div className="flex items-center justify-between gap-2 mb-6">
+                 <div className="flex items-center justify-between gap-2 mb-3">
                   {/* Left: Filters + privacy */}
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <ShelfControls
