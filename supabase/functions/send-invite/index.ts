@@ -120,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Shelvy <onboarding@resend.dev>",
+        from: "Shelvy <noreply@shelvybooks.com>",
         to: [recipientEmail],
         subject: `${senderName} invited you to join Shelvy!`,
         html: emailHtml,
