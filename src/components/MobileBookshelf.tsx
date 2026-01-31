@@ -361,6 +361,8 @@ export function MobileBookshelf({
           open={!!selectedBook}
           onOpenChange={(open) => !open && setInternalSelectedBook(null)}
           onUpdateCompletedAt={onUpdateCompletedAt}
+          onMove={onMoveBook}
+          onRemove={onRemoveBook}
         />
       )}
 

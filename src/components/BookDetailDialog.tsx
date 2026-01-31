@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Book } from '@/types/book';
+import { Book, BookStatus } from '@/types/book';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
 import { getAmazonBookUrl } from '@/lib/amazonLinks';
 import { format } from 'date-fns';
-import { CalendarCheck, BookMarked, Check, BookOpen, Hash, Tag } from 'lucide-react';
+import { CalendarCheck, BookMarked, Check, BookOpen, Hash, Tag, CheckCircle, Trash2 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -32,9 +32,19 @@ interface BookDetailDialogProps {
   onAddToShelf?: (book: Book) => void;
   /** Whether the book is already on user's shelf */
   isOnShelf?: boolean;
+  /** Move book to different status */
+  onMove?: (id: string, status: BookStatus) => void;
+  /** Remove book from shelf */
+  onRemove?: (id: string) => void;
 }
 
-export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt, onAddToShelf, isOnShelf }: BookDetailDialogProps) {
+const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
+  { status: 'reading', label: 'Reading', icon: <BookOpen className="w-4 h-4" /> },
+  { status: 'want-to-read', label: 'Want to Read', icon: <BookMarked className="w-4 h-4" /> },
+  { status: 'read', label: 'Read', icon: <CheckCircle className="w-4 h-4" /> },
+];
+
+export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt, onAddToShelf, isOnShelf, onMove, onRemove }: BookDetailDialogProps) {
   const { user, setAuthDialogOpen } = useAuth();
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   
@@ -204,6 +214,46 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
                 {book.description}
               </p>
             </ScrollArea>
+          </div>
+        )}
+
+        {/* Status actions - for managing book shelf status */}
+        {onMove && !isDemoBook && (
+          <div className="border-t border-border pt-3">
+            <p className="text-xs font-medium text-muted-foreground mb-2">Move to</p>
+            <div className="flex flex-wrap gap-2">
+              {statusOptions
+                .filter((opt) => opt.status !== book.status)
+                .map((opt) => (
+                  <Button
+                    key={opt.status}
+                    size="sm"
+                    variant="secondary"
+                    className="gap-1.5"
+                    onClick={() => {
+                      onMove(book.id, opt.status);
+                      onOpenChange(false);
+                    }}
+                  >
+                    {opt.icon}
+                    {opt.label}
+                  </Button>
+                ))}
+              {onRemove && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => {
+                    onRemove(book.id);
+                    onOpenChange(false);
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Remove
+                </Button>
+              )}
+            </div>
           </div>
         )}
 

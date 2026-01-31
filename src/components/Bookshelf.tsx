@@ -378,6 +378,8 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
           open={!!selectedBook}
           onOpenChange={(open) => !open && setInternalSelectedBook(null)}
           onUpdateCompletedAt={onUpdateCompletedAt}
+          onMove={onMoveBook}
+          onRemove={onRemoveBook}
         />
       )}
 
