@@ -924,28 +924,76 @@
   }
 
   /* Skin variants for mini-shelf */
+  .skin-walnut .mini-shelf {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-walnut-dark) / 0.3) 0%, 
+      transparent 30%
+    );
+  }
+  .skin-walnut .mini-shelf-back {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-walnut-dark) / 0.2) 0%, 
+      hsl(var(--shelf-walnut) / 0.1) 50%,
+      transparent 100%
+    );
+  }
   .skin-walnut .mini-shelf-surface,
   .skin-walnut .mini-shelf-front {
     background: linear-gradient(180deg, 
       hsl(var(--shelf-walnut)) 0%, 
       hsl(var(--shelf-walnut-dark)) 100%
     );
+    box-shadow: 
+      0 2px 4px hsl(var(--shelf-walnut-dark) / 0.3),
+      inset 0 1px 0 hsl(var(--shelf-walnut-light) / 0.3);
   }
 
+  .skin-dark .mini-shelf {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-dark-dark) / 0.4) 0%, 
+      transparent 30%
+    );
+  }
+  .skin-dark .mini-shelf-back {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-dark-dark) / 0.25) 0%, 
+      hsl(var(--shelf-dark) / 0.15) 50%,
+      transparent 100%
+    );
+  }
   .skin-dark .mini-shelf-surface,
   .skin-dark .mini-shelf-front {
     background: linear-gradient(180deg, 
       hsl(var(--shelf-dark)) 0%, 
       hsl(var(--shelf-dark-dark)) 100%
     );
+    box-shadow: 
+      0 2px 4px hsl(var(--shelf-dark-dark) / 0.4),
+      inset 0 1px 0 hsl(var(--shelf-dark-light) / 0.2);
   }
 
+  .skin-white .mini-shelf {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-white-dark) / 0.3) 0%, 
+      transparent 30%
+    );
+  }
+  .skin-white .mini-shelf-back {
+    background: linear-gradient(180deg, 
+      hsl(var(--shelf-white-dark) / 0.2) 0%, 
+      hsl(var(--shelf-white) / 0.1) 50%,
+      transparent 100%
+    );
+  }
   .skin-white .mini-shelf-surface,
   .skin-white .mini-shelf-front {
     background: linear-gradient(180deg, 
       hsl(var(--shelf-white)) 0%, 
       hsl(var(--shelf-white-dark)) 100%
     );
+    box-shadow: 
+      0 2px 4px hsl(var(--shelf-white-dark) / 0.3),
+      inset 0 1px 0 hsl(var(--shelf-white-light) / 0.3);
   }
 }
 
