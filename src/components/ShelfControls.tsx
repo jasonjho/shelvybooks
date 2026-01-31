@@ -29,6 +29,8 @@ interface ShelfControlsProps {
   activeCategoryFilters?: string[];
   /** Callback when category filters change */
   onCategoryFilterChange?: (categories: string[]) => void;
+  /** Compact mode - hides labels, shows only icons */
+  compact?: boolean;
 }
 
 const statusFilters: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -54,6 +56,7 @@ export function ShelfControls({
   availableCategories = [],
   activeCategoryFilters = [],
   onCategoryFilterChange,
+  compact = false,
 }: ShelfControlsProps) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
@@ -120,7 +123,7 @@ export function ShelfControls({
             )}
           >
             <Filter className="w-4 h-4" />
-            <span className="hidden sm:inline">{getFilterLabel()}</span>
+            {!compact && <span className="hidden sm:inline">{getFilterLabel()}</span>}
             <span className="text-xs opacity-70">({getFilterCount()})</span>
             <ChevronDown className={cn(
               "w-3 h-3 transition-transform",
@@ -173,7 +176,7 @@ export function ShelfControls({
               )}
             >
               <Tag className="w-4 h-4" />
-              <span className="hidden sm:inline">{getCategoryLabel()}</span>
+              {!compact && <span className="hidden sm:inline">{getCategoryLabel()}</span>}
               {activeCategoryFilters.length > 0 && (
                 <span className="text-xs opacity-70">({activeCategoryFilters.length})</span>
               )}
@@ -224,9 +227,11 @@ export function ShelfControls({
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm" className="gap-2">
             {sortOptions.find((o) => o.value === sortOption)?.icon}
-            <span className="hidden sm:inline">
-              {sortOptions.find((o) => o.value === sortOption)?.label}
-            </span>
+            {!compact && (
+              <span className="hidden sm:inline">
+                {sortOptions.find((o) => o.value === sortOption)?.label}
+              </span>
+            )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-popover">

@@ -5,9 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface FollowButtonProps {
   targetUserId: string;
+  /** If true, shows only icon without label */
+  iconOnly?: boolean;
 }
 
-export function FollowButton({ targetUserId }: FollowButtonProps) {
+export function FollowButton({ targetUserId, iconOnly = false }: FollowButtonProps) {
   const { user, setAuthDialogOpen } = useAuth();
   const { isFollowing, follow, unfollow, isFollowPending, isUnfollowPending } = useFollows();
 
@@ -48,12 +50,12 @@ export function FollowButton({ targetUserId }: FollowButtonProps) {
       ) : following ? (
         <>
           <UserMinus className="h-4 w-4" />
-          Following
+          {!iconOnly && "Following"}
         </>
       ) : (
         <>
           <UserPlus className="h-4 w-4" />
-          Follow
+          {!iconOnly && "Follow"}
         </>
       )}
     </Button>

@@ -304,8 +304,8 @@ export default function PublicShelf() {
           </h2>
         </div>
 
-        {/* Controls row: Back + Follow + Filters/Sort + CTA */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+        {/* Controls row - Desktop */}
+        <div className="hidden sm:flex flex-wrap items-center justify-center gap-3 mb-6">
           {/* Back to My Shelf - for logged-in users */}
           {user && (
             <Link to="/">
@@ -339,6 +339,37 @@ export default function PublicShelf() {
               <Button size="sm" className="gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md">
                 <BookOpen className="w-4 h-4" />
                 Start Your Shelf
+              </Button>
+            </Link>
+          )}
+        </div>
+
+        {/* Controls row - Mobile: more compact */}
+        <div className="sm:hidden flex items-center justify-center gap-2 mb-6">
+          {/* Follow button - only show if viewing someone else's shelf */}
+          {shelfOwner?.user_id && user?.id !== shelfOwner.user_id && (
+            <FollowButton targetUserId={shelfOwner.user_id} iconOnly />
+          )}
+          
+          <ShelfControls
+            activeFilters={activeFilters}
+            onFilterChange={setActiveFilters}
+            sortOption={sortOption}
+            onSortChange={setSortOption}
+            onShuffle={handleShuffle}
+            bookCounts={bookCounts}
+            availableCategories={availableCategories}
+            activeCategoryFilters={activeCategoryFilters}
+            onCategoryFilterChange={setActiveCategoryFilters}
+            compact
+          />
+          
+          {/* CTA for logged-out users */}
+          {!user && (
+            <Link to="/">
+              <Button size="sm" className="gap-1.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md px-3">
+                <BookOpen className="w-4 h-4" />
+                <span className="sr-only">Start Your Shelf</span>
               </Button>
             </Link>
           )}
