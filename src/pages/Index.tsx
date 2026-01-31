@@ -99,8 +99,17 @@ export default function Index() {
     clearViewedShelf, 
     isViewingFriend, 
     viewedBooks, 
-    loadingViewedBooks 
+    loadingViewedBooks,
+    viewedAppearance,
   } = useViewedShelf();
+
+  // Determine which appearance settings to use (friend's or own)
+  const activeShelfSkin = isViewingFriend && viewedAppearance 
+    ? viewedAppearance.shelfSkin 
+    : undefined; // Will be set from useBooks
+  const activeSettings = isViewingFriend && viewedAppearance 
+    ? viewedAppearance.settings 
+    : undefined; // Will be set from useBooks
 
   const {
     books,
@@ -212,13 +221,17 @@ export default function Index() {
     }
   };
 
-  const ambientGradient = getAmbientGradient(settings.backgroundTheme);
+  // Determine which settings to use for rendering
+  const displaySettings = activeSettings || settings;
+  const displaySkin = activeShelfSkin || shelfSkin;
+
+  const ambientGradient = getAmbientGradient(displaySettings.backgroundTheme);
 
   return (
-    <div className={cn("min-h-screen overflow-x-hidden overscroll-x-none", getBackgroundClass(settings.backgroundTheme))}>
+    <div className={cn("min-h-screen overflow-x-hidden overscroll-x-none", getBackgroundClass(displaySettings.backgroundTheme))}>
 
       {/* Ambient top light */}
-      {settings.showAmbientLight && ambientGradient && (
+      {displaySettings.showAmbientLight && ambientGradient && (
         <div 
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] pointer-events-none transition-opacity duration-500"
           style={{ background: ambientGradient }}
@@ -365,8 +378,8 @@ export default function Index() {
                   isMobile ? (
                     <MobileBookshelf
                       books={sortedBooks}
-                      skin={shelfSkin}
-                      settings={settings}
+                      skin={displaySkin}
+                      settings={displaySettings}
                       activeFilters={activeFilters}
                       onMoveBook={user && !isViewingFriend ? moveBook : undefined}
                       onRemoveBook={user && !isViewingFriend ? removeBook : undefined}
@@ -377,8 +390,8 @@ export default function Index() {
                   ) : (
                     <Bookshelf
                       books={sortedBooks}
-                      skin={shelfSkin}
-                      settings={settings}
+                      skin={displaySkin}
+                      settings={displaySettings}
                       activeFilters={activeFilters}
                       onMoveBook={user && !isViewingFriend ? moveBook : undefined}
                       onRemoveBook={user && !isViewingFriend ? removeBook : undefined}

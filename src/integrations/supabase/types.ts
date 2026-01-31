@@ -385,29 +385,50 @@ export type Database = {
       }
       shelf_settings: {
         Row: {
+          background_theme: string | null
           created_at: string
+          decor_density: string | null
           display_name: string | null
           id: string
           is_public: boolean
           share_id: string | null
+          shelf_skin: string | null
+          show_ambient_light: boolean | null
+          show_bookends: boolean | null
+          show_plant: boolean | null
+          show_wood_grain: boolean | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          background_theme?: string | null
           created_at?: string
+          decor_density?: string | null
           display_name?: string | null
           id?: string
           is_public?: boolean
           share_id?: string | null
+          shelf_skin?: string | null
+          show_ambient_light?: boolean | null
+          show_bookends?: boolean | null
+          show_plant?: boolean | null
+          show_wood_grain?: boolean | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          background_theme?: string | null
           created_at?: string
+          decor_density?: string | null
           display_name?: string | null
           id?: string
           is_public?: boolean
           share_id?: string | null
+          shelf_skin?: string | null
+          show_ambient_light?: boolean | null
+          show_bookends?: boolean | null
+          show_plant?: boolean | null
+          show_wood_grain?: boolean | null
           updated_at?: string
           user_id?: string
         }
@@ -439,6 +460,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_shelf_appearance: {
+        Args: { _share_id: string }
+        Returns: {
+          background_theme: string
+          decor_density: string
+          shelf_skin: string
+          show_ambient_light: boolean
+          show_bookends: boolean
+          show_plant: boolean
+          show_wood_grain: boolean
+        }[]
+      }
       get_public_shelf_books: {
         Args: { _share_id: string }
         Returns: {
