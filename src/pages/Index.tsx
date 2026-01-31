@@ -311,7 +311,11 @@ export default function Index() {
                   </div>
                 )}
 
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                <div className={cn(
+                  "flex flex-wrap items-center gap-3 mb-6",
+                  // Only justify-between when we have right-side controls
+                  user && !isViewingFriend ? "justify-between" : "justify-start"
+                )}>
                   {/* Left side: Shelf Switcher (desktop only) + ShelfControls */}
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Desktop shelf switcher */}
