@@ -87,13 +87,9 @@ export function FindFriendsDialog() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          className="bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground"
-          title="Find Friends"
-        >
-          <Users className="h-5 w-5" />
+        <Button variant="outline" size="sm" className="gap-2">
+          <Users className="w-4 h-4" />
+          Find Friends
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col">
