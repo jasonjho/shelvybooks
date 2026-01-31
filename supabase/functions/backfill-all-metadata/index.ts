@@ -11,6 +11,8 @@ interface BookMetadata {
   isbn?: string;
   description?: string;
   categories?: string[];
+  coverUrl?: string;
+  source?: 'isbndb' | 'google' | 'openlibrary';
 }
 
 // Exponential backoff with jitter
@@ -20,12 +22,13 @@ async function sleep(ms: number): Promise<void> {
 
 async function fetchWithRetry(
   url: string,
+  options?: RequestInit,
   maxRetries = 3,
   baseDelay = 500
 ): Promise<Response | null> {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, options);
       
       // If rate limited (429) or server error (5xx), retry with backoff
       if (response.status === 429 || response.status >= 500) {
@@ -67,31 +70,106 @@ function cleanTitle(title: string): string {
     .trim();
 }
 
-// Search Google Books for metadata - try multiple query strategies
-async function fetchGoogleBooksMetadata(title: string, author: string, apiKey?: string): Promise<BookMetadata | null> {
-  const cleanedTitle = cleanTitle(title);
-  
-  // Try different query strategies in order of specificity
-  const queries = [
-    `intitle:${cleanedTitle} inauthor:${author}`,
-    `"${cleanedTitle}" ${author}`,
-    `${cleanedTitle} ${author}`,
-  ];
+// Strip HTML tags and decode entities from text
+function stripHtml(html: string | undefined): string | undefined {
+  if (!html) return undefined;
+  return html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&ldquo;/g, '"')
+    .replace(/&rdquo;/g, '"')
+    .replace(/&lsquo;/g, "'")
+    .replace(/&rsquo;/g, "'")
+    .replace(/&mdash;/g, '—')
+    .replace(/&ndash;/g, '–')
+    .replace(/&hellip;/g, '…')
+    .replace(/&#8212;/g, '—')
+    .replace(/&#8211;/g, '–')
+    .replace(/&#8217;/g, "'")
+    .replace(/&#8216;/g, "'")
+    .replace(/&#8220;/g, '"')
+    .replace(/&#8221;/g, '"')
+    .replace(/&#8230;/g, '…')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
-  for (const query of queries) {
-    let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=1&printType=books`;
+// PRIMARY: Search ISBNdb for metadata
+async function fetchISBNdbMetadata(title: string, author: string, apiKey: string): Promise<BookMetadata | null> {
+  const cleanedTitle = cleanTitle(title);
+  const query = encodeURIComponent(`${cleanedTitle} ${author}`);
+  const url = `https://api2.isbndb.com/books/${query}?pageSize=5`;
+
+  const response = await fetchWithRetry(url, {
+    headers: {
+      'Authorization': apiKey,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response) return null;
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    console.log(`ISBNdb error: ${response.status}`);
+    return null;
+  }
+
+  try {
+    const data = await response.json();
+    const books = data.books || [];
     
-    if (apiKey) {
-      url += `&key=${apiKey}`;
+    if (books.length === 0) return null;
+    
+    // Find best match by title comparison
+    const normalizedTitle = cleanedTitle.toLowerCase();
+    const bestMatch = books.find((book: { title?: string; title_long?: string }) => {
+      const bookTitle = (book.title || book.title_long || '').toLowerCase();
+      return bookTitle.includes(normalizedTitle) || normalizedTitle.includes(bookTitle);
+    }) || books[0];
+
+    const result: BookMetadata = { source: 'isbndb' };
+    
+    if (bestMatch.pages) result.pageCount = bestMatch.pages;
+    if (bestMatch.isbn13 || bestMatch.isbn) result.isbn = bestMatch.isbn13 || bestMatch.isbn;
+    if (bestMatch.synopsis || bestMatch.overview) {
+      result.description = stripHtml(bestMatch.synopsis || bestMatch.overview)?.slice(0, 2000);
+    }
+    if (bestMatch.subjects?.length) result.categories = bestMatch.subjects.slice(0, 5);
+    if (bestMatch.image && !bestMatch.image.includes('placeholder')) {
+      result.coverUrl = bestMatch.image;
     }
 
-    const response = await fetchWithRetry(url);
-    if (!response || !response.ok) continue;
+    return result;
+  } catch (e) {
+    console.error('ISBNdb parse error:', e);
+    return null;
+  }
+}
+
+// FALLBACK 1: Search Google Books for metadata
+async function fetchGoogleBooksMetadata(title: string, author: string, apiKey?: string): Promise<BookMetadata | null> {
+  const cleanedTitle = cleanTitle(title);
+  const query = `${cleanedTitle} ${author}`;
+  let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=3&printType=books`;
+  
+  if (apiKey) {
+    url += `&key=${apiKey}`;
+  }
+
+  const response = await fetchWithRetry(url);
+  if (!response || !response.ok) return null;
+  
+  try {
+    const data = await response.json();
+    const items = data.items || [];
     
-    try {
-      const data = await response.json();
-      const book = data.items?.[0]?.volumeInfo;
-      
+    for (const item of items) {
+      const book = item.volumeInfo;
       if (!book) continue;
       
       // Only return if we got useful data
@@ -99,44 +177,72 @@ async function fetchGoogleBooksMetadata(title: string, author: string, apiKey?: 
         const isbn = book.industryIdentifiers?.find((id: { type: string }) => id.type === 'ISBN_13')?.identifier
           || book.industryIdentifiers?.find((id: { type: string }) => id.type === 'ISBN_10')?.identifier;
         
-        return {
-          pageCount: book.pageCount,
-          isbn,
-          description: book.description?.slice(0, 2000),
-          categories: book.categories?.slice(0, 5),
-        };
+        const result: BookMetadata = { source: 'google' };
+        if (book.pageCount) result.pageCount = book.pageCount;
+        if (isbn) result.isbn = isbn;
+        if (book.description) result.description = book.description.slice(0, 2000);
+        if (book.categories?.length) result.categories = book.categories.slice(0, 5);
+        
+        // Get cover if available
+        const thumbnail = book.imageLinks?.thumbnail;
+        if (thumbnail) {
+          let coverUrl = thumbnail.replace('http://', 'https://').replace('zoom=1', 'zoom=2');
+          try {
+            const u = new URL(coverUrl);
+            if (u.hostname === 'books.google.com' && u.pathname.startsWith('/books/content')) {
+              if (!u.searchParams.get('edge')) u.searchParams.set('edge', 'curl');
+              const zoom = u.searchParams.get('zoom');
+              if (!zoom || zoom === '1') u.searchParams.set('zoom', '2');
+              coverUrl = u.toString();
+            }
+          } catch {
+            // ignore URL parse errors
+          }
+          result.coverUrl = coverUrl;
+        }
+        
+        return result;
       }
-    } catch {
-      continue;
     }
+  } catch {
+    // ignore
   }
   
   return null;
 }
 
-// Search Open Library for metadata (fallback)
+// FALLBACK 2: Search Open Library for metadata
 async function fetchOpenLibraryMetadata(title: string, author: string): Promise<BookMetadata | null> {
   const cleanedTitle = cleanTitle(title);
   const query = `${cleanedTitle} ${author}`;
-  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=1&fields=key,title,author_name,number_of_pages_median,isbn,subject`;
+  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=3&fields=key,title,author_name,number_of_pages_median,isbn,subject,cover_i`;
 
   const response = await fetchWithRetry(url);
   if (!response || !response.ok) return null;
   
   try {
     const data = await response.json();
-    const doc = data.docs?.[0];
+    const docs = data.docs || [];
     
-    if (!doc) return null;
-    
-    return {
-      pageCount: doc.number_of_pages_median,
-      isbn: doc.isbn?.[0],
-      categories: doc.subject?.slice(0, 5),
-    };
+    for (const doc of docs) {
+      const result: BookMetadata = { source: 'openlibrary' };
+      
+      if (doc.number_of_pages_median) result.pageCount = doc.number_of_pages_median;
+      if (doc.isbn?.[0]) result.isbn = doc.isbn[0];
+      if (doc.subject?.length) result.categories = doc.subject.slice(0, 5);
+      if (doc.cover_i) {
+        result.coverUrl = `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`;
+      }
+      
+      if (result.pageCount || result.isbn || result.categories?.length || result.coverUrl) {
+        return result;
+      }
+    }
   } catch {
-    return null;
+    // ignore
   }
+  
+  return null;
 }
 
 serve(async (req) => {
@@ -148,21 +254,19 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const isbndbApiKey = Deno.env.get('ISBNDB_API_KEY');
     const googleApiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY');
 
-    // Check if this is a cron job call - the cron passes anon key JWT in the Authorization header
-    // We detect this by checking if the token is a JWT with "anon" role for our project
+    // Check if this is a cron job call
     const authHeader = req.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '') || '';
     
-    // Decode the JWT payload (base64) to check if it's the anon key
     let isCronCall = false;
     try {
       const payloadBase64 = token.split('.')[1];
       if (payloadBase64) {
         const payload = JSON.parse(atob(payloadBase64));
         console.log(`JWT payload: role=${payload.role}, ref=${payload.ref}`);
-        // If it's an anon role JWT for our project, it's the cron job
         isCronCall = payload.role === 'anon' && payload.ref === 'gzzkaxivhqqoezfqtpsd';
       }
     } catch (e) {
@@ -182,7 +286,6 @@ serve(async (req) => {
         );
       }
 
-      // Use anon key client to verify the user's token
       const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
         global: { headers: { Authorization: authHeader } },
       });
@@ -196,7 +299,6 @@ serve(async (req) => {
         );
       }
 
-      // Check admin role using the has_role RPC function
       const { data: isAdmin, error: roleError } = await supabaseAuth.rpc('has_role', {
         _user_id: user.id,
         _role: 'admin',
@@ -212,72 +314,117 @@ serve(async (req) => {
       console.log(`Admin ${user.id} triggered backfill`);
     }
     
-    // Use service role for actual database operations
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Find UNIQUE title+author combinations that haven't been attempted yet
-    // This deduplicates across all users - we only fetch metadata once per unique book
-    const { data: uniqueBooks, error: fetchError } = await supabase
+    // Parse request body for options
+    let refreshCovers = false;
+    let batchSize = 100; // ISBNdb allows 3 req/sec, 100 books with 350ms delay = ~35 seconds
+    
+    try {
+      const body = await req.json();
+      refreshCovers = body.refreshCovers === true;
+      if (body.batchSize && typeof body.batchSize === 'number') {
+        batchSize = Math.min(body.batchSize, 150); // Cap at 150 to stay within timeout
+      }
+    } catch {
+      // No body or invalid JSON, use defaults
+    }
+
+    // Find books needing attention
+    // If refreshCovers is true, also include books with missing/placeholder covers
+    let query = supabase
       .from('books')
-      .select('title, author')
-      .is('metadata_attempted_at', null)
-      .or('description.is.null,page_count.is.null,categories.is.null,isbn.is.null');
+      .select('title, author, cover_url');
+    
+    if (refreshCovers) {
+      // Books needing metadata OR missing covers
+      query = query.or(
+        'isbndb_attempted_at.is.null,' +
+        'cover_url.is.null,' +
+        'cover_url.eq.,' +
+        'cover_url.eq./placeholder.svg'
+      );
+    } else {
+      // Only books not yet attempted by ISBNdb
+      query = query.is('isbndb_attempted_at', null);
+    }
+
+    const { data: books, error: fetchError } = await query;
 
     if (fetchError) {
       throw new Error(`Failed to fetch books: ${fetchError.message}`);
     }
 
-    if (!uniqueBooks || uniqueBooks.length === 0) {
+    if (!books || books.length === 0) {
       return new Response(
-        JSON.stringify({ message: 'All books already have metadata', updated: 0, uniqueBooksProcessed: 0 }),
+        JSON.stringify({ message: 'All books already processed', updated: 0, uniqueBooksProcessed: 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     // Deduplicate by title+author (case-insensitive)
     const seen = new Set<string>();
-    const deduped: Array<{ title: string; author: string }> = [];
-    for (const book of uniqueBooks) {
+    const deduped: Array<{ title: string; author: string; needsCover: boolean }> = [];
+    for (const book of books) {
       const key = `${book.title.toLowerCase()}|||${book.author.toLowerCase()}`;
       if (!seen.has(key)) {
         seen.add(key);
-        deduped.push(book);
+        const needsCover = !book.cover_url || book.cover_url === '' || book.cover_url === '/placeholder.svg';
+        deduped.push({ title: book.title, author: book.author, needsCover });
       }
     }
 
-    // Google Books API limits: 100 requests/min, 1000/day per API key
-    // Each book can try up to 3 query strategies, so 30 books × 3 = 90 requests max per batch
-    const batchSize = 30;
     const batch = deduped.slice(0, batchSize);
 
-    console.log(`Found ${uniqueBooks.length} books needing metadata, ${deduped.length} unique title/author combos. Processing batch of ${batch.length}.`);
+    console.log(`Found ${books.length} books needing attention, ${deduped.length} unique. Processing batch of ${batch.length}. ISBNdb: ${isbndbApiKey ? 'configured' : 'NOT configured'}`);
 
     let updated = 0;
+    let coversUpdated = 0;
     let noDataFound = 0;
     const errors: string[] = [];
     const notFound: string[] = [];
 
     for (const book of batch) {
       try {
-        // Try Google Books first
-        let metadata = await fetchGoogleBooksMetadata(book.title, book.author, googleApiKey);
-        
-        // Fallback to Open Library if Google didn't return ISBN
-        if (!metadata?.isbn) {
-          const olMetadata = await fetchOpenLibraryMetadata(book.title, book.author);
-          if (olMetadata) {
-            metadata = {
-              pageCount: metadata?.pageCount || olMetadata.pageCount,
-              isbn: metadata?.isbn || olMetadata.isbn,
-              description: metadata?.description,
-              categories: metadata?.categories || olMetadata.categories,
-            };
+        let metadata: BookMetadata | null = null;
+
+        // PRIMARY: Try ISBNdb first
+        if (isbndbApiKey) {
+          metadata = await fetchISBNdbMetadata(book.title, book.author, isbndbApiKey);
+          if (metadata) console.log(`ISBNdb found: ${book.title}`);
+        }
+
+        // FALLBACK 1: Google Books
+        if (!metadata || (!metadata.coverUrl && book.needsCover)) {
+          const googleMeta = await fetchGoogleBooksMetadata(book.title, book.author, googleApiKey);
+          if (googleMeta) {
+            if (!metadata) {
+              metadata = googleMeta;
+              console.log(`Google Books found: ${book.title}`);
+            } else if (!metadata.coverUrl && googleMeta.coverUrl) {
+              metadata.coverUrl = googleMeta.coverUrl;
+              console.log(`Google Books cover fallback: ${book.title}`);
+            }
           }
         }
 
-        // Build update data - apply to ALL books with this title+author
+        // FALLBACK 2: Open Library
+        if (!metadata || (!metadata.coverUrl && book.needsCover)) {
+          const olMeta = await fetchOpenLibraryMetadata(book.title, book.author);
+          if (olMeta) {
+            if (!metadata) {
+              metadata = olMeta;
+              console.log(`Open Library found: ${book.title}`);
+            } else if (!metadata.coverUrl && olMeta.coverUrl) {
+              metadata.coverUrl = olMeta.coverUrl;
+              console.log(`Open Library cover fallback: ${book.title}`);
+            }
+          }
+        }
+
+        // Build update data
         const updateData: Record<string, unknown> = {
-          metadata_attempted_at: new Date().toISOString(),
+          isbndb_attempted_at: new Date().toISOString(),
         };
 
         let hasNewData = false;
@@ -286,35 +433,35 @@ serve(async (req) => {
           if (metadata.isbn) { updateData.isbn = metadata.isbn; hasNewData = true; }
           if (metadata.description) { updateData.description = metadata.description; hasNewData = true; }
           if (metadata.categories) { updateData.categories = metadata.categories; hasNewData = true; }
+          if (metadata.coverUrl) { updateData.cover_url = metadata.coverUrl; hasNewData = true; }
         }
 
-        // Update ALL matching books (across all users) with this title+author
+        // Update ALL matching books with this title+author
         const { error: updateError, count } = await supabase
           .from('books')
           .update(updateData)
           .ilike('title', book.title)
-          .ilike('author', book.author)
-          .is('metadata_attempted_at', null);
+          .ilike('author', book.author);
 
         if (updateError) {
           errors.push(`Failed to update "${book.title}": ${updateError.message}`);
         } else if (hasNewData) {
           updated += count || 1;
-          console.log(`Updated ${count} copies of: ${book.title}${updateData.isbn ? ` (ISBN: ${updateData.isbn})` : ''}`);
+          if (metadata?.coverUrl) coversUpdated += count || 1;
+          console.log(`Updated ${count} copies of: ${book.title} [${metadata?.source}]${metadata?.isbn ? ` ISBN: ${metadata.isbn}` : ''}`);
         } else {
           noDataFound++;
           notFound.push(`${book.title} by ${book.author}`);
-          console.log(`No metadata found for: ${book.title} by ${book.author} (marked ${count} copies as attempted)`);
+          console.log(`No metadata found for: ${book.title} by ${book.author}`);
         }
 
-        // Base rate limiting delay between unique books
-        await sleep(150);
+        // Rate limiting: ISBNdb allows 3 req/sec, use 350ms to be safe
+        await sleep(350);
       } catch (err) {
         errors.push(`Error processing "${book.title}": ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
     }
 
-    // Calculate remaining unique books
     const remaining = deduped.length - batch.length;
 
     return new Response(
@@ -322,6 +469,7 @@ serve(async (req) => {
         message: `Backfill complete`, 
         uniqueBooksProcessed: batch.length,
         totalBooksUpdated: updated,
+        coversUpdated,
         noDataFound,
         remaining,
         notFoundSamples: notFound.slice(0, 5),
