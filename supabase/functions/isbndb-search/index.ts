@@ -208,7 +208,18 @@ serve(async (req) => {
       );
     }
 
-    const sanitizedQuery = query.slice(0, 200).trim().replace(/[<>'"`;\\]/g, '');
+    // Clean up the query for ISBNdb:
+    // 1. Remove quote characters (ISBNdb doesn't support exact-match syntax)
+    // 2. Normalize curly quotes/apostrophes to standard forms, then remove
+    // 3. Remove other potentially problematic characters
+    const sanitizedQuery = query
+      .slice(0, 200)
+      .trim()
+      .replace(/[""„‟]/g, '')           // Remove curly double quotes
+      .replace(/[''‚‛]/g, "'")          // Normalize curly single quotes to straight
+      .replace(/[<>'"`;\\]/g, '')       // Remove quotes and special chars
+      .replace(/\s+/g, ' ')             // Collapse multiple spaces
+      .trim();
     
     if (sanitizedQuery.length < 2) {
       return new Response(
