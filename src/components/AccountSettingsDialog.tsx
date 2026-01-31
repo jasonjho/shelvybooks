@@ -76,6 +76,18 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
     if (!user || confirmText !== 'DELETE') return;
     
     setIsDeleting(true);
+    
+    // Close all dialogs immediately for better UX
+    setDeleteAccountOpen(false);
+    onOpenChange(false);
+    setConfirmText('');
+    
+    // Show toast immediately
+    toast({
+      title: 'Deleting account...',
+      description: 'Please wait while we remove your data.',
+    });
+    
     try {
       // Call the delete-account edge function
       const { error } = await supabase.functions.invoke('delete-account');
@@ -96,7 +108,6 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
         description: error instanceof Error ? error.message : 'An error occurred',
         variant: 'destructive',
       });
-    } finally {
       setIsDeleting(false);
     }
   };
