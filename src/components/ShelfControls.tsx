@@ -110,7 +110,7 @@ export function ShelfControls({
   const showCategoryFilter = availableCategories.length > 0 && onCategoryFilterChange;
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex items-center gap-1.5 flex-nowrap">
       {/* Filter Popover */}
       <Popover open={filterOpen} onOpenChange={setFilterOpen}>
         <PopoverTrigger asChild>

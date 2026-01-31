@@ -303,13 +303,13 @@ export default function Index() {
                   <ViewingFriendPill viewedUser={viewedUser} onClose={clearViewedShelf} />
                 )}
 
-                 {/* Controls row - all on one line with compact icons on mobile */}
+                 {/* Controls row - single line with horizontal scroll on overflow */}
                  <div className={cn(
                    "flex items-center gap-2 mb-6",
                    user ? "justify-between" : "justify-start"
                  )}>
-                  {/* Left side: Shelf Switcher + ShelfControls */}
-                  <div className="flex items-center gap-2">
+                  {/* Left side: Shelf Switcher + ShelfControls - no wrap, scroll if needed */}
+                  <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto scrollbar-hide">
                     <ShelfSwitcher 
                       viewedUser={viewedUser}
                       onSelectUser={viewShelf}
@@ -329,9 +329,9 @@ export default function Index() {
                     />
                   </div>
                   
-                  {/* Right side: action buttons */}
+                  {/* Right side: action buttons - shrink-0 to prevent compression */}
                   {user && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {/* Desktop: separate dropdowns */}
                       <div className="hidden sm:flex items-center gap-2">
                         <SocialActionsDropdown />
