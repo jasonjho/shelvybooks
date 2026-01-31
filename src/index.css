@@ -833,7 +833,7 @@
 
   /* Mobile bookshelf styles */
   .mobile-bookcase {
-    @apply p-4;
+    @apply px-0 py-4;
     overflow: visible;
   }
 
@@ -848,7 +848,7 @@
   }
 
   .mini-shelf {
-    @apply relative mx-2;
+    @apply relative mx-0;
     height: 115px;
     background: linear-gradient(180deg, 
       hsl(var(--shelf-oak-dark)) 0%, 
