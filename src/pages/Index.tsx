@@ -279,7 +279,7 @@ export default function Index() {
             ) : (
               <>
                 {/* Daily Quote */}
-                {user && <DailyQuote onAddBook={addBook} existingBooks={allBooks} />}
+                {user && <DailyQuote />}
 
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                   <ShelfControls
