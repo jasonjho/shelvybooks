@@ -102,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
         </head>
         <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #92400e; font-size: 32px; margin: 0; font-weight: 700;">📚 Shelvy</h1>
+            <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #92400e; font-size: 32px; margin: 0; font-weight: 700;">Shelvy</h1>
             <p style="font-family: 'Inter', sans-serif; color: #6b7280; margin: 8px 0 0 0; font-size: 14px;">Your personal bookshelf, beautifully organized</p>
           </div>
           
@@ -140,7 +140,7 @@ const handler = async (req: Request): Promise<Response> => {
         </head>
         <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #92400e; font-size: 32px; margin: 0; font-weight: 700;">📚 Shelvy</h1>
+            <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #92400e; font-size: 32px; margin: 0; font-weight: 700;">Shelvy</h1>
             <p style="font-family: 'Inter', sans-serif; color: #6b7280; margin: 8px 0 0 0; font-size: 14px;">Your personal bookshelf, beautifully organized</p>
           </div>
           
