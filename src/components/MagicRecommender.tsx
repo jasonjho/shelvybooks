@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Sparkles, Wand2, ExternalLink, Loader2, Plus, Check } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Sparkles, Wand2, ExternalLink, Loader2, Plus, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -242,9 +243,15 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-lg font-sans">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl font-sans">
+        <DialogContent className="sm:max-w-lg font-sans max-h-[90vh] overflow-hidden flex flex-col">
+          {/* Close button for mobile */}
+          <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+          
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2 text-xl font-sans pr-8">
               <Wand2 className="h-5 w-5 text-violet-500" />
               <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
                 Find me a book
@@ -257,7 +264,7 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4 font-sans">
+          <div className="space-y-4 py-4 font-sans flex-1 overflow-y-auto min-h-0">
             {!result ? (
               <>
                 <div className="space-y-2">
@@ -266,11 +273,18 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
                   </Label>
                   <Input
                     id="mood"
-                    placeholder="e.g., something cozy, a page-turner, thought-provoking..."
+                    placeholder="e.g., something cozy, a page-turner..."
                     value={mood}
                     onChange={(e) => setMood(e.target.value)}
                     disabled={loading}
                     className="font-sans"
+                    // Ensure input scrolls into view on mobile when focused
+                    onFocus={(e) => {
+                      // Small delay to let keyboard appear
+                      setTimeout(() => {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }, 300);
+                    }}
                   />
                 </div>
 
@@ -300,12 +314,12 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
             ) : (
               <div className="space-y-4 animate-fade-in">
                 {/* Insight */}
-                <div className="p-3 rounded-lg bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border border-violet-200/50 dark:border-violet-800/50">
+                <div className="p-3 rounded-lg bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border border-violet-200/50 dark:border-violet-800/50 flex-shrink-0">
                   <p className="text-sm text-muted-foreground italic">✨ {result.insight}</p>
                 </div>
 
                 {/* Recommendations */}
-                <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+                <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
                   {result.recommendations.map((rec, index) => {
                     const isAdded = addedRecs.has(index);
                     const isSelected = selectedRecs.has(index);
@@ -418,6 +432,18 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
                         <Plus className="h-4 w-4 mr-2" />
                       )}
                       Add All to Shelf
+                    </Button>
+                  )}
+
+                  {/* Done button - show when some books have been added */}
+                  {addedRecs.size > 0 && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleOpenChange(false)}
+                      className="w-full border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20"
+                    >
+                      <Check className="h-4 w-4 mr-2" />
+                      Done
                     </Button>
                   )}
 
