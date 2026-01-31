@@ -148,7 +148,7 @@ export function ShelfControls({
                   variant={isActive ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => toggleFilter(filter.status)}
-                  className="justify-start gap-2"
+                  className={cn("justify-start gap-2", !isActive && "hover:bg-accent hover:text-accent-foreground")}
                 >
                   {filter.icon}
                   {filter.label}
