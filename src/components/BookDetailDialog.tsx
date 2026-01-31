@@ -221,7 +221,7 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
         {onMove && !isDemoBook && (
           <div className="border-t border-border pt-3">
             <p className="text-xs font-medium text-muted-foreground mb-2">Move to</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {statusOptions
                 .filter((opt) => opt.status !== book.status)
                 .map((opt) => (
@@ -229,13 +229,13 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
                     key={opt.status}
                     size="sm"
                     variant="secondary"
-                    className="gap-1.5"
+                    className="gap-1 h-7 px-2 text-xs"
                     onClick={() => {
                       onMove(book.id, opt.status);
                       onOpenChange(false);
                     }}
                   >
-                    {opt.icon}
+                    <span className="[&>svg]:w-3.5 [&>svg]:h-3.5">{opt.icon}</span>
                     {opt.label}
                   </Button>
                 ))}
@@ -243,13 +243,13 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className="gap-1 h-7 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
                   onClick={() => {
                     onRemove(book.id);
                     onOpenChange(false);
                   }}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                   Remove
                 </Button>
               )}
