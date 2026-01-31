@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getDailyQuote, bookQuotes, BookQuote } from '@/data/bookQuotes';
 import { Button } from '@/components/ui/button';
-import { Book, Plus, X, Quote, EyeOff, Shuffle, Loader2 } from 'lucide-react';
+import { Plus, X, Quote, EyeOff, Shuffle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { BookStatus } from '@/types/book';
@@ -128,98 +128,69 @@ export function DailyQuote({ onAddBook, existingBooks }: DailyQuoteProps) {
   return (
     <div
       className={cn(
-        'relative mb-4 px-4 py-3 rounded-lg',
-        'bg-gradient-to-r from-amber-50/70 to-orange-50/50',
-        'dark:from-amber-950/30 dark:to-orange-950/20',
-        'border border-amber-200/40 dark:border-amber-800/20'
+        'relative mb-4 px-3 py-2 rounded-md flex items-center gap-2',
+        'bg-amber-50/50 dark:bg-amber-950/20',
+        'border border-amber-200/30 dark:border-amber-800/20'
       )}
     >
-      <span className="absolute -top-2.5 left-3 px-1.5 text-[10px] font-medium uppercase tracking-wider text-amber-600/70 dark:text-amber-400/50 bg-background rounded">
-        Daily Inspiration
-      </span>
-      <div className="flex items-center gap-3">
+      <Quote className="w-3.5 h-3.5 text-amber-400/70 flex-shrink-0" />
+      
+      <p className={cn(
+        "flex-1 min-w-0 text-sm text-foreground/80 truncate transition-opacity",
+        loading && "opacity-50"
+      )}>
+        <span className="italic">{quote.quote}</span>
+      </p>
 
-        {/* Quote & book info */}
-        <div className="flex-1 min-w-0">
-          <p className={cn(
-            "text-sm font-serif italic text-foreground/85 line-clamp-2 leading-snug transition-opacity",
-            loading && "opacity-50"
-          )}>
-            <Quote className="inline w-3 h-3 text-amber-400/60 mr-1 -mt-0.5" />
-            {quote.quote}
-          </p>
-          <p className={cn(
-            "text-xs text-muted-foreground mt-1 truncate transition-opacity",
-            loading && "opacity-50"
-          )}>
-            — <span className="font-medium">{quote.book.title}</span> by {quote.book.author}
-          </p>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {/* Next quote button */}
-          <button
-            onClick={handleNextQuote}
-            disabled={loading}
-            className="p-1.5 rounded text-amber-600/70 hover:text-amber-700 hover:bg-amber-100/50 dark:text-amber-400/70 dark:hover:text-amber-300 dark:hover:bg-amber-900/30 transition-colors disabled:opacity-50"
-            aria-label="Next quote"
-            title="Next quote"
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Shuffle className="w-4 h-4" />
-            )}
-          </button>
-
-          {user && (
-            <Button
-              size="sm"
-              variant={added ? 'secondary' : 'default'}
-              onClick={handleAddBook}
-              disabled={added || loading}
-              className={cn(
-                'h-7 text-xs gap-1 px-2',
-                !added && 'bg-amber-600 hover:bg-amber-700 text-white'
-              )}
-            >
-              {added ? (
-                <>
-                  <Book className="w-3 h-3" />
-                  <span className="hidden sm:inline">Added</span>
-                </>
-              ) : (
-                <>
-                  <Plus className="w-3 h-3" />
-                  <span className="hidden sm:inline">Add</span>
-                </>
-              )}
-            </Button>
+      {/* Compact actions */}
+      <div className="flex items-center gap-1 flex-shrink-0">
+        <button
+          onClick={handleNextQuote}
+          disabled={loading}
+          className="p-1 rounded text-amber-600/60 hover:text-amber-700 hover:bg-amber-100/50 dark:text-amber-400/60 dark:hover:text-amber-300 dark:hover:bg-amber-900/30 transition-colors disabled:opacity-50"
+          aria-label="Next quote"
+          title="Next quote"
+        >
+          {loading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Shuffle className="w-3.5 h-3.5" />
           )}
+        </button>
 
-          {/* Dismiss dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className="p-1.5 rounded text-muted-foreground/50 hover:text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                aria-label="Dismiss options"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
-              <DropdownMenuItem onClick={handleDismissToday}>
-                <X className="w-4 h-4 mr-2" />
-                Hide for today
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDisablePermanently} className="text-muted-foreground">
-                <EyeOff className="w-4 h-4 mr-2" />
-                Don't show again
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {user && !added && (
+          <Button
+            size="sm"
+            onClick={handleAddBook}
+            disabled={loading}
+            className="h-6 text-xs gap-1 px-2 bg-amber-600 hover:bg-amber-700 text-white"
+            title={`Add "${quote.book.title}" to shelf`}
+          >
+            <Plus className="w-3 h-3" />
+            <span className="hidden sm:inline">Add</span>
+          </Button>
+        )}
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="p-1 rounded text-muted-foreground/40 hover:text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              aria-label="Dismiss options"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem onClick={handleDismissToday}>
+              <X className="w-4 h-4 mr-2" />
+              Hide for today
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDisablePermanently} className="text-muted-foreground">
+              <EyeOff className="w-4 h-4 mr-2" />
+              Don't show again
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
