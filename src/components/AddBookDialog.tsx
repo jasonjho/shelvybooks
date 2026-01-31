@@ -109,15 +109,20 @@ export function AddBookDialog({ onAddBook, defaultStatus, open: controlledOpen, 
       
       {!showManualEntry ? (
           <>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by title or author..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="pl-9"
-                autoFocus
-              />
+            <div className="space-y-1.5">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by title or author..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="pl-9"
+                  autoFocus
+                />
+              </div>
+              <p className="text-xs text-muted-foreground/70 px-1">
+                Tip: Add author name for better results, or use "quotes" for exact titles
+              </p>
             </div>
 
             <div className="min-h-[300px] max-h-[400px] overflow-y-auto">
