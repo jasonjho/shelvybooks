@@ -81,16 +81,16 @@ export function SettingsPanelDialog({ open, onOpenChange }: SettingsPanelDialogP
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0">
-        <DialogHeader className="px-4 pt-4 pb-2">
+      <DialogContent className="sm:max-w-md p-0 max-h-[90dvh] flex flex-col">
+        <DialogHeader className="px-4 pt-3 pb-2 flex-none">
           <DialogTitle>Shelf Settings</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="max-h-[70vh] px-4 pb-4">
-          <div className="space-y-4">
+        <ScrollArea className="flex-1 px-4 pb-4">
+          <div className="space-y-3">
             {/* Wood Finish */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <span className="text-sm font-medium">Wood Finish</span>
-              <div className="flex gap-3 py-1 px-1">
+              <div className="flex gap-3 px-1">
                 {skins.map((skin) => (
                   <button
                     key={skin.id}
