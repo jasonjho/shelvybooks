@@ -225,9 +225,12 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
+      // For 403 (subscription/quota) and 404 (not found), return empty results
+      // so the client can gracefully fall back to alternative sources
+      if (response.status === 403 || response.status === 404) {
+        console.error(`ISBNdb error: ${response.status} - returning empty results for fallback`);
         return new Response(
-          JSON.stringify({ items: [], source: 'isbndb' }),
+          JSON.stringify({ items: [], source: 'isbndb', unavailable: response.status === 403 }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
