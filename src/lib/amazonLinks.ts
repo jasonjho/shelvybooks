@@ -54,22 +54,22 @@ function getIsbn10(isbn: string): string | null {
 
 /**
  * Generate Amazon book URL with affiliate tag
- * Uses direct product link when ISBN is available, falls back to search
+ * Uses ISBN search when available (more reliable than assuming ISBN-10=ASIN),
+ * falls back to title+author search
  */
 export function getAmazonBookUrl(
   title: string,
   author: string,
   isbn?: string | null
 ): string {
-  // Try to use ISBN-10 as ASIN for direct product link
+  // Use ISBN in search query when available - more reliable than direct /dp/ links
+  // since ISBN-10 doesn't always equal a valid Amazon ASIN
   if (isbn) {
-    const isbn10 = getIsbn10(isbn);
-    if (isbn10) {
-      return `https://www.amazon.com/dp/${isbn10}/?tag=${AMAZON_ASSOCIATE_TAG}`;
-    }
+    const cleanIsbn = isbn.replace(/[-\s]/g, '');
+    return `https://www.amazon.com/s?k=${cleanIsbn}&i=stripbooks&tag=${AMAZON_ASSOCIATE_TAG}`;
   }
   
-  // Fallback to search URL with tag
+  // Fallback to title+author search
   const query = encodeURIComponent(`${title} ${author}`);
   return `https://www.amazon.com/s?k=${query}&i=stripbooks&tag=${AMAZON_ASSOCIATE_TAG}`;
 }
