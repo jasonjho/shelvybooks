@@ -5,8 +5,9 @@ import { X, Share2, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useShelfSettings } from '@/hooks/useShelfSettings';
 
-const STORAGE_KEY = 'shelvy-share-nudge-dismissed';
+const STORAGE_KEY = 'shelvy-share-nudge-dismissed-at';
 const BOOK_THRESHOLD = 5;
+const REMINDER_INTERVAL_DAYS = 14; // Show again after 14 days
 
 interface ShareNudgeProps {
   bookCount: number;
@@ -15,7 +16,12 @@ interface ShareNudgeProps {
 export function ShareNudge({ bookCount }: ShareNudgeProps) {
   const { settings, loading, togglePublic } = useShelfSettings();
   const [dismissed, setDismissed] = useState(() => {
-    return localStorage.getItem(STORAGE_KEY) === 'true';
+    const dismissedAt = localStorage.getItem(STORAGE_KEY);
+    if (!dismissedAt) return false;
+    
+    // Check if enough time has passed since last dismissal
+    const daysSinceDismissed = (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 60 * 60 * 24);
+    return daysSinceDismissed < REMINDER_INTERVAL_DAYS;
   });
   const [visible, setVisible] = useState(false);
 
@@ -37,7 +43,8 @@ export function ShareNudge({ bookCount }: ShareNudgeProps) {
   }, [bookCount, settings, loading, dismissed]);
 
   const handleDismiss = () => {
-    localStorage.setItem(STORAGE_KEY, 'true');
+    // Store timestamp instead of boolean for time-based reminder
+    localStorage.setItem(STORAGE_KEY, Date.now().toString());
     setDismissed(true);
     setVisible(false);
   };
