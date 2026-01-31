@@ -3,12 +3,15 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { BookPlus, Upload, ChevronDown, Plus } from 'lucide-react';
+import { BookPlus, Upload, ChevronDown, Plus, Sparkles, Library } from 'lucide-react';
 import { ImportBooksDialog } from '@/components/ImportBooksDialog';
 import { AddBookDialog } from '@/components/AddBookDialog';
+import { MagicRecommender } from '@/components/MagicRecommender';
+import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { Book } from '@/types/book';
 
 interface BookActionsDropdownProps {
@@ -19,6 +22,8 @@ interface BookActionsDropdownProps {
 export function BookActionsDropdown({ onAddBook, existingBooks }: BookActionsDropdownProps) {
   const [importOpen, setImportOpen] = useState(false);
   const [addBookOpen, setAddBookOpen] = useState(false);
+  const [recommenderOpen, setRecommenderOpen] = useState(false);
+  const [discoverOpen, setDiscoverOpen] = useState(false);
 
   return (
     <>
@@ -30,7 +35,24 @@ export function BookActionsDropdown({ onAddBook, existingBooks }: BookActionsDro
             <ChevronDown className="w-3 h-3 opacity-60" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg z-50">
+        <DropdownMenuContent align="end" className="w-52 bg-background border shadow-lg z-50">
+          <DropdownMenuItem 
+            onClick={() => setRecommenderOpen(true)}
+            className="gap-2 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-violet-500" />
+            <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+              Find me a book
+            </span>
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            onClick={() => setDiscoverOpen(true)}
+            className="gap-2 cursor-pointer"
+          >
+            <Library className="w-4 h-4" />
+            Discover Collections
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem 
             onClick={() => setAddBookOpen(true)}
             className="gap-2 cursor-pointer"
@@ -60,6 +82,17 @@ export function BookActionsDropdown({ onAddBook, existingBooks }: BookActionsDro
         onOpenChange={setAddBookOpen} 
         onAddBook={onAddBook} 
         defaultStatus="reading" 
+      />
+      <MagicRecommender 
+        open={recommenderOpen}
+        onOpenChange={setRecommenderOpen}
+        books={existingBooks}
+        onAddBook={onAddBook}
+      />
+      <DiscoverCollections 
+        open={discoverOpen}
+        onOpenChange={setDiscoverOpen}
+        onAddBook={onAddBook}
       />
     </>
   );

@@ -3,13 +3,10 @@ import { Bookshelf } from '@/components/Bookshelf';
 import { MobileBookshelf } from '@/components/MobileBookshelf';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { ShelfControls } from '@/components/ShelfControls';
-import { AddBookDialog } from '@/components/AddBookDialog';
-import { ImportBooksDialog } from '@/components/ImportBooksDialog';
 import { SocialActionsDropdown } from '@/components/SocialActionsDropdown';
 import { BookActionsDropdown } from '@/components/BookActionsDropdown';
 import { AuthButton } from '@/components/AuthButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { MagicRecommender } from '@/components/MagicRecommender';
 import { ClubsDropdown } from '@/components/ClubsDropdown';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { OnboardingTips } from '@/components/OnboardingTips';
@@ -296,18 +293,11 @@ export default function Index() {
                   
                   {user && (
                     <div className="flex items-center gap-2">
-                      <MagicRecommender books={allBooks} onAddBook={addBook} />
                       <SocialActionsDropdown />
                       <BookActionsDropdown onAddBook={addBook} existingBooks={allBooks} />
                     </div>
                   )}
                 </div>
-
-                {/* Discover collections (collapsible) - only for logged in users with books */}
-                {user && allBooks.length > 0 && (
-                  <DiscoverCollections onAddBook={addBook} />
-                )}
-
 
                 {isMobile ? (
                   <MobileBookshelf
