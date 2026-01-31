@@ -17,7 +17,7 @@ import { ShelfPrivacyIndicator } from '@/components/ShelfPrivacyIndicator';
 import { ShareShelfDialog } from '@/components/ShareShelfDialog';
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { ShelfSwitcher } from '@/components/ShelfSwitcher';
-import { ViewingFriendPill } from '@/components/ViewingFriendPill';
+
 import { Button } from '@/components/ui/button';
 
 import { useBooks } from '@/hooks/useBooks';
@@ -298,10 +298,6 @@ export default function Index() {
                  {/* Daily Quote - keep stable when switching shelves */}
                  {user && <DailyQuote />}
 
-                {/* Viewing Friend Pill */}
-                {viewedUser && (
-                  <ViewingFriendPill viewedUser={viewedUser} onClose={clearViewedShelf} />
-                )}
 
                  {/* Controls row - single line with horizontal scroll on overflow */}
                  <div className={cn(
