@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Book, BookStatus } from '@/types/book';
 
@@ -74,6 +74,9 @@ export function useViewedShelf(): ViewedShelfState {
       }));
     },
     enabled: !!viewedUser?.shareId,
+    // Keep previous friend's books mounted while next friend's data loads.
+    // This prevents layout collapsing/jumping in the header/controls area.
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
