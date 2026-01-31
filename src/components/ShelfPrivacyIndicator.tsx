@@ -28,7 +28,7 @@ export function ShelfPrivacyIndicator({ onClick, className }: ShelfPrivacyIndica
           onClick={onClick}
           className={cn(
             'inline-flex items-center gap-1.5 rounded-full text-xs font-medium transition-colors',
-            isMobile ? 'p-1.5' : 'px-2 py-1',
+            isMobile ? 'p-2' : 'px-2.5 py-1.5',
             isPublic
               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
               : 'bg-muted text-muted-foreground',
@@ -38,12 +38,12 @@ export function ShelfPrivacyIndicator({ onClick, className }: ShelfPrivacyIndica
         >
           {isPublic ? (
             <>
-              <Globe className="w-3.5 h-3.5" />
+              <Globe className="w-4 h-4" />
               {!isMobile && <span>Public</span>}
             </>
           ) : (
             <>
-              <Lock className="w-3.5 h-3.5" />
+              <Lock className="w-4 h-4" />
               {!isMobile && <span>Private</span>}
             </>
           )}
