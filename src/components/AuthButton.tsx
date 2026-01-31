@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/contexts/ProfileContext';
-import { LogIn, LogOut, User, Settings, Shield } from 'lucide-react';
+import { LogIn, LogOut, User, Settings, Shield, Palette } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ProfileEditDialog } from '@/components/ProfileEditDialog';
 import { AccountSettingsDialog } from '@/components/AccountSettingsDialog';
+import { SettingsPanelDialog } from '@/components/SettingsPanelDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 
@@ -38,6 +39,7 @@ export function AuthButton() {
   const [submitting, setSubmitting] = useState(false);
   const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [accountSettingsOpen, setAccountSettingsOpen] = useState(false);
+  const [shelfSettingsOpen, setShelfSettingsOpen] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
@@ -189,8 +191,12 @@ export function AuthButton() {
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={() => setProfileEditOpen(true)} className="gap-2 cursor-pointer">
-            <Settings className="w-4 h-4" />
+            <User className="w-4 h-4" />
             Edit profile
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShelfSettingsOpen(true)} className="gap-2 cursor-pointer">
+            <Palette className="w-4 h-4" />
+            Shelf settings
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setAccountSettingsOpen(true)} className="gap-2 cursor-pointer">
             <Shield className="w-4 h-4" />
@@ -206,6 +212,7 @@ export function AuthButton() {
 
       <ProfileEditDialog open={profileEditOpen} onOpenChange={setProfileEditOpen} />
       <AccountSettingsDialog open={accountSettingsOpen} onOpenChange={setAccountSettingsOpen} />
+      <SettingsPanelDialog open={shelfSettingsOpen} onOpenChange={setShelfSettingsOpen} />
     </>
   );
 }
