@@ -33,14 +33,14 @@ const getEmailHtml = () => `
       <div style="margin-bottom: 16px;">
         <strong style="color: #78350f;">🎨 Cleaner UI & Mobile Support</strong>
         <p style="margin: 4px 0 0 0; font-size: 15px; color: #4b5563;">
-          A tidier, more polished look that works beautifully on your phone.
+          A tidier, more polished look on mobile.
         </p>
       </div>
       
       <div style="margin-bottom: 16px;">
         <strong style="color: #78350f;">👋 Find & Invite Friends</strong>
         <p style="margin: 4px 0 0 0; font-size: 15px; color: #4b5563;">
-          Search for friends on Shelvy or invite new ones to join and share reading recommendations.
+          Search for friends on Shelvy or invite new ones to join.
         </p>
       </div>
       
