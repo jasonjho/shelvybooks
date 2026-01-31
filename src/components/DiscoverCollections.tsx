@@ -5,21 +5,35 @@ import { Book, BookStatus } from '@/types/book';
 import { Button } from '@/components/ui/button';
 import { Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface DiscoverCollectionsProps {
   onAddBook: (book: Omit<Book, 'id'>) => Promise<void>;
   isEmptyShelf?: boolean;
   compact?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function DiscoverCollections({ 
   onAddBook, 
   isEmptyShelf = false,
   compact = false,
+  open: controlledOpen,
+  onOpenChange,
 }: DiscoverCollectionsProps) {
-  const [isExpanded, setIsExpanded] = useState(isEmptyShelf);
+  const [internalOpen, setInternalOpen] = useState(isEmptyShelf);
   const [addingBooks, setAddingBooks] = useState<Set<string>>(new Set());
   
+  const isControlled = controlledOpen !== undefined;
+  const isExpanded = isControlled ? controlledOpen : internalOpen;
+  const setIsExpanded = isControlled ? (onOpenChange || (() => {})) : setInternalOpen;
+
   const {
     collections,
     loadingCollection,
@@ -63,6 +77,41 @@ export function DiscoverCollections({
     }
   };
 
+  const collectionsGrid = (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {collections.map(collection => (
+        <CollectionCard
+          key={collection.id}
+          collection={collection}
+          books={collectionBooks[collection.id]}
+          isLoading={loadingCollection === collection.id}
+          onPreview={() => handlePreview(collection.id)}
+          onAddBooks={(books) => handleAddBooks(collection.id, books)}
+          isAddingBooks={addingBooks.has(collection.id)}
+        />
+      ))}
+    </div>
+  );
+
+  // Controlled dialog mode - used from dropdown
+  if (isControlled) {
+    return (
+      <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
+        <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              Discover Collections
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            {collectionsGrid}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   // For empty shelf, show prominently
   if (isEmptyShelf) {
     return (
@@ -81,24 +130,14 @@ export function DiscoverCollections({
           </p>
         </div>
         
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
-          {collections.map(collection => (
-            <CollectionCard
-              key={collection.id}
-              collection={collection}
-              books={collectionBooks[collection.id]}
-              isLoading={loadingCollection === collection.id}
-              onPreview={() => handlePreview(collection.id)}
-              onAddBooks={(books) => handleAddBooks(collection.id, books)}
-              isAddingBooks={addingBooks.has(collection.id)}
-            />
-          ))}
+        <div className="max-w-5xl mx-auto">
+          {collectionsGrid}
         </div>
       </div>
     );
   }
 
-  // Compact discover section (persistent)
+  // Compact discover section (persistent) - collapsible
   return (
     <div className="mb-6">
       <Button
@@ -118,18 +157,8 @@ export function DiscoverCollections({
       </Button>
       
       {isExpanded && (
-        <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3 animate-fade-in">
-          {collections.map(collection => (
-            <CollectionCard
-              key={collection.id}
-              collection={collection}
-              books={collectionBooks[collection.id]}
-              isLoading={loadingCollection === collection.id}
-              onPreview={() => handlePreview(collection.id)}
-              onAddBooks={(books) => handleAddBooks(collection.id, books)}
-              isAddingBooks={addingBooks.has(collection.id)}
-            />
-          ))}
+        <div className="mt-4 animate-fade-in">
+          {collectionsGrid}
         </div>
       )}
     </div>

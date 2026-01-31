@@ -33,10 +33,16 @@ interface MagicRecommenderProps {
   books: Book[];
   onAddBook: (book: Omit<Book, 'id'>) => Promise<void>;
   disabled?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommenderProps) {
-  const [open, setOpen] = useState(false);
+export function MagicRecommender({ books, onAddBook, disabled, open: controlledOpen, onOpenChange }: MagicRecommenderProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? (onOpenChange || (() => {})) : setInternalOpen;
   const [loading, setLoading] = useState(false);
   const [addingBooks, setAddingBooks] = useState(false);
   const [mood, setMood] = useState('');
@@ -220,6 +226,230 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
   const someSelected = selectedRecs.size > 0;
   const selectedNotAdded = [...selectedRecs].filter((i) => !addedRecs.has(i)).length;
 
+  const dialogContent = (
+    <>
+      {/* Close button for mobile */}
+      <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10">
+        <X className="h-4 w-4" />
+        <span className="sr-only">Close</span>
+      </DialogClose>
+      
+      <DialogHeader className="flex-shrink-0">
+        <DialogTitle className="flex items-center gap-2 text-xl font-sans pr-8">
+          <Wand2 className="h-5 w-5 text-violet-500" />
+          <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+            Find me a book
+          </span>
+          <Sparkles className="h-4 w-4 text-fuchsia-500" />
+        </DialogTitle>
+        <DialogDescription className="font-sans">
+          Based on your {books.length} book{books.length !== 1 ? 's' : ''}, we'll conjure up
+          personalized recommendations just for you.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="space-y-4 py-4 font-sans flex-1 overflow-y-auto min-h-0">
+        {!result ? (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="mood" className="text-sm text-muted-foreground">
+                What are you in the mood for? (optional)
+              </Label>
+              <Input
+                id="mood"
+                placeholder="e.g., something cozy, a page-turner..."
+                value={mood}
+                onChange={(e) => setMood(e.target.value)}
+                disabled={loading}
+                className="font-sans"
+                onFocus={(e) => {
+                  setTimeout(() => {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 300);
+                }}
+              />
+            </div>
+
+            <Button
+              onClick={handleGetRecommendations}
+              disabled={loading || books.length === 0}
+              className={cn(
+                'w-full transition-all duration-300',
+                'bg-gradient-to-r from-violet-600 to-fuchsia-600',
+                'hover:from-violet-500 hover:to-fuchsia-500',
+                'hover:shadow-lg hover:shadow-violet-500/30'
+              )}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Conjuring magic...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Get Recommendations
+                </>
+              )}
+            </Button>
+          </>
+        ) : (
+          <div className="space-y-4 animate-fade-in">
+            <div className="p-3 rounded-lg bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border border-violet-200/50 dark:border-violet-800/50 flex-shrink-0">
+              <p className="text-sm text-muted-foreground italic">✨ {result.insight}</p>
+            </div>
+
+            <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
+              {result.recommendations.map((rec, index) => {
+                const isAdded = addedRecs.has(index);
+                const isSelected = selectedRecs.has(index);
+                
+                return (
+                  <div
+                    key={index}
+                    className={cn(
+                      'p-4 rounded-lg border bg-card transition-all',
+                      isSelected && !isAdded && 'ring-2 ring-violet-400 border-violet-400',
+                      isAdded && 'bg-muted/50 opacity-75'
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleSelection(index)}
+                        disabled={isAdded}
+                        className="mt-1 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
+                      />
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-sans font-semibold text-foreground">{rec.title}</h4>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 whitespace-nowrap">
+                            {rec.vibe}
+                          </span>
+                          {isAdded && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 flex items-center gap-1">
+                              <Check className="h-3 w-3" />
+                              Added
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">by {rec.author}</p>
+                        <p className="text-sm mt-1">{rec.reason}</p>
+                      </div>
+                      
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => addSingleBook(rec, index)}
+                          disabled={isAdded || addingBooks}
+                          className="h-8 w-8"
+                          title={isAdded ? 'Already added' : 'Add to shelf'}
+                        >
+                          {isAdded ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Plus className="h-4 w-4" />
+                          )}
+                        </Button>
+                        
+                        <a
+                          href={getAmazonSearchUrl(rec.title, rec.author)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-md hover:bg-muted transition-colors"
+                          title="Find on Amazon"
+                        >
+                          <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {someSelected && selectedNotAdded > 0 && (
+                <Button
+                  onClick={addSelectedBooks}
+                  disabled={addingBooks}
+                  className={cn(
+                    'w-full transition-all duration-300',
+                    'bg-gradient-to-r from-violet-600 to-fuchsia-600',
+                    'hover:from-violet-500 hover:to-fuchsia-500'
+                  )}
+                >
+                  {addingBooks ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4 mr-2" />
+                  )}
+                  Add Selected ({selectedNotAdded})
+                </Button>
+              )}
+              
+              {!allAdded && (
+                <Button
+                  variant={someSelected ? 'outline' : 'default'}
+                  onClick={addAllBooks}
+                  disabled={addingBooks}
+                  className={cn(
+                    'w-full',
+                    !someSelected && 'bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500'
+                  )}
+                >
+                  {addingBooks ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4 mr-2" />
+                  )}
+                  Add All to Shelf
+                </Button>
+              )}
+
+              {addedRecs.size > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={() => handleOpenChange(false)}
+                  className="w-full border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20"
+                >
+                  <Check className="h-4 w-4 mr-2" />
+                  Done
+                </Button>
+              )}
+
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setResult(null);
+                  setSelectedRecs(new Set());
+                  setAddedRecs(new Set());
+                }}
+                className="w-full"
+              >
+                <Wand2 className="h-4 w-4 mr-2" />
+                Try Again
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+
+  // If controlled, don't render the trigger button
+  if (isControlled) {
+    return (
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-lg font-sans max-h-[90vh] overflow-hidden flex flex-col">
+          {dialogContent}
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <>
       <Button
@@ -244,226 +474,7 @@ export function MagicRecommender({ books, onAddBook, disabled }: MagicRecommende
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-lg font-sans max-h-[90vh] overflow-hidden flex flex-col">
-          {/* Close button for mobile */}
-          <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </DialogClose>
-          
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="flex items-center gap-2 text-xl font-sans pr-8">
-              <Wand2 className="h-5 w-5 text-violet-500" />
-              <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-                Find me a book
-              </span>
-              <Sparkles className="h-4 w-4 text-fuchsia-500" />
-            </DialogTitle>
-            <DialogDescription className="font-sans">
-              Based on your {books.length} book{books.length !== 1 ? 's' : ''}, we'll conjure up
-              personalized recommendations just for you.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4 font-sans flex-1 overflow-y-auto min-h-0">
-            {!result ? (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="mood" className="text-sm text-muted-foreground">
-                    What are you in the mood for? (optional)
-                  </Label>
-                  <Input
-                    id="mood"
-                    placeholder="e.g., something cozy, a page-turner..."
-                    value={mood}
-                    onChange={(e) => setMood(e.target.value)}
-                    disabled={loading}
-                    className="font-sans"
-                    // Ensure input scrolls into view on mobile when focused
-                    onFocus={(e) => {
-                      // Small delay to let keyboard appear
-                      setTimeout(() => {
-                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      }, 300);
-                    }}
-                  />
-                </div>
-
-                <Button
-                  onClick={handleGetRecommendations}
-                  disabled={loading || books.length === 0}
-                  className={cn(
-                    'w-full transition-all duration-300',
-                    'bg-gradient-to-r from-violet-600 to-fuchsia-600',
-                    'hover:from-violet-500 hover:to-fuchsia-500',
-                    'hover:shadow-lg hover:shadow-violet-500/30'
-                  )}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Conjuring magic...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Get Recommendations
-                    </>
-                  )}
-                </Button>
-              </>
-            ) : (
-              <div className="space-y-4 animate-fade-in">
-                {/* Insight */}
-                <div className="p-3 rounded-lg bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border border-violet-200/50 dark:border-violet-800/50 flex-shrink-0">
-                  <p className="text-sm text-muted-foreground italic">✨ {result.insight}</p>
-                </div>
-
-                {/* Recommendations */}
-                <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
-                  {result.recommendations.map((rec, index) => {
-                    const isAdded = addedRecs.has(index);
-                    const isSelected = selectedRecs.has(index);
-                    
-                    return (
-                      <div
-                        key={index}
-                        className={cn(
-                          'p-4 rounded-lg border bg-card transition-all',
-                          isSelected && !isAdded && 'ring-2 ring-violet-400 border-violet-400',
-                          isAdded && 'bg-muted/50 opacity-75'
-                        )}
-                      >
-                        <div className="flex items-start gap-3">
-                          {/* Checkbox for multi-select */}
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={() => toggleSelection(index)}
-                            disabled={isAdded}
-                            className="mt-1 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
-                          />
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="font-sans font-semibold text-foreground">{rec.title}</h4>
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 whitespace-nowrap">
-                                {rec.vibe}
-                              </span>
-                              {isAdded && (
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 flex items-center gap-1">
-                                  <Check className="h-3 w-3" />
-                                  Added
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground">by {rec.author}</p>
-                            <p className="text-sm mt-1">{rec.reason}</p>
-                          </div>
-                          
-                          <div className="flex items-center gap-1 flex-shrink-0">
-                            {/* Add single book button */}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => addSingleBook(rec, index)}
-                              disabled={isAdded || addingBooks}
-                              className="h-8 w-8"
-                              title={isAdded ? 'Already added' : 'Add to shelf'}
-                            >
-                              {isAdded ? (
-                                <Check className="h-4 w-4 text-green-600" />
-                              ) : (
-                                <Plus className="h-4 w-4" />
-                              )}
-                            </Button>
-                            
-                            {/* Amazon link */}
-                            <a
-                              href={getAmazonSearchUrl(rec.title, rec.author)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-2 rounded-md hover:bg-muted transition-colors"
-                              title="Find on Amazon"
-                            >
-                              <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex flex-col gap-2">
-                  {/* Add Selected button - only show when items are selected */}
-                  {someSelected && selectedNotAdded > 0 && (
-                    <Button
-                      onClick={addSelectedBooks}
-                      disabled={addingBooks}
-                      className={cn(
-                        'w-full transition-all duration-300',
-                        'bg-gradient-to-r from-violet-600 to-fuchsia-600',
-                        'hover:from-violet-500 hover:to-fuchsia-500'
-                      )}
-                    >
-                      {addingBooks ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Plus className="h-4 w-4 mr-2" />
-                      )}
-                      Add Selected ({selectedNotAdded})
-                    </Button>
-                  )}
-                  
-                  {/* Add All button */}
-                  {!allAdded && (
-                    <Button
-                      variant={someSelected ? 'outline' : 'default'}
-                      onClick={addAllBooks}
-                      disabled={addingBooks}
-                      className={cn(
-                        'w-full',
-                        !someSelected && 'bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500'
-                      )}
-                    >
-                      {addingBooks ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Plus className="h-4 w-4 mr-2" />
-                      )}
-                      Add All to Shelf
-                    </Button>
-                  )}
-
-                  {/* Done button - show when some books have been added */}
-                  {addedRecs.size > 0 && (
-                    <Button
-                      variant="outline"
-                      onClick={() => handleOpenChange(false)}
-                      className="w-full border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20"
-                    >
-                      <Check className="h-4 w-4 mr-2" />
-                      Done
-                    </Button>
-                  )}
-
-                  {/* Try again button */}
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setResult(null);
-                      setSelectedRecs(new Set());
-                      setAddedRecs(new Set());
-                    }}
-                    className="w-full"
-                  >
-                    <Wand2 className="h-4 w-4 mr-2" />
-                    Try Again
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
+          {dialogContent}
         </DialogContent>
       </Dialog>
     </>
