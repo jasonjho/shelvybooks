@@ -95,10 +95,40 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
           <div className="space-y-4">
             <div className="space-y-1">
               <h4 className="font-sans font-medium text-sm">Shelf Customization</h4>
-            <p className="text-xs text-muted-foreground">
-              Toggle decorative elements
-            </p>
-          </div>
+              <p className="text-xs text-muted-foreground">
+                Personalize your bookshelf
+              </p>
+            </div>
+
+            {/* Wood Finish - moved here under Shelf Customization */}
+            {currentSkin && onSkinChange && (
+              <div className="space-y-2">
+                <span className="text-sm font-medium">Wood Finish</span>
+                <div className="flex gap-3 py-1 px-1">
+                  {skins.map((skin) => (
+                    <button
+                      key={skin.id}
+                      onClick={() => onSkinChange(skin.id)}
+                      className={cn(
+                        'w-9 h-9 rounded-full border-2 transition-all flex items-center justify-center shadow-lg',
+                        skin.gradient,
+                        currentSkin === skin.id
+                          ? 'border-primary ring-2 ring-primary/30 scale-110'
+                          : 'border-border hover:border-primary/50 hover:scale-105'
+                      )}
+                      title={skin.name}
+                    >
+                      {currentSkin === skin.id && (
+                        <Check className={cn(
+                          'w-4 h-4',
+                          skin.id === 'white' ? 'text-stone-700' : 'text-white'
+                        )} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           
           <div className="space-y-3">
             {toggleSettings.map((setting) => (
@@ -184,37 +214,6 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
               ))}
             </div>
           </div>
-
-
-          {/* Wood Finish */}
-          {currentSkin && onSkinChange && (
-            <div className="space-y-2 pt-2 pb-1 border-t border-border">
-              <span className="text-sm font-medium">Wood Finish</span>
-              <div className="flex gap-3 py-1 px-1">
-                {skins.map((skin) => (
-                  <button
-                    key={skin.id}
-                    onClick={() => onSkinChange(skin.id)}
-                    className={cn(
-                      'w-9 h-9 rounded-full border-2 transition-all flex items-center justify-center shadow-lg',
-                      skin.gradient,
-                      currentSkin === skin.id
-                        ? 'border-primary ring-2 ring-primary/30 scale-110'
-                        : 'border-border hover:border-primary/50 hover:scale-105'
-                    )}
-                    title={skin.name}
-                  >
-                    {currentSkin === skin.id && (
-                      <Check className={cn(
-                        'w-4 h-4',
-                        skin.id === 'white' ? 'text-stone-700' : 'text-white'
-                      )} />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Theme Mode */}
           <div className="space-y-2 pt-2 border-t border-border">
