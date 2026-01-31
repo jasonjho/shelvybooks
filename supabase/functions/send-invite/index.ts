@@ -78,11 +78,10 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const appUrl = "https://shelvy-books.lovable.app";
+    const logoUrl = "https://gzzkaxivhqqoezfqtpsd.supabase.co/storage/v1/object/public/email-assets/shelvy-logo.png";
     let emailHtml: string;
     let emailSubject: string;
-
-    // Google Fonts link for Playfair Display
-    const fontLink = `<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">`;
+    
     
     if (existingUser) {
       // User already exists - send "wants to connect" email
@@ -98,11 +97,10 @@ const handler = async (req: Request): Promise<Response> => {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          ${fontLink}
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="font-family: Georgia, 'Times New Roman', serif; color: #92400e; font-size: 36px; margin: 0; font-weight: 400; letter-spacing: -0.5px;">Shelvy</h1>
+            <img src="${logoUrl}" alt="Shelvy" style="height: 48px; width: auto;" />
             <p style="color: #6b7280; margin: 8px 0 0 0; font-size: 14px;">Your personal bookshelf, beautifully organized</p>
           </div>
           
@@ -134,11 +132,10 @@ const handler = async (req: Request): Promise<Response> => {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          ${fontLink}
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="font-family: Georgia, 'Times New Roman', serif; color: #92400e; font-size: 36px; margin: 0; font-weight: 400; letter-spacing: -0.5px;">Shelvy</h1>
+            <img src="${logoUrl}" alt="Shelvy" style="height: 48px; width: auto;" />
             <p style="color: #6b7280; margin: 8px 0 0 0; font-size: 14px;">Your personal bookshelf, beautifully organized</p>
           </div>
           
