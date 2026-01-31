@@ -181,7 +181,7 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
           {currentSkin && onSkinChange && (
             <div className="space-y-2 pt-2 border-t border-border">
               <span className="text-sm font-medium">Wood Finish</span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 p-1 -m-1">
                 {skins.map((skin) => (
                   <button
                     key={skin.id}
