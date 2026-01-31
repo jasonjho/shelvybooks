@@ -10,9 +10,53 @@ interface BookToRefresh {
   id: string;
   title: string;
   author: string;
+  isbn?: string;
 }
 
-// Search Google Books API for a cover
+// Clean title by removing series notation for better search matching
+function cleanTitle(title: string): string {
+  return title
+    .replace(/\s*\([^)]*#\d+[^)]*\)\s*/gi, ' ')
+    .replace(/\s*#\d+\s*/gi, ' ')
+    .replace(/\s*,?\s*book\s+\d+\s*/gi, ' ')
+    .replace(/\s*,?\s*vol\.?\s*\d+\s*/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Search ISBNdb for a cover (PRIMARY SOURCE)
+async function searchISBNdbCover(title: string, author: string, apiKey: string): Promise<string | null> {
+  const cleanedTitle = cleanTitle(title);
+  const query = encodeURIComponent(`${cleanedTitle} ${author}`);
+  const url = `https://api2.isbndb.com/books/${query}?pageSize=3`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': apiKey,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const books = data.books || [];
+
+    // Find first result with a valid cover
+    for (const book of books) {
+      if (book.image && !book.image.includes('placeholder')) {
+        return book.image;
+      }
+    }
+  } catch (e) {
+    console.error("ISBNdb error:", e);
+  }
+
+  return null;
+}
+
+// Search Google Books API for a cover (FALLBACK 1)
 async function searchGoogleBooksCover(title: string, author: string, apiKey?: string): Promise<string | null> {
   const query = `${title} ${author}`;
   let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=3&printType=books`;
@@ -59,7 +103,7 @@ async function searchGoogleBooksCover(title: string, author: string, apiKey?: st
   return null;
 }
 
-// Search Open Library for a cover
+// Search Open Library for a cover (FALLBACK 2)
 async function searchOpenLibraryCover(title: string, author: string): Promise<string | null> {
   const query = `${title} ${author}`;
   const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=3&fields=cover_i`;
@@ -100,6 +144,7 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const isbndbApiKey = Deno.env.get('ISBNDB_API_KEY');
     const googleApiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY');
     
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -182,11 +227,24 @@ serve(async (req) => {
     for (const book of booksToRefresh) {
       console.log(`Searching cover for: ${book.title} by ${book.author}`);
       
-      // Try Google Books first, then Open Library
-      let coverUrl = await searchGoogleBooksCover(book.title, book.author, googleApiKey);
+      let coverUrl: string | null = null;
       
+      // Try ISBNdb first (PRIMARY)
+      if (isbndbApiKey) {
+        coverUrl = await searchISBNdbCover(book.title, book.author, isbndbApiKey);
+        if (coverUrl) console.log(`Found cover via ISBNdb`);
+      }
+      
+      // Fallback to Google Books
+      if (!coverUrl) {
+        coverUrl = await searchGoogleBooksCover(book.title, book.author, googleApiKey);
+        if (coverUrl) console.log(`Found cover via Google Books`);
+      }
+      
+      // Fallback to Open Library
       if (!coverUrl) {
         coverUrl = await searchOpenLibraryCover(book.title, book.author);
+        if (coverUrl) console.log(`Found cover via Open Library`);
       }
       
       if (coverUrl) {
