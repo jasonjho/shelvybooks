@@ -197,7 +197,7 @@ const handler = async (req: Request): Promise<Response> => {
       for (let i = 0; i < targetEmails.length; i += batchSize) {
         const batch = targetEmails.slice(i, i + batchSize);
         
-        // Send to each email individually (Resend doesn't support bulk BCC well)
+        // Send to each email individually with rate limiting (Resend allows 2/sec)
         for (const email of batch) {
           try {
             const emailResponse = await fetch("https://api.resend.com/emails", {
@@ -216,14 +216,19 @@ const handler = async (req: Request): Promise<Response> => {
 
             if (emailResponse.ok) {
               sentCount++;
+              console.log(`Sent to ${email}`);
             } else {
+              const errorText = await emailResponse.text();
               failedCount++;
-              console.error(`Failed to send to ${email}`);
+              console.error(`Failed to send to ${email}: ${emailResponse.status} - ${errorText}`);
             }
           } catch (err) {
             failedCount++;
             console.error(`Error sending to ${email}:`, err);
           }
+          
+          // Rate limit: wait 600ms between emails (under 2/sec limit)
+          await new Promise(resolve => setTimeout(resolve, 600));
         }
       }
 
