@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/contexts/ProfileContext';
-import { LogIn, LogOut, User, Settings } from 'lucide-react';
+import { LogIn, LogOut, User, Settings, Shield } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ProfileEditDialog } from '@/components/ProfileEditDialog';
+import { AccountSettingsDialog } from '@/components/AccountSettingsDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 
@@ -36,7 +37,7 @@ export function AuthButton() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [profileEditOpen, setProfileEditOpen] = useState(false);
-
+  const [accountSettingsOpen, setAccountSettingsOpen] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
@@ -191,6 +192,10 @@ export function AuthButton() {
             <Settings className="w-4 h-4" />
             Edit profile
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setAccountSettingsOpen(true)} className="gap-2 cursor-pointer">
+            <Shield className="w-4 h-4" />
+            Account settings
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={signOut} className="gap-2 cursor-pointer">
             <LogOut className="w-4 h-4" />
@@ -200,6 +205,7 @@ export function AuthButton() {
       </DropdownMenu>
 
       <ProfileEditDialog open={profileEditOpen} onOpenChange={setProfileEditOpen} />
+      <AccountSettingsDialog open={accountSettingsOpen} onOpenChange={setAccountSettingsOpen} />
     </>
   );
 }
