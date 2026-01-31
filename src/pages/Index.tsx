@@ -223,7 +223,6 @@ export default function Index() {
           </div>
           <div className="flex items-center gap-2">
             {user && <ClubsDropdown />}
-            {user && <FindFriendsDialog />}
             {user && <NotificationBell />}
             <ThemeToggle />
             <SettingsPanel 
@@ -300,6 +299,7 @@ export default function Index() {
                   {user && (
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                       <MagicRecommender books={allBooks} onAddBook={addBook} />
+                      <FindFriendsDialog />
                       <ShareShelfDialog />
                       <ImportBooksDialog onAddBook={addBook} existingBooks={allBooks} />
                       <AddBookDialog onAddBook={addBook} defaultStatus="reading" />
