@@ -3,7 +3,7 @@ import { BookSpine, ClubInfo } from './BookSpine';
 import { BookDetailDialog } from './BookDetailDialog';
 import { BookNoteDialog } from './BookNoteDialog';
 import { ShelfDecoration, DECORATION_TYPES, DecorationType } from './ShelfDecorations';
-import { ShelfRibbon } from './ShelfRibbon';
+
 import { cn } from '@/lib/utils';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useBookNotes, BookNote, NoteColor } from '@/hooks/useBookNotes';
@@ -331,8 +331,6 @@ export function MobileBookshelf({
 
   return (
     <div ref={containerRef} className={cn('mobile-bookcase relative', skinClass, grainClass)}>
-      {/* Ribbon indicator when viewing someone else's shelf */}
-      {viewingUsername && <ShelfRibbon username={viewingUsername} className="-top-2" />}
       
       {books.length === 0 ? (
         <div className="flex items-center justify-center py-12 text-muted-foreground text-sm italic">

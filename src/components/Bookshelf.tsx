@@ -4,7 +4,7 @@ import { BookSpine, ClubInfo } from './BookSpine';
 import { BookDetailDialog } from './BookDetailDialog';
 import { BookNoteDialog } from './BookNoteDialog';
 import { ShelfDecoration, DECORATION_TYPES, DecorationType } from './ShelfDecorations';
-import { ShelfRibbon } from './ShelfRibbon';
+
 import { cn } from '@/lib/utils';
 import { useBookNotes, BookNote, NoteColor } from '@/hooks/useBookNotes';
 interface BookshelfProps {
@@ -337,8 +337,6 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
 
   return (
     <div ref={containerRef} className={cn('bookcase p-4 pt-6 pb-8 flex flex-col gap-0', skinClass, grainClass)}>
-      {/* Ribbon indicator when viewing someone else's shelf */}
-      {viewingUsername && <ShelfRibbon username={viewingUsername} />}
       
       {/* Decorative trim elements */}
       <div className="bookcase-crown" />
