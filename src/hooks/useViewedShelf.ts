@@ -1,18 +1,13 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Book, BookStatus, ShelfSkin, ShelfSettings, DecorDensity, BackgroundTheme } from '@/types/book';
+import { Book, BookStatus } from '@/types/book';
 
 export interface ViewedShelfUser {
   userId: string;
   username: string;
   avatarUrl: string | null;
   shareId: string;
-}
-
-export interface ViewedShelfAppearance {
-  shelfSkin: ShelfSkin;
-  settings: ShelfSettings;
 }
 
 export interface ViewedShelfState {
@@ -28,21 +23,7 @@ export interface ViewedShelfState {
   viewedBooks: Book[];
   /** Loading state for friend's books */
   loadingViewedBooks: boolean;
-  /** Appearance settings for the viewed shelf */
-  viewedAppearance: ViewedShelfAppearance | null;
 }
-
-const DEFAULT_APPEARANCE: ViewedShelfAppearance = {
-  shelfSkin: 'oak',
-  settings: {
-    showPlant: true,
-    showBookends: true,
-    showAmbientLight: true,
-    showWoodGrain: true,
-    decorDensity: 'balanced',
-    backgroundTheme: 'office',
-  },
-};
 
 export function useViewedShelf(): ViewedShelfState {
   const [viewedUser, setViewedUser] = useState<ViewedShelfUser | null>(null);
@@ -96,36 +77,6 @@ export function useViewedShelf(): ViewedShelfState {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Fetch appearance settings for the viewed shelf
-  const { data: viewedAppearance } = useQuery({
-    queryKey: ['viewed-shelf-appearance', viewedUser?.shareId],
-    queryFn: async (): Promise<ViewedShelfAppearance> => {
-      if (!viewedUser?.shareId) return DEFAULT_APPEARANCE;
-
-      const { data, error } = await supabase
-        .rpc('get_public_shelf_appearance', { _share_id: viewedUser.shareId });
-
-      if (error || !data || data.length === 0) {
-        return DEFAULT_APPEARANCE;
-      }
-
-      const appearance = data[0];
-      return {
-        shelfSkin: (appearance.shelf_skin as ShelfSkin) || 'oak',
-        settings: {
-          showPlant: appearance.show_plant ?? true,
-          showBookends: appearance.show_bookends ?? true,
-          showAmbientLight: appearance.show_ambient_light ?? true,
-          showWoodGrain: appearance.show_wood_grain ?? true,
-          decorDensity: (appearance.decor_density as DecorDensity) || 'balanced',
-          backgroundTheme: (appearance.background_theme as BackgroundTheme) || 'office',
-        },
-      };
-    },
-    enabled: !!viewedUser?.shareId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
-
   const isViewingFriend = useMemo(() => viewedUser !== null, [viewedUser]);
 
   return {
@@ -135,6 +86,5 @@ export function useViewedShelf(): ViewedShelfState {
     isViewingFriend,
     viewedBooks,
     loadingViewedBooks,
-    viewedAppearance: isViewingFriend ? (viewedAppearance || DEFAULT_APPEARANCE) : null,
   };
 }
