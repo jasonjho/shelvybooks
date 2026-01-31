@@ -137,7 +137,7 @@ export function DailyQuote({ onAddBook, existingBooks }: DailyQuoteProps) {
       <span className="absolute -top-2.5 left-3 px-1.5 text-[10px] font-medium uppercase tracking-wider text-amber-600/70 dark:text-amber-400/50 bg-background rounded">
         Daily Inspiration
       </span>
-      <div className="flex items-start gap-3">
+      <div className="flex items-center gap-3">
 
         {/* Quote & book info */}
         <div className="flex-1 min-w-0">
