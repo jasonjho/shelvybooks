@@ -90,6 +90,43 @@ export function useBooks() {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   }, [settings]);
 
+  // Enrich book with ISBNdb metadata before saving
+  const enrichBook = useCallback(
+    async (book: Omit<Book, 'id'>): Promise<Omit<Book, 'id'>> => {
+      // Skip enrichment if book already has metadata
+      if (book.isbn && book.pageCount && book.description) {
+        return book;
+      }
+
+      try {
+        const { data, error } = await supabase.functions.invoke('enrich-book', {
+          body: { title: book.title, author: book.author },
+        });
+
+        if (error || !data?.enriched) {
+          return book;
+        }
+
+        const enrichedData = data.data || {};
+        return {
+          ...book,
+          pageCount: book.pageCount || enrichedData.pageCount,
+          isbn: book.isbn || enrichedData.isbn,
+          description: book.description || enrichedData.description,
+          categories: book.categories || enrichedData.categories,
+          // Only use ISBNdb cover if current one is missing or placeholder
+          coverUrl: (!book.coverUrl || book.coverUrl.includes('placeholder')) 
+            ? (enrichedData.coverUrl || book.coverUrl) 
+            : book.coverUrl,
+        };
+      } catch (err) {
+        console.error('Book enrichment failed:', err);
+        return book;
+      }
+    },
+    []
+  );
+
   const addBook = useCallback(
     async (book: Omit<Book, 'id'>) => {
       if (!user) {
@@ -101,18 +138,21 @@ export function useBooks() {
         return;
       }
 
+      // Enrich with ISBNdb before saving
+      const enrichedBook = await enrichBook(book);
+
       const { data, error } = await supabase
         .from('books')
         .insert({
           user_id: user.id,
-          title: book.title,
-          author: book.author,
-          cover_url: book.coverUrl,
-          status: book.status,
-          page_count: book.pageCount,
-          isbn: book.isbn,
-          description: book.description,
-          categories: book.categories,
+          title: enrichedBook.title,
+          author: enrichedBook.author,
+          cover_url: enrichedBook.coverUrl,
+          status: enrichedBook.status,
+          page_count: enrichedBook.pageCount,
+          isbn: enrichedBook.isbn,
+          description: enrichedBook.description,
+          categories: enrichedBook.categories,
         })
         .select()
         .single();
@@ -147,10 +187,10 @@ export function useBooks() {
 
       toast({
         title: 'Book added',
-        description: `"${book.title}" has been added to your shelf.`,
+        description: `"${enrichedBook.title}" has been added to your shelf.`,
       });
     },
-    [user, toast, markAsAdded]
+    [user, toast, markAsAdded, enrichBook]
   );
 
   const removeBook = useCallback(
