@@ -307,16 +307,13 @@ export default function Index() {
                    "flex flex-wrap items-center gap-3 mb-6",
                    user ? "justify-between" : "justify-start"
                  )}>
-                  {/* Left side: Shelf Switcher (desktop only) + ShelfControls */}
+                  {/* Left side: Shelf Switcher + ShelfControls */}
                   <div className="flex flex-wrap items-center gap-2">
-                    {/* Desktop shelf switcher */}
-                    <div className="hidden sm:block">
-                      <ShelfSwitcher 
-                        viewedUser={viewedUser}
-                        onSelectUser={viewShelf}
-                        onSelectOwnShelf={clearViewedShelf}
-                      />
-                    </div>
+                    <ShelfSwitcher 
+                      viewedUser={viewedUser}
+                      onSelectUser={viewShelf}
+                      onSelectOwnShelf={clearViewedShelf}
+                    />
                     <ShelfControls
                       activeFilters={activeFilters}
                       onFilterChange={setActiveFilters}
