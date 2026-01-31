@@ -138,9 +138,17 @@ export function FindFriendsDialog({ open: controlledOpen, onOpenChange: controll
         throw new Error(response.error.message);
       }
 
-      toast.success('Invite sent!', {
-        description: `We've sent an invitation to ${inviteEmail}`,
-      });
+      const isExistingUser = response.data?.isExistingUser;
+      
+      if (isExistingUser) {
+        toast.success('Connection request sent!', {
+          description: `${inviteEmail} is already on Shelvy — we've let them know you want to connect!`,
+        });
+      } else {
+        toast.success('Invite sent!', {
+          description: `We've sent an invitation to ${inviteEmail}`,
+        });
+      }
       setInviteEmail('');
     } catch (error) {
       console.error('Invite error:', error);
