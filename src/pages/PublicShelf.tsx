@@ -304,8 +304,18 @@ export default function PublicShelf() {
           </h2>
         </div>
 
-        {/* Controls row: Follow + Filters/Sort + CTA */}
+        {/* Controls row: Back + Follow + Filters/Sort + CTA */}
         <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+          {/* Back to My Shelf - for logged-in users */}
+          {user && (
+            <Link to="/">
+              <Button variant="outline" size="sm" className="gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                My Shelf
+              </Button>
+            </Link>
+          )}
+          
           {/* Follow button - only show if viewing someone else's shelf */}
           {shelfOwner?.user_id && user?.id !== shelfOwner.user_id && (
             <FollowButton targetUserId={shelfOwner.user_id} />
