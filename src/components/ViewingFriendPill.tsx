@@ -10,7 +10,7 @@ interface ViewingFriendPillProps {
 
 export function ViewingFriendPill({ viewedUser, onClose }: ViewingFriendPillProps) {
   return (
-    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
+    <div className="fixed top-[4.5rem] left-1/2 -translate-x-1/2 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
       <div className="flex items-center gap-2 bg-background/95 backdrop-blur-sm border border-border shadow-lg rounded-full px-3 py-1.5">
         <Avatar className="w-5 h-5">
           <AvatarImage src={viewedUser.avatarUrl || undefined} alt={viewedUser.username} />
