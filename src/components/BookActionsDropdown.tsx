@@ -81,7 +81,7 @@ export function BookActionsDropdown({ onAddBook, existingBooks }: BookActionsDro
         open={addBookOpen} 
         onOpenChange={setAddBookOpen} 
         onAddBook={onAddBook} 
-        defaultStatus="reading" 
+        defaultStatus="want-to-read" 
       />
       <MagicRecommender 
         open={recommenderOpen}
