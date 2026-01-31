@@ -119,9 +119,11 @@ serve(async (req) => {
       });
 
       if (!response.ok) {
-        if (response.status === 404) {
+        // For 403 (subscription/quota) and 404 (not found), return empty results gracefully
+        if (response.status === 403 || response.status === 404) {
+          console.log(`ISBNdb ISBN lookup: ${response.status} - returning empty for fallback`);
           return new Response(
-            JSON.stringify({ items: [], source: 'isbndb', notFound: true }),
+            JSON.stringify({ items: [], source: 'isbndb', notFound: true, unavailable: response.status === 403 }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
@@ -173,9 +175,11 @@ serve(async (req) => {
             if (data.book) {
               results.push(normalizeBook(data.book, i));
             }
-          } else if (response.status !== 404) {
+          } else if (response.status !== 404 && response.status !== 403) {
+            // Only log as error if not a quota/subscription issue
             errors.push(`ISBN ${isbnToLookup}: ${response.status}`);
           }
+          // Silently skip 403/404 - these are expected when service is unavailable
           
           // Rate limit: wait between requests (1 req/sec for basic, 333ms for pro)
           if (i < body.isbns.length - 1) {
