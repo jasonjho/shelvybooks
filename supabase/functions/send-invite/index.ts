@@ -78,16 +78,13 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const appUrl = "https://shelvy-books.lovable.app";
-    const logoUrl = "https://gzzkaxivhqqoezfqtpsd.supabase.co/storage/v1/object/public/email-assets/shelvy-logo.png";
     let emailHtml: string;
     let emailSubject: string;
-    
     
     if (existingUser) {
       // User already exists - send "wants to connect" email
       emailSubject = `${senderName} wants to connect with you on Shelvy!`;
       
-      // Single CTA: prioritize shelf link if available, otherwise link to app
       const ctaUrl = shelfUrl || appUrl;
       const ctaText = shelfUrl ? `View ${senderName}'s Shelf` : "Open Shelvy";
 
@@ -99,22 +96,11 @@ const handler = async (req: Request): Promise<Response> => {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <img src="${logoUrl}" alt="Shelvy" style="height: 48px; width: auto;" />
-            <p style="color: #6b7280; margin: 8px 0 0 0; font-size: 14px;">Your personal bookshelf, beautifully organized</p>
+          <div style="background: #fef9e7; border-radius: 12px; padding: 32px;">
+            <h2 style="color: #78350f; margin: 0 0 20px 0; font-weight: 700; font-size: 24px;">Hey there! 👋</h2>
+            <p style="margin: 0 0 24px 0; font-size: 16px; color: #374151;"><strong style="color: #78350f;">${senderName}</strong> wants to connect with you on Shelvy! They thought you'd enjoy checking out their bookshelf and sharing reading recommendations.</p>
+            <a href="${ctaUrl}" style="background: #78350f; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 500; font-size: 16px;">${ctaText}</a>
           </div>
-          
-          <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
-            <h2 style="color: #92400e; margin-top: 0; font-weight: 600; font-size: 20px;">Hey there! 👋</h2>
-            <p><strong>${senderName}</strong> wants to connect with you on Shelvy! They thought you'd enjoy checking out their bookshelf and sharing reading recommendations.</p>
-            <p style="margin: 24px 0 0 0;">
-              <a href="${ctaUrl}" style="background: #92400e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">${ctaText}</a>
-            </p>
-          </div>
-          
-          <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 40px;">
-            You received this email because ${senderName} wants to connect with you on Shelvy.
-          </p>
         </body>
         </html>
       `;
@@ -122,7 +108,6 @@ const handler = async (req: Request): Promise<Response> => {
       // New user - send invite to join email
       emailSubject = `${senderName} invited you to join Shelvy!`;
       
-      // Single CTA: prioritize shelf link if available, otherwise link to app
       const ctaUrl = shelfUrl || appUrl;
       const ctaText = shelfUrl ? `View ${senderName}'s Shelf` : "Start Your Shelf";
 
@@ -134,22 +119,11 @@ const handler = async (req: Request): Promise<Response> => {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <img src="${logoUrl}" alt="Shelvy" style="height: 48px; width: auto;" />
-            <p style="color: #6b7280; margin: 8px 0 0 0; font-size: 14px;">Your personal bookshelf, beautifully organized</p>
+          <div style="background: #fef9e7; border-radius: 12px; padding: 32px;">
+            <h2 style="color: #78350f; margin: 0 0 20px 0; font-weight: 700; font-size: 24px;">Hey there! 👋</h2>
+            <p style="margin: 0 0 24px 0; font-size: 16px; color: #374151;"><strong style="color: #78350f;">${senderName}</strong> thinks you'd love Shelvy — a beautiful way to track your reading journey, organize your books, and discover new favorites.</p>
+            <a href="${ctaUrl}" style="background: #78350f; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 500; font-size: 16px;">${ctaText}</a>
           </div>
-          
-          <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
-            <h2 style="color: #92400e; margin-top: 0; font-weight: 600; font-size: 20px;">Hey there! 👋</h2>
-            <p><strong>${senderName}</strong> thinks you'd love Shelvy — a beautiful way to track your reading journey, organize your books, and discover new favorites.</p>
-            <p style="margin: 24px 0 0 0;">
-              <a href="${ctaUrl}" style="background: #92400e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">${ctaText}</a>
-            </p>
-          </div>
-          
-          <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 40px;">
-            You received this email because ${senderName} invited you to join Shelvy.
-          </p>
         </body>
         </html>
       `;
