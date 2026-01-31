@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -27,6 +27,15 @@ export function CollectionCard({
 }: CollectionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set());
+  const pendingAddAll = useRef(false);
+
+  // When books finish loading and we have a pending "Add All", execute it
+  useEffect(() => {
+    if (pendingAddAll.current && books && books.length > 0 && !isLoading) {
+      pendingAddAll.current = false;
+      onAddBooks(books);
+    }
+  }, [books, isLoading, onAddBooks]);
 
   const handleExpand = async () => {
     if (!isExpanded && !books) {
@@ -87,16 +96,19 @@ export function CollectionCard({
               variant="default"
               size="sm"
               onClick={() => {
-                if (!books) {
+                if (books && books.length > 0) {
+                  // Books already loaded, add immediately
+                  onAddBooks(books);
+                } else if (!isLoading) {
+                  // Books not loaded, fetch them and queue the add
+                  pendingAddAll.current = true;
                   onPreview();
                 }
-                // Small delay to ensure books are loaded
-                setTimeout(() => handleAddAll(), books ? 0 : 1000);
               }}
               disabled={isLoading || isAddingBooks}
               className="shrink-0"
             >
-              {isAddingBooks ? (
+              {isAddingBooks || (isLoading && pendingAddAll.current) ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
