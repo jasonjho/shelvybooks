@@ -1,18 +1,28 @@
-import { Book } from '@/types/book';
-import { BookOpen, Hash, Tag, FileText } from 'lucide-react';
+import { Book, BookStatus } from '@/types/book';
+import { BookOpen, Hash, Tag, FileText, BookMarked, CheckCircle, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getAmazonBookUrl } from '@/lib/amazonLinks';
+import { cn } from '@/lib/utils';
 
 interface BookHoverPreviewProps {
   book: Book;
-  amazonUrl?: string; // Now optional - will be generated if not provided
+  amazonUrl?: string;
   onSelect?: () => void;
   clubInfo?: Array<{ clubName: string; status: string }>;
+  onMove?: (id: string, status: BookStatus) => void;
+  onRemove?: (id: string) => void;
 }
 
-export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo }: BookHoverPreviewProps) {
+const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
+  { status: 'reading', label: 'Reading', icon: <BookOpen className="w-3.5 h-3.5" /> },
+  { status: 'want-to-read', label: 'Want to Read', icon: <BookMarked className="w-3.5 h-3.5" /> },
+  { status: 'read', label: 'Read', icon: <CheckCircle className="w-3.5 h-3.5" /> },
+];
+
+export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, onRemove }: BookHoverPreviewProps) {
   const finalAmazonUrl = amazonUrl || getAmazonBookUrl(book.title, book.author, book.isbn);
   const hasMetadata = book.pageCount || book.isbn || book.categories?.length || book.description;
+  const isInteractive = !!onMove;
 
   return (
     <div className="bg-popover text-popover-foreground px-4 py-3 rounded-lg text-sm min-w-[240px] max-w-[320px] shadow-xl border border-border">
@@ -78,6 +88,43 @@ export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo }: BookHo
         <div className="flex items-center gap-1.5 mt-2 text-xs text-primary">
           <span>📚</span>
           <span>{clubInfo.map(c => c.clubName).join(', ')}</span>
+        </div>
+      )}
+      
+      {/* Status actions - only show for interactive books */}
+      {isInteractive && (
+        <div className="mt-3 pt-3 border-t border-border/50">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {statusOptions
+              .filter((opt) => opt.status !== book.status)
+              .map((opt) => (
+                <button
+                  key={opt.status}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMove?.(book.id, opt.status);
+                  }}
+                  className={cn(
+                    'flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors',
+                    'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
+                  )}
+                >
+                  {opt.icon}
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+            {onRemove && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove(book.id);
+                }}
+                className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors bg-destructive/10 hover:bg-destructive/20 text-destructive"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       )}
       
