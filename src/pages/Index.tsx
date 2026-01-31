@@ -308,8 +308,8 @@ export default function Index() {
                    "flex items-center gap-2 mb-6",
                    user ? "justify-between" : "justify-start"
                  )}>
-                  {/* Left side: Shelf Switcher + ShelfControls - no wrap, scroll if needed */}
-                  <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto scrollbar-hide">
+                  {/* Left side: Shelf Switcher + ShelfControls - min-w-0 allows flex shrink, overflow enables scroll */}
+                  <div className="flex items-center gap-1.5 flex-nowrap min-w-0 flex-1 overflow-x-auto scrollbar-hide">
                     <ShelfSwitcher 
                       viewedUser={viewedUser}
                       onSelectUser={viewShelf}
