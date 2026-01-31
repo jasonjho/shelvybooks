@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { BookClub, BookClubMember, BookClubSuggestion } from '@/types/bookClub';
 
+
 // Extended member type with profile info
 export interface ClubMemberWithProfile extends BookClubMember {
   displayName: string | null;
