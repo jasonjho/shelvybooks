@@ -215,8 +215,9 @@ const handler = async (req: Request): Promise<Response> => {
             });
 
             if (emailResponse.ok) {
+              const responseData = await emailResponse.json();
               sentCount++;
-              console.log(`Sent to ${email}`);
+              console.log(`Sent to ${email} - ID: ${responseData.id}`);
             } else {
               const errorText = await emailResponse.text();
               failedCount++;
