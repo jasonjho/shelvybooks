@@ -1,9 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Bookshelf } from '@/components/Bookshelf';
 import { MobileBookshelf } from '@/components/MobileBookshelf';
-import { SettingsPanel } from '@/components/SettingsPanel';
 import { ShelfControls } from '@/components/ShelfControls';
-import { BookActionsDropdown } from '@/components/BookActionsDropdown';
 import { MobileActionsMenu } from '@/components/MobileActionsMenu';
 import { AuthButton } from '@/components/AuthButton';
 import { ClubsDropdown } from '@/components/ClubsDropdown';
@@ -16,6 +14,7 @@ import { ShelfPrivacyIndicator } from '@/components/ShelfPrivacyIndicator';
 import { ShareShelfDialog } from '@/components/ShareShelfDialog';
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { ShelfSwitcher } from '@/components/ShelfSwitcher';
+import { BookActionsDropdown } from '@/components/BookActionsDropdown';
 
 import { Button } from '@/components/ui/button';
 
@@ -239,14 +238,15 @@ export default function Index() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {user && (
+              <ShelfSwitcher 
+                viewedUser={viewedUser}
+                onSelectUser={viewShelf}
+                onSelectOwnShelf={clearViewedShelf}
+              />
+            )}
             {user && <ClubsDropdown />}
             {user && <NotificationBell />}
-            <SettingsPanel 
-              settings={settings} 
-              onSettingsChange={updateSettings}
-              currentSkin={shelfSkin}
-              onSkinChange={setShelfSkin}
-            />
             <AuthButton />
           </div>
         </div>
@@ -298,15 +298,10 @@ export default function Index() {
                  {user && <DailyQuote />}
 
 
-                 {/* Controls - single row layout */}
+                 {/* Controls - filters on left, + button on right */}
                  <div className="flex items-center justify-between gap-2 mb-6">
-                  {/* Left: Shelf switcher, filters, privacy */}
+                  {/* Left: Filters + privacy */}
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <ShelfSwitcher 
-                      viewedUser={viewedUser}
-                      onSelectUser={viewShelf}
-                      onSelectOwnShelf={clearViewedShelf}
-                    />
                     <ShelfControls
                       activeFilters={activeFilters}
                       onFilterChange={setActiveFilters}
@@ -332,9 +327,6 @@ export default function Index() {
                     <MobileActionsMenu 
                       onAddBook={addBook} 
                       existingBooks={ownBooks}
-                      viewedUser={viewedUser}
-                      onSelectUser={viewShelf}
-                      onSelectOwnShelf={clearViewedShelf}
                     />
                   )}
                 </div>
