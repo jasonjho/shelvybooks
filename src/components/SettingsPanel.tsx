@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Settings, Lamp, Trees, BookmarkMinus, Sparkles, Check, Image } from 'lucide-react';
+import { Settings, Lamp, Trees, BookmarkMinus, Sparkles, Check, Image, Sun, Moon, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
 
 interface SettingsPanelProps {
   settings: ShelfSettings;
@@ -69,7 +70,15 @@ const backgroundOptions: { value: BackgroundTheme; label: string; emoji: string 
   { value: 'space', label: 'Space', emoji: '🚀' },
 ];
 
+const themeOptions: { value: string; label: string; icon: typeof Sun }[] = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', label: 'System', icon: Monitor },
+];
+
 export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinChange }: SettingsPanelProps) {
+  const { theme, setTheme } = useTheme();
+  
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -206,6 +215,31 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
               </div>
             </div>
           )}
+
+          {/* Theme Mode */}
+          <div className="space-y-2 pt-2 border-t border-border">
+            <div className="flex items-center gap-2">
+              <Sun className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Theme</span>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {themeOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setTheme(option.value)}
+                  className={cn(
+                    "flex flex-col items-center gap-1 p-2 rounded-md text-xs transition-colors",
+                    theme === option.value
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary/50 hover:bg-secondary text-secondary-foreground"
+                  )}
+                >
+                  <option.icon className="w-4 h-4" />
+                  <span className="font-medium">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
           </div>
         </ScrollArea>
       </PopoverContent>
