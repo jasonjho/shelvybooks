@@ -6,7 +6,6 @@ import { ShelfControls } from '@/components/ShelfControls';
 import { SocialActionsDropdown } from '@/components/SocialActionsDropdown';
 import { BookActionsDropdown } from '@/components/BookActionsDropdown';
 import { AuthButton } from '@/components/AuthButton';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { ClubsDropdown } from '@/components/ClubsDropdown';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { OnboardingTips } from '@/components/OnboardingTips';
@@ -221,7 +220,6 @@ export default function Index() {
           <div className="flex items-center gap-2">
             {user && <ClubsDropdown />}
             {user && <NotificationBell />}
-            <ThemeToggle />
             <SettingsPanel 
               settings={settings} 
               onSettingsChange={updateSettings}
