@@ -81,6 +81,7 @@ function sortBooks(books: Book[], sortOption: SortOption, shuffleSeed: number): 
 export default function Index() {
   const isMobile = useIsMobile();
   const [activeFilters, setActiveFilters] = useState<BookStatus[]>([]);
+  const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
   
@@ -122,19 +123,41 @@ export default function Index() {
     return user ? books : isbndbDemoBooks;
   }, [user, books, isbndbDemoBooks]);
 
+  // Extract unique categories from all books, sorted by frequency
+  const availableCategories = useMemo(() => {
+    const categoryCount = new Map<string, number>();
+    allBooks.forEach(book => {
+      book.categories?.forEach(cat => {
+        categoryCount.set(cat, (categoryCount.get(cat) || 0) + 1);
+      });
+    });
+    // Sort by frequency (most common first), then alphabetically
+    return Array.from(categoryCount.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([cat]) => cat);
+  }, [allBooks]);
+
+  // Filter books by category
+  const categoryFilteredBooks = useMemo(() => {
+    if (activeCategoryFilters.length === 0) return allBooks;
+    return allBooks.filter(book => 
+      book.categories?.some(cat => activeCategoryFilters.includes(cat))
+    );
+  }, [allBooks, activeCategoryFilters]);
+
   // Sort books
   const sortedBooks = useMemo(() => {
-    return sortBooks(allBooks, sortOption, shuffleSeed);
-  }, [allBooks, sortOption, shuffleSeed]);
+    return sortBooks(categoryFilteredBooks, sortOption, shuffleSeed);
+  }, [categoryFilteredBooks, sortOption, shuffleSeed]);
 
-  // Calculate book counts by status
+  // Calculate book counts by status (from category-filtered books)
   const bookCounts = useMemo(() => {
     return {
-      reading: allBooks.filter(b => b.status === 'reading').length,
-      'want-to-read': allBooks.filter(b => b.status === 'want-to-read').length,
-      read: allBooks.filter(b => b.status === 'read').length,
+      reading: categoryFilteredBooks.filter(b => b.status === 'reading').length,
+      'want-to-read': categoryFilteredBooks.filter(b => b.status === 'want-to-read').length,
+      read: categoryFilteredBooks.filter(b => b.status === 'read').length,
     };
-  }, [allBooks]);
+  }, [categoryFilteredBooks]);
 
   const handleShuffle = useCallback(() => {
     setShuffleSeed(Date.now());
@@ -266,6 +289,9 @@ export default function Index() {
                     onSortChange={setSortOption}
                     onShuffle={handleShuffle}
                     bookCounts={bookCounts}
+                    availableCategories={availableCategories}
+                    activeCategoryFilters={activeCategoryFilters}
+                    onCategoryFilterChange={setActiveCategoryFilters}
                   />
                   
                   {user && (

@@ -95,6 +95,7 @@ export default function PublicShelf() {
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [activeFilters, setActiveFilters] = useState<BookStatus[]>([]);
+  const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
 
@@ -198,19 +199,41 @@ export default function PublicShelf() {
     loadPublicShelf();
   }, [shareId]);
 
+  // Extract unique categories from all books, sorted by frequency
+  const availableCategories = useMemo(() => {
+    const categoryCount = new Map<string, number>();
+    books.forEach(book => {
+      book.categories?.forEach(cat => {
+        categoryCount.set(cat, (categoryCount.get(cat) || 0) + 1);
+      });
+    });
+    // Sort by frequency (most common first), then alphabetically
+    return Array.from(categoryCount.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([cat]) => cat);
+  }, [books]);
+
+  // Filter books by category
+  const categoryFilteredBooks = useMemo(() => {
+    if (activeCategoryFilters.length === 0) return books;
+    return books.filter(book => 
+      book.categories?.some(cat => activeCategoryFilters.includes(cat))
+    );
+  }, [books, activeCategoryFilters]);
+
   // Sort books
   const sortedBooks = useMemo(() => {
-    return sortBooks(books, sortOption, shuffleSeed);
-  }, [books, sortOption, shuffleSeed]);
+    return sortBooks(categoryFilteredBooks, sortOption, shuffleSeed);
+  }, [categoryFilteredBooks, sortOption, shuffleSeed]);
 
-  // Calculate book counts by status
+  // Calculate book counts by status (from category-filtered books)
   const bookCounts = useMemo(() => {
     return {
-      reading: books.filter(b => b.status === 'reading').length,
-      'want-to-read': books.filter(b => b.status === 'want-to-read').length,
-      read: books.filter(b => b.status === 'read').length,
+      reading: categoryFilteredBooks.filter(b => b.status === 'reading').length,
+      'want-to-read': categoryFilteredBooks.filter(b => b.status === 'want-to-read').length,
+      read: categoryFilteredBooks.filter(b => b.status === 'read').length,
     };
-  }, [books]);
+  }, [categoryFilteredBooks]);
 
   const handleShuffle = useCallback(() => {
     setShuffleSeed(Date.now());
@@ -295,6 +318,9 @@ export default function PublicShelf() {
             onSortChange={setSortOption}
             onShuffle={handleShuffle}
             bookCounts={bookCounts}
+            availableCategories={availableCategories}
+            activeCategoryFilters={activeCategoryFilters}
+            onCategoryFilterChange={setActiveCategoryFilters}
           />
           
           {/* CTA for logged-out users - inline with controls */}
