@@ -283,25 +283,19 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
       const container = containerRef.current;
       if (!container) return;
 
-      // Measure actual rendered shelf grid width so toggling/reconfiguring decor
-      // recomputes capacity correctly (no fragile border/padding math).
-      const gridEl = container.querySelector('.books-grid') as HTMLElement | null;
-      const bookCoverEl = container.querySelector('.book-cover') as HTMLElement | null;
+      // Get container width and subtract bookcase padding (p-4 = 16px each side)
+      const containerWidth = container.clientWidth;
+      const bookcasePadding = 32; // 16px left + 16px right
+      const shelfRowPadding = 32; // px-4 = 16px each side
+      const bookendWidth = settings.showBookends ? 48 : 0; // ~24px each bookend
+      
+      const availableWidth = containerWidth - bookcasePadding - shelfRowPadding - bookendWidth;
+      
+      const itemWidth = 70; // book cover width
+      const gapPx = 12; // gap-3 = 0.75rem = 12px
 
-      const gridWidth = gridEl?.clientWidth ?? container.clientWidth;
-      const itemWidth = bookCoverEl?.offsetWidth ?? 70;
-
-      const gapPx = (() => {
-        if (!gridEl) return 8;
-        const style = window.getComputedStyle(gridEl);
-        // For flex gap, browsers typically expose it via columnGap.
-        const raw = style.columnGap || (style as unknown as { gap?: string }).gap || '8px';
-        const parsed = Number.parseFloat(raw);
-        return Number.isFinite(parsed) ? parsed : 8;
-      })();
-
-      // N items take: N*itemWidth + (N-1)*gap <= gridWidth
-      const totalSlots = Math.max(1, Math.floor((gridWidth + gapPx) / (itemWidth + gapPx)));
+      // N items take: N*itemWidth + (N-1)*gap <= availableWidth
+      const totalSlots = Math.max(1, Math.floor((availableWidth + gapPx) / (itemWidth + gapPx)));
       const bookSlots = Math.max(totalSlots - decorSlotsPerRow, 3);
       setBooksPerRow(bookSlots);
     };
