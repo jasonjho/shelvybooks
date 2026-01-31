@@ -932,11 +932,11 @@
     );
   }
 
-  .skin-ebony .mini-shelf-surface,
-  .skin-ebony .mini-shelf-front {
+  .skin-dark .mini-shelf-surface,
+  .skin-dark .mini-shelf-front {
     background: linear-gradient(180deg, 
-      hsl(var(--shelf-ebony)) 0%, 
-      hsl(var(--shelf-ebony-dark)) 100%
+      hsl(var(--shelf-dark)) 0%, 
+      hsl(var(--shelf-dark-dark)) 100%
     );
   }
 
