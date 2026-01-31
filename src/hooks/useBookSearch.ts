@@ -3,6 +3,34 @@ import { GoogleBook } from '@/types/book';
 import { supabase } from '@/integrations/supabase/client';
 import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
 
+// Convert technical error messages to user-friendly ones
+function getUserFriendlyError(message: string): string {
+  const lowerMessage = message.toLowerCase();
+  
+  // Rate limit / quota errors
+  if (lowerMessage.includes('429') || lowerMessage.includes('rate limit') || lowerMessage.includes('too many')) {
+    return 'Search is temporarily busy. Please try again in a moment.';
+  }
+  
+  // API quota / forbidden errors
+  if (lowerMessage.includes('403') || lowerMessage.includes('forbidden') || lowerMessage.includes('quota')) {
+    return 'Search service is temporarily unavailable. Please try again later.';
+  }
+  
+  // Edge function errors
+  if (lowerMessage.includes('edge function') || lowerMessage.includes('non 2xx')) {
+    return 'Unable to search books right now. Please try again.';
+  }
+  
+  // Network errors
+  if (lowerMessage.includes('network') || lowerMessage.includes('fetch') || lowerMessage.includes('connection')) {
+    return 'Connection error. Please check your internet and try again.';
+  }
+  
+  // Generic fallback - don't show technical details
+  return 'Something went wrong. Please try again.';
+}
+
 export function useBookSearch() {
   const [results, setResults] = useState<GoogleBook[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,22 +46,35 @@ export function useBookSearch() {
     setError(null);
 
     try {
-      // Use ISBNdb for all book searches
+      // Try ISBNdb first
       const { data, error: fnError } = await supabase.functions.invoke('isbndb-search', {
         body: { query, mode: 'search' }
       });
 
-      if (fnError) {
-        throw new Error(fnError.message || 'Failed to search books');
-      }
+      // If ISBNdb fails (rate limit, quota, etc.), fall back to book-search (Google + OpenLibrary)
+      if (fnError || data?.error || !data?.items?.length) {
+        console.log('ISBNdb unavailable, falling back to Google Books + Open Library');
+        
+        const { data: fallbackData, error: fallbackError } = await supabase.functions.invoke('book-search', {
+          body: { query }
+        });
 
-      if (data.error) {
-        throw new Error(data.error);
+        if (fallbackError) {
+          throw new Error(getUserFriendlyError(fallbackError.message));
+        }
+
+        if (fallbackData?.error) {
+          throw new Error(getUserFriendlyError(fallbackData.error));
+        }
+
+        setResults(fallbackData?.items || []);
+        return;
       }
 
       setResults(data.items || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const message = err instanceof Error ? err.message : 'An error occurred';
+      setError(getUserFriendlyError(message));
       setResults([]);
     } finally {
       setIsLoading(false);
