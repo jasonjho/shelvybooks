@@ -188,18 +188,20 @@ export function useFollowedUsersBooks() {
     queryFn: async (): Promise<FollowedBook[]> => {
       if (!user) return [];
 
-      // Get users I follow
+      // Get users I follow WITH the timestamp of when I started following
       const { data: follows, error: followsError } = await supabase
         .from('follows')
-        .select('following_id')
+        .select('following_id, created_at')
         .eq('follower_id', user.id);
 
       if (followsError) throw followsError;
       if (!follows || follows.length === 0) return [];
 
+      // Map of user_id -> when I started following them
+      const followedAtMap = new Map(follows.map(f => [f.following_id, new Date(f.created_at)]));
       const followingIds = follows.map(f => f.following_id);
 
-      // Get books from followed users (last 30 days, max 20 books)
+      // Get books from followed users (last 30 days, max 50 to allow for filtering)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -216,13 +218,22 @@ export function useFollowedUsersBooks() {
         .in('user_id', followingIds)
         .gte('created_at', thirtyDaysAgo.toISOString())
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(50);
 
       if (booksError) throw booksError;
       if (!books || books.length === 0) return [];
 
+      // Only include books added AFTER we started following that user
+      const filteredBooks = books.filter(book => {
+        const followedAt = followedAtMap.get(book.user_id);
+        if (!followedAt) return false;
+        return new Date(book.created_at) > followedAt;
+      }).slice(0, 20); // Limit to 20 after filtering
+
+      if (filteredBooks.length === 0) return [];
+
       // Get profiles for these users
-      const userIds = [...new Set(books.map(b => b.user_id))];
+      const userIds = [...new Set(filteredBooks.map(b => b.user_id))];
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, username, avatar_url')
@@ -230,7 +241,7 @@ export function useFollowedUsersBooks() {
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-      return books.map(book => ({
+      return filteredBooks.map(book => ({
         ...book,
         username: profileMap.get(book.user_id)?.username || 'Unknown',
         avatarUrl: profileMap.get(book.user_id)?.avatar_url || null,
