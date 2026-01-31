@@ -23,7 +23,7 @@ interface MobileBookshelfProps {
 }
 
 const BOOK_WIDTH = 55; // Width of mobile book covers
-const BOOK_GAP = 4; // Gap between books (gap-1 = 0.25rem = 4px)
+const BOOK_GAP = 8; // Gap between books (gap-2 = 0.5rem = 8px)
 const SHELF_PADDING = 96; // Padding on left and right (3rem * 2 = 96px)
 
 // Density config for decorations on mobile (slightly lower than desktop)
