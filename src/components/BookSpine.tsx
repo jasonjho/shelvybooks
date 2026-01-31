@@ -7,7 +7,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
-import { BookOpen, BookMarked, CheckCircle, Trash2, Users, StickyNote, MoreVertical } from 'lucide-react';
+import { BookOpen, BookMarked, CheckCircle, Trash2, Users, StickyNote } from 'lucide-react';
 import { useBookAnimations } from '@/contexts/BookAnimationContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -20,7 +20,6 @@ import { BookHoverPreview } from '@/components/BookHoverPreview';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { BookActionDrawer } from '@/components/BookActionDrawer';
 
 export interface ClubInfo {
   clubName: string;
@@ -57,11 +56,12 @@ type BookCoverProps = {
   onAddNote?: () => void;
   isInteractive?: boolean;
   newLikesCount?: number;
-  onOpenMobileMenu?: () => void;
+  onMove?: (id: string, status: BookStatus) => void;
+  onRemove?: (id: string) => void;
 };
 
 const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
-  ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo, note, onAddNote, isInteractive = true, newLikesCount = 0, onOpenMobileMenu }, ref) => {
+  ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo, note, onAddNote, isInteractive = true, newLikesCount = 0, onMove, onRemove }, ref) => {
   const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -256,20 +256,6 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
                 <div className="sparkle-particle" style={{ top: '-3px', left: '75%', animationDelay: '0.3s' }} />
               </>
             )}
-
-            {/* Mobile menu button - visible on touch devices */}
-            {isMobile && isInteractive && onOpenMobileMenu && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenMobileMenu();
-                }}
-                className="absolute top-0 right-0 w-6 h-6 flex items-center justify-center bg-black/50 rounded-bl-md z-20"
-                aria-label="Book options"
-              >
-                <MoreVertical className="w-3.5 h-3.5 text-white" />
-              </button>
-            )}
           </div>
         </HoverCardTrigger>
 
@@ -289,6 +275,8 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
               amazonUrl={amazonUrl} 
               onSelect={onSelect}
               clubInfo={clubInfo}
+              onMove={isInteractive ? onMove : undefined}
+              onRemove={isInteractive ? onRemove : undefined}
             />
             {/* Arrow pointing to book */}
             <div 
@@ -311,8 +299,6 @@ BookCover.displayName = 'BookCover';
 
 export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true, isGrayed = false, clubInfo, note, onAddNote, newLikesCount }: BookSpineProps) {
   const { recentlyAddedBooks, recentlyCompletedBooks } = useBookAnimations();
-  const isMobile = useIsMobile();
-  const [drawerOpen, setDrawerOpen] = useState(false);
   
   const isWobbling = recentlyAddedBooks.has(book.id);
   const isSparkle = recentlyCompletedBooks.has(book.id);
@@ -322,10 +308,9 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
     return <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} isInteractive={false} newLikesCount={newLikesCount} />;
   }
 
-  // On mobile, use a drawer instead of context menu
-  if (isMobile) {
-    return (
-      <>
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger>
         <BookCover 
           book={book} 
           onSelect={onSelect} 
@@ -337,26 +322,9 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
           onAddNote={onAddNote} 
           isInteractive={true} 
           newLikesCount={newLikesCount}
-          onOpenMobileMenu={() => setDrawerOpen(true)}
-        />
-        <BookActionDrawer
-          book={book}
-          open={drawerOpen}
-          onOpenChange={setDrawerOpen}
           onMove={onMove}
           onRemove={onRemove}
-          onSelect={onSelect}
-          onAddNote={onAddNote}
-          note={note}
         />
-      </>
-    );
-  }
-
-  return (
-    <ContextMenu>
-      <ContextMenuTrigger>
-        <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} onAddNote={onAddNote} isInteractive={true} newLikesCount={newLikesCount} />
       </ContextMenuTrigger>
       
       <ContextMenuContent className="w-48 z-50">
