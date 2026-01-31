@@ -115,8 +115,8 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
           <div className="space-y-6 py-4">
             {/* Clear Shelf Section */}
             <div className="space-y-2">
-              <h3 className="text-sm font-medium">Clear Shelf</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-sm font-medium font-sans">Clear Shelf</h3>
+              <p className="text-sm text-muted-foreground font-sans">
                 Remove all books from your shelf. This cannot be undone.
               </p>
               <Button
@@ -134,9 +134,9 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
               <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-3">
                 <div className="flex items-center gap-2 text-destructive">
                   <AlertTriangle className="w-4 h-4" />
-                  <h3 className="text-sm font-semibold">Danger Zone</h3>
+                  <h3 className="text-sm font-semibold font-sans">Danger Zone</h3>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground font-sans">
                   Permanently delete your Shelvy account and all associated data. This action is irreversible.
                 </p>
                 <Button
@@ -157,11 +157,11 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
       <AlertDialog open={clearShelfOpen} onOpenChange={setClearShelfOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
+            <AlertDialogTitle className="flex items-center gap-2 font-sans">
               <BookX className="w-5 h-5 text-orange-600" />
               Clear your shelf?
             </AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="font-sans">
               This will permanently delete <strong>all books</strong> from your shelf. 
               Your notes, likes received, and reading history will also be removed. 
               This action cannot be undone.
@@ -194,11 +194,11 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
       }}>
         <AlertDialogContent className="border-destructive/30">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive font-sans">
               <AlertTriangle className="w-5 h-5" />
               Delete your account?
             </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3">
+            <AlertDialogDescription className="space-y-3 font-sans">
               <p>
                 This will <strong>permanently delete</strong> your Shelvy account and all associated data including:
               </p>
@@ -217,7 +217,7 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
           </AlertDialogHeader>
           
           <div className="space-y-2 py-2">
-            <Label htmlFor="confirm-delete" className="text-sm">
+            <Label htmlFor="confirm-delete" className="text-sm font-sans">
               Type <span className="font-mono font-bold">DELETE</span> to confirm
             </Label>
             <Input
