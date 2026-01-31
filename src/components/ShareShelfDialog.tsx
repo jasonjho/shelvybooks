@@ -131,13 +131,13 @@ export function ShareShelfDialog() {
           {settings.is_public && shareUrl && (
             <div className="space-y-2">
               <Label>Share Link</Label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <Input
                   readOnly
                   value={shareUrl}
-                  className="font-mono text-sm"
+                  className="font-mono text-sm min-w-0 flex-1"
                 />
-                <Button size="icon" variant="outline" onClick={handleCopy}>
+                <Button size="icon" variant="outline" onClick={handleCopy} className="flex-shrink-0">
                   {copied ? (
                     <Check className="w-4 h-4 text-green-600" />
                   ) : (
