@@ -869,8 +869,7 @@
   }
 
   .mini-shelf-content {
-    @apply absolute bottom-6 left-0 right-0 flex items-end;
-    justify-content: space-evenly;
+    @apply absolute bottom-6 left-0 right-0 flex items-end justify-center gap-8;
     z-index: 2;
     padding: 0 1.5rem;
     overflow: visible;
