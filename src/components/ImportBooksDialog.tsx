@@ -35,6 +35,8 @@ interface ImportBooksDialogProps {
     openLibraryKey: string;
   }) => Promise<void>;
   existingBooks: { title: string; author: string }[];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 function mapGoodreadsStatus(shelf: string | undefined): BookStatus {
@@ -99,8 +101,12 @@ function isDuplicate(book: { title: string; author: string }, existingBooks: { t
   });
 }
 
-export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialogProps) {
-  const [open, setOpen] = useState(false);
+export function ImportBooksDialog({ onAddBook, existingBooks, open: controlledOpen, onOpenChange: controlledOnOpenChange }: ImportBooksDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
   const [step, setStep] = useState<'upload' | 'preview' | 'importing' | 'done'>('upload');
   const [parsedBooks, setParsedBooks] = useState<(ParsedBook & { isDuplicate: boolean })[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -226,6 +232,167 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
     return 'To Read';
   };
 
+  const dialogContent = (
+    <DialogContent className="max-w-2xl w-[90vw] overflow-hidden">
+      <DialogHeader>
+        <DialogTitle className="font-sans text-lg font-semibold">Import from Goodreads</DialogTitle>
+        <DialogDescription className="text-sm">
+          Upload your Goodreads library export (CSV) to bulk-add books
+        </DialogDescription>
+      </DialogHeader>
+
+      {step === 'upload' && (
+        <div className="space-y-4">
+          <div
+            className={cn(
+              'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
+              'hover:border-primary/50 hover:bg-muted/50 cursor-pointer',
+              error && 'border-destructive'
+            )}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <FileText className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+            <p className="text-sm font-medium mb-1">Click to upload CSV</p>
+            <p className="text-xs text-muted-foreground">
+              Export from Goodreads → My Books → Import/Export
+            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-2 text-destructive text-sm">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p className="font-medium">How to export from Goodreads:</p>
+            <ol className="list-decimal list-inside space-y-0.5 ml-1">
+              <li>Go to goodreads.com → My Books</li>
+              <li>Click "Import and export" in the left sidebar</li>
+              <li>Click "Export Library"</li>
+              <li>Upload the downloaded CSV here</li>
+            </ol>
+          </div>
+        </div>
+      )}
+
+      {step === 'preview' && (
+        <div className="space-y-4 overflow-hidden">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm text-muted-foreground">
+              Found <span className="font-medium text-foreground">{parsedBooks.length}</span> books
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => toggleAll(true)}>
+                Select all
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => toggleAll(false)}>
+                Deselect all
+              </Button>
+            </div>
+          </div>
+
+          <ScrollArea className="h-[300px] border rounded-lg">
+            <div className="p-2 space-y-1">
+              {parsedBooks.map((book, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    'flex items-center gap-2 p-2 rounded-md transition-colors',
+                    'hover:bg-muted/50 cursor-pointer',
+                    !book.selected && 'opacity-50'
+                  )}
+                  onClick={() => toggleBook(index)}
+                >
+                  <Checkbox checked={book.selected} className="pointer-events-none flex-shrink-0" />
+                  <Book className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate" title={book.title}>{book.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{book.author}</p>
+                  </div>
+                  <span
+                    className={cn(
+                      'text-xs px-2 py-0.5 rounded-full flex-shrink-0 whitespace-nowrap',
+                      book.isDuplicate 
+                        ? 'bg-muted text-muted-foreground'
+                        : book.status === 'reading' 
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          : book.status === 'want-to-read' 
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                            : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    )}
+                  >
+                    {book.isDuplicate ? 'On shelf' : getStatusLabel(book.status)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setStep('upload')} className="flex-1">
+              Back
+            </Button>
+            <Button onClick={handleImport} disabled={selectedCount === 0} className="flex-1">
+              Import {selectedCount} {selectedCount === 1 ? 'book' : 'books'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {step === 'importing' && (
+        <div className="space-y-4 py-4">
+          <div className="flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+          <div className="space-y-2">
+            <Progress value={importProgress} />
+            <p className="text-sm text-center text-muted-foreground">
+              Importing books... {importResults.success + importResults.failed} /{' '}
+              {parsedBooks.filter((b) => b.selected).length}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {step === 'done' && (
+        <div className="space-y-4 py-4">
+          <div className="flex items-center justify-center">
+            <CheckCircle2 className="w-12 h-12 text-green-500" />
+          </div>
+          <div className="text-center space-y-1">
+            <p className="text-lg font-medium">Import Complete!</p>
+            <p className="text-sm text-muted-foreground">
+              Successfully added {importResults.success} {importResults.success === 1 ? 'book' : 'books'}
+              {importResults.failed > 0 && ` (${importResults.failed} failed)`}
+            </p>
+          </div>
+          <Button onClick={handleClose} className="w-full">
+            Done
+          </Button>
+        </div>
+      )}
+    </DialogContent>
+  );
+
+  // When controlled (no trigger needed), just render the dialog
+  if (isControlled) {
+    return (
+      <Dialog open={open} onOpenChange={(isOpen) => (isOpen ? setOpen(true) : handleClose())}>
+        {dialogContent}
+      </Dialog>
+    );
+  }
+
+  // Uncontrolled: include the trigger button
   return (
     <Dialog open={open} onOpenChange={(isOpen) => (isOpen ? setOpen(true) : handleClose())}>
       <DialogTrigger asChild>
@@ -234,154 +401,7 @@ export function ImportBooksDialog({ onAddBook, existingBooks }: ImportBooksDialo
           Import
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl w-[90vw] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="font-sans text-lg font-semibold">Import from Goodreads</DialogTitle>
-          <DialogDescription className="text-sm">
-            Upload your Goodreads library export (CSV) to bulk-add books
-          </DialogDescription>
-        </DialogHeader>
-
-        {step === 'upload' && (
-          <div className="space-y-4">
-            <div
-              className={cn(
-                'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
-                'hover:border-primary/50 hover:bg-muted/50 cursor-pointer',
-                error && 'border-destructive'
-              )}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <FileText className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-sm font-medium mb-1">Click to upload CSV</p>
-              <p className="text-xs text-muted-foreground">
-                Export from Goodreads → My Books → Import/Export
-              </p>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-            </div>
-
-            {error && (
-              <div className="flex items-center gap-2 text-destructive text-sm">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p className="font-medium">How to export from Goodreads:</p>
-              <ol className="list-decimal list-inside space-y-0.5 ml-1">
-                <li>Go to goodreads.com → My Books</li>
-                <li>Click "Import and export" in the left sidebar</li>
-                <li>Click "Export Library"</li>
-                <li>Upload the downloaded CSV here</li>
-              </ol>
-            </div>
-          </div>
-        )}
-
-        {step === 'preview' && (
-          <div className="space-y-4 overflow-hidden">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-sm text-muted-foreground">
-                Found <span className="font-medium text-foreground">{parsedBooks.length}</span> books
-              </p>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => toggleAll(true)}>
-                  Select all
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => toggleAll(false)}>
-                  Deselect all
-                </Button>
-              </div>
-            </div>
-
-            <ScrollArea className="h-[300px] border rounded-lg">
-              <div className="p-2 space-y-1">
-                {parsedBooks.map((book, index) => (
-                  <div
-                    key={index}
-                    className={cn(
-                      'flex items-center gap-2 p-2 rounded-md transition-colors',
-                      'hover:bg-muted/50 cursor-pointer',
-                      !book.selected && 'opacity-50'
-                    )}
-                    onClick={() => toggleBook(index)}
-                  >
-                    <Checkbox checked={book.selected} className="pointer-events-none flex-shrink-0" />
-                    <Book className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" title={book.title}>{book.title}</p>
-                      <p className="text-xs text-muted-foreground truncate">{book.author}</p>
-                    </div>
-                    <span
-                      className={cn(
-                        'text-xs px-2 py-0.5 rounded-full flex-shrink-0 whitespace-nowrap',
-                        book.isDuplicate 
-                          ? 'bg-muted text-muted-foreground'
-                          : book.status === 'reading' 
-                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                            : book.status === 'want-to-read' 
-                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                              : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      )}
-                    >
-                      {book.isDuplicate ? 'On shelf' : getStatusLabel(book.status)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep('upload')} className="flex-1">
-                Back
-              </Button>
-              <Button onClick={handleImport} disabled={selectedCount === 0} className="flex-1">
-                Import {selectedCount} {selectedCount === 1 ? 'book' : 'books'}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === 'importing' && (
-          <div className="space-y-4 py-4">
-            <div className="flex items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-            <div className="space-y-2">
-              <Progress value={importProgress} />
-              <p className="text-sm text-center text-muted-foreground">
-                Importing books... {importResults.success + importResults.failed} /{' '}
-                {parsedBooks.filter((b) => b.selected).length}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {step === 'done' && (
-          <div className="space-y-4 py-4">
-            <div className="flex items-center justify-center">
-              <CheckCircle2 className="w-12 h-12 text-green-500" />
-            </div>
-            <div className="text-center space-y-1">
-              <p className="text-lg font-medium">Import Complete!</p>
-              <p className="text-sm text-muted-foreground">
-                Successfully added {importResults.success} {importResults.success === 1 ? 'book' : 'books'}
-                {importResults.failed > 0 && ` (${importResults.failed} failed)`}
-              </p>
-            </div>
-            <Button onClick={handleClose} className="w-full">
-              Done
-            </Button>
-          </div>
-        )}
-      </DialogContent>
+      {dialogContent}
     </Dialog>
   );
 }
