@@ -5,6 +5,7 @@ import { SettingsPanel } from '@/components/SettingsPanel';
 import { ShelfControls } from '@/components/ShelfControls';
 import { SocialActionsDropdown } from '@/components/SocialActionsDropdown';
 import { BookActionsDropdown } from '@/components/BookActionsDropdown';
+import { MobileActionsMenu } from '@/components/MobileActionsMenu';
 import { AuthButton } from '@/components/AuthButton';
 import { ClubsDropdown } from '@/components/ClubsDropdown';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
@@ -290,10 +291,17 @@ export default function Index() {
                   />
                   
                   {user && (
-                    <div className="flex items-center gap-2">
-                      <SocialActionsDropdown />
-                      <BookActionsDropdown onAddBook={addBook} existingBooks={allBooks} />
-                    </div>
+                    <>
+                      {/* Desktop: separate dropdowns */}
+                      <div className="hidden sm:flex items-center gap-2">
+                        <SocialActionsDropdown />
+                        <BookActionsDropdown onAddBook={addBook} existingBooks={allBooks} />
+                      </div>
+                      {/* Mobile: unified FAB menu */}
+                      <div className="sm:hidden">
+                        <MobileActionsMenu onAddBook={addBook} existingBooks={allBooks} />
+                      </div>
+                    </>
                   )}
                 </div>
 
