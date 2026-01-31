@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { useShelfSettings } from '@/hooks/useShelfSettings';
 
 const STORAGE_KEY = 'shelvy-share-nudge-dismissed-at';
+const FIRST_NUDGE_KEY = 'shelvy-share-nudge-shown-first';
 const BOOK_THRESHOLD = 5;
 const REMINDER_INTERVAL_DAYS = 14; // Show again after 14 days
 
@@ -25,22 +26,32 @@ export function ShareNudge({ bookCount }: ShareNudgeProps) {
   });
   const [visible, setVisible] = useState(false);
 
+  // Check if this is the user's first time seeing the nudge
+  const hasSeenFirstNudge = localStorage.getItem(FIRST_NUDGE_KEY) === 'true';
+
   // Show nudge after delay if conditions are met
   useEffect(() => {
     if (loading || dismissed) return;
     
-    // Only show if: 5+ books AND shelf is private
-    const shouldShow = bookCount >= BOOK_THRESHOLD && settings && !settings.is_public;
+    // Determine threshold: 1 book for first-time users, 5+ for returning users
+    const threshold = hasSeenFirstNudge ? BOOK_THRESHOLD : 1;
+    
+    // Only show if: meets threshold AND shelf is private
+    const shouldShow = bookCount >= threshold && settings && !settings.is_public;
     
     if (shouldShow) {
       const timer = setTimeout(() => {
         setVisible(true);
+        // Mark that they've seen the first nudge
+        if (!hasSeenFirstNudge) {
+          localStorage.setItem(FIRST_NUDGE_KEY, 'true');
+        }
       }, 3000); // Show after 3s
       return () => clearTimeout(timer);
     } else {
       setVisible(false);
     }
-  }, [bookCount, settings, loading, dismissed]);
+  }, [bookCount, settings, loading, dismissed, hasSeenFirstNudge]);
 
   const handleDismiss = () => {
     // Store timestamp instead of boolean for time-based reminder
@@ -90,10 +101,13 @@ export function ShareNudge({ bookCount }: ShareNudgeProps) {
         {/* Content */}
         <div className="px-4 py-4">
           <h3 className="font-sans font-semibold text-foreground mb-1">
-            Your shelf is growing! 📚
+            {bookCount === 1 ? 'Your first book! 📚' : 'Your shelf is growing! 📚'}
           </h3>
           <p className="font-sans text-sm text-muted-foreground leading-relaxed">
-            You've added {bookCount} books. Make your shelf public so friends can discover what you're reading and follow your journey.
+            {bookCount === 1 
+              ? "Great start! Make your shelf public so friends can discover what you're reading."
+              : `You've added ${bookCount} books. Make your shelf public so friends can discover what you're reading and follow your journey.`
+            }
           </p>
         </div>
 
