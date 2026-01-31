@@ -3,7 +3,6 @@ import { Bookshelf } from '@/components/Bookshelf';
 import { MobileBookshelf } from '@/components/MobileBookshelf';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { ShelfControls } from '@/components/ShelfControls';
-import { SocialActionsDropdown } from '@/components/SocialActionsDropdown';
 import { BookActionsDropdown } from '@/components/BookActionsDropdown';
 import { MobileActionsMenu } from '@/components/MobileActionsMenu';
 import { AuthButton } from '@/components/AuthButton';
@@ -309,25 +308,15 @@ export default function Index() {
                       onSelectOwnShelf={clearViewedShelf}
                     />
                     
-                    {user && (
-                      <>
-                        {/* Desktop/Tablet: full dropdowns */}
-                        <div className="hidden sm:flex items-center gap-2">
-                          <SocialActionsDropdown />
-                          <BookActionsDropdown onAddBook={addBook} existingBooks={ownBooks} />
-                        </div>
-                        {/* Mobile: compact menu */}
-                        <div className="sm:hidden">
-                          <MobileActionsMenu 
-                            onAddBook={addBook} 
-                            existingBooks={ownBooks}
-                            viewedUser={viewedUser}
-                            onSelectUser={viewShelf}
-                            onSelectOwnShelf={clearViewedShelf}
-                          />
-                        </div>
-                      </>
-                    )}
+                      {user && (
+                        <MobileActionsMenu 
+                          onAddBook={addBook} 
+                          existingBooks={ownBooks}
+                          viewedUser={viewedUser}
+                          onSelectUser={viewShelf}
+                          onSelectOwnShelf={clearViewedShelf}
+                        />
+                      )}
                   </div>
                   
                   {/* Row 2: Filters & Sorting (left) + Privacy indicator (right) */}
