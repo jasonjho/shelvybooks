@@ -602,17 +602,18 @@
     max-width: 100%;
   }
 
-  /* Responsive books grid - wraps on smaller screens as fallback */
+  /* Responsive books grid - distributes items across shelf width */
   .books-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
     align-items: flex-end;
-    justify-content: flex-start;
+    justify-content: center;
     overflow: visible;
     position: relative;
     z-index: 1;
     max-width: 100%;
+    width: 100%;
   }
 
   .books-grid > div {
