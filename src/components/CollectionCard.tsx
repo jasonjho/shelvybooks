@@ -199,8 +199,8 @@ export function CollectionCard({
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate font-sans">{book.title}</p>
-                          <p className="text-xs text-muted-foreground truncate font-sans">{book.author}</p>
+                          <p className="text-sm font-medium font-sans break-words">{book.title}</p>
+                          <p className="text-xs text-muted-foreground font-sans break-words">{book.author}</p>
                         </div>
                       </label>
                     ))}
