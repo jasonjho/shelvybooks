@@ -1,8 +1,7 @@
-import { useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export type NoteColor = 'yellow' | 'pink' | 'blue' | 'green';
 
@@ -16,56 +15,98 @@ export interface BookNote {
   updatedAt: string;
 }
 
-async function fetchNotes(bookIds: string[]): Promise<Map<string, BookNote>> {
-  if (bookIds.length === 0) return new Map();
+// Custom event for note updates - allows cross-component sync
+const NOTES_UPDATED_EVENT = 'book-notes-updated';
 
-  const { data, error } = await supabase
-    .from('book_notes')
-    .select('*')
-    .in('book_id', bookIds);
-
-  if (error) {
-    console.error('Error fetching book notes:', error);
-    return new Map();
-  }
-
-  const noteMap = new Map<string, BookNote>();
-  data?.forEach((note) => {
-    noteMap.set(note.book_id, {
-      id: note.id,
-      bookId: note.book_id,
-      userId: note.user_id,
-      content: note.content,
-      color: note.color as NoteColor,
-      createdAt: note.created_at,
-      updatedAt: note.updated_at,
-    });
-  });
-  return noteMap;
+function dispatchNotesUpdated() {
+  window.dispatchEvent(new CustomEvent(NOTES_UPDATED_EVENT));
 }
 
 export function useBookNotes(bookIds: string[]) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [notes, setNotes] = useState<Map<string, BookNote>>(new Map());
+  const [loading, setLoading] = useState(true);
 
-  // Use a stable query key based on sorted book IDs
-  const queryKey = ['book-notes', ...bookIds.slice().sort()];
+  // Fetch notes for the given book IDs
+  const fetchNotes = useCallback(async () => {
+    if (bookIds.length === 0) {
+      setNotes(new Map());
+      setLoading(false);
+      return;
+    }
 
-  const { data: notes = new Map<string, BookNote>(), isLoading: loading } = useQuery({
-    queryKey,
-    queryFn: () => fetchNotes(bookIds),
-    enabled: bookIds.length > 0,
-    staleTime: 30000, // 30 seconds
-  });
+    const { data, error } = await supabase
+      .from('book_notes')
+      .select('*')
+      .in('book_id', bookIds);
 
-  const saveMutation = useMutation({
-    mutationFn: async ({ bookId, content, color }: { bookId: string; content: string; color: NoteColor }) => {
-      if (!user) throw new Error('User not authenticated');
+    if (error) {
+      console.error('Error fetching book notes:', error);
+      setLoading(false);
+      return;
+    }
+
+    const noteMap = new Map<string, BookNote>();
+    data?.forEach((note) => {
+      noteMap.set(note.book_id, {
+        id: note.id,
+        bookId: note.book_id,
+        userId: note.user_id,
+        content: note.content,
+        color: note.color as NoteColor,
+        createdAt: note.created_at,
+        updatedAt: note.updated_at,
+      });
+    });
+    setNotes(noteMap);
+    setLoading(false);
+  }, [bookIds.join(',')]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes]);
+
+  // Listen for updates from other components
+  useEffect(() => {
+    const handleNotesUpdated = () => {
+      fetchNotes();
+    };
+
+    window.addEventListener(NOTES_UPDATED_EVENT, handleNotesUpdated);
+    return () => window.removeEventListener(NOTES_UPDATED_EVENT, handleNotesUpdated);
+  }, [fetchNotes]);
+
+  const saveNote = useCallback(
+    async (bookId: string, content: string, color: NoteColor = 'yellow') => {
+      if (!user) {
+        toast({
+          title: 'Sign in required',
+          description: 'Please sign in to add notes.',
+          variant: 'destructive',
+        });
+        return false;
+      }
 
       const trimmed = content.trim();
-      if (!trimmed) throw new Error('Note is empty');
-      if (trimmed.length > 200) throw new Error('Note too long');
+      if (!trimmed) {
+        toast({
+          title: 'Note is empty',
+          description: 'Please write something for your note.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+
+      if (trimmed.length > 200) {
+        toast({
+          title: 'Note too long',
+          description: 'Notes must be 200 characters or less.',
+          variant: 'destructive',
+        });
+        return false;
+      }
 
       const existingNote = notes.get(bookId);
 
@@ -76,77 +117,85 @@ export function useBookNotes(bookIds: string[]) {
           .update({ content: trimmed, color })
           .eq('id', existingNote.id);
 
-        if (error) throw error;
-        return { action: 'updated' as const, bookId };
+        if (error) {
+          toast({ title: 'Error', description: error.message, variant: 'destructive' });
+          return false;
+        }
+
+        setNotes((prev) => {
+          const updated = new Map(prev);
+          updated.set(bookId, {
+            ...existingNote,
+            content: trimmed,
+            color,
+            updatedAt: new Date().toISOString(),
+          });
+          return updated;
+        });
       } else {
         // Insert new note
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('book_notes')
-          .insert({ book_id: bookId, user_id: user.id, content: trimmed, color });
+          .insert({ book_id: bookId, user_id: user.id, content: trimmed, color })
+          .select()
+          .single();
 
-        if (error) throw error;
-        return { action: 'created' as const, bookId };
+        if (error) {
+          toast({ title: 'Error', description: error.message, variant: 'destructive' });
+          return false;
+        }
+
+        setNotes((prev) => {
+          const updated = new Map(prev);
+          updated.set(bookId, {
+            id: data.id,
+            bookId: data.book_id,
+            userId: data.user_id,
+            content: data.content,
+            color: data.color as NoteColor,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at,
+          });
+          return updated;
+        });
       }
-    },
-    onSuccess: () => {
-      // Invalidate ALL book-notes queries to ensure any component using notes gets fresh data
-      queryClient.invalidateQueries({ queryKey: ['book-notes'] });
+
       toast({ title: 'Note saved!', description: 'Your recommendation note has been added.' });
+      
+      // Notify other components that notes have been updated
+      dispatchNotesUpdated();
+      
+      return true;
     },
-    onError: (error: Error) => {
-      const message = error.message;
-      if (message === 'Note is empty') {
-        toast({ title: 'Note is empty', description: 'Please write something for your note.', variant: 'destructive' });
-      } else if (message === 'Note too long') {
-        toast({ title: 'Note too long', description: 'Notes must be 200 characters or less.', variant: 'destructive' });
-      } else if (message === 'User not authenticated') {
-        toast({ title: 'Sign in required', description: 'Please sign in to add notes.', variant: 'destructive' });
-      } else {
-        toast({ title: 'Error', description: message, variant: 'destructive' });
-      }
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (bookId: string) => {
-      const existingNote = notes.get(bookId);
-      if (!existingNote) throw new Error('Note not found');
-
-      const { error } = await supabase.from('book_notes').delete().eq('id', existingNote.id);
-      if (error) throw error;
-      return bookId;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['book-notes'] });
-      toast({ title: 'Note removed' });
-    },
-    onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    },
-  });
-
-  const saveNote = useCallback(
-    async (bookId: string, content: string, color: NoteColor = 'yellow') => {
-      try {
-        await saveMutation.mutateAsync({ bookId, content, color });
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    [saveMutation]
+    [user, notes, toast]
   );
 
   const deleteNote = useCallback(
     async (bookId: string) => {
-      try {
-        await deleteMutation.mutateAsync(bookId);
-        return true;
-      } catch {
+      const existingNote = notes.get(bookId);
+      if (!existingNote) return false;
+
+      const { error } = await supabase.from('book_notes').delete().eq('id', existingNote.id);
+
+      if (error) {
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
         return false;
       }
+
+      setNotes((prev) => {
+        const updated = new Map(prev);
+        updated.delete(bookId);
+        return updated;
+      });
+
+      toast({ title: 'Note removed' });
+      
+      // Notify other components that notes have been updated
+      dispatchNotesUpdated();
+      
+      return true;
     },
-    [deleteMutation]
+    [notes, toast]
   );
 
   const getNote = useCallback((bookId: string) => notes.get(bookId), [notes]);
