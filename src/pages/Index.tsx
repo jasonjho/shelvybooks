@@ -9,7 +9,7 @@ import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
-import { ShareShelfDialog } from '@/components/ShareShelfDialog';
+
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { ShelfSwitcher } from '@/components/ShelfSwitcher';
 import { BookActionsDropdown } from '@/components/BookActionsDropdown';
@@ -85,7 +85,7 @@ export default function Index() {
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
-  const [mobileShareOpen, setMobileShareOpen] = useState(false);
+  
   
   const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
 
@@ -332,10 +332,8 @@ export default function Index() {
                       activeCategoryFilters={activeCategoryFilters}
                       onCategoryFilterChange={setActiveCategoryFilters}
                       compact={isMobile}
+                      showShare={!!user}
                     />
-                    {user && (
-                      <ShareShelfDialog open={mobileShareOpen} onOpenChange={setMobileShareOpen} />
-                    )}
                   </div>
                   
                   {/* Right: + button */}
