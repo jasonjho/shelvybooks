@@ -7,14 +7,6 @@ import {
   DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerFooter,
-} from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -82,92 +74,8 @@ export function BookNoteDialog({
   const charCount = content.trim().length;
   const isOverLimit = charCount > 200;
 
-  // Mobile form: color picker ABOVE textarea so it's never clipped by keyboard
-  const mobileFormContent = (
-    <div className="space-y-3 px-4">
-      {/* Color picker - shown first on mobile */}
-      <div className="space-y-1.5">
-        <Label>Post-it color</Label>
-        <div className="flex gap-2">
-          {colorOptions.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setColor(opt.value)}
-              className={cn(
-                'w-8 h-8 rounded-md border-2 transition-all',
-                opt.bgClass,
-                color === opt.value ? 'border-foreground scale-110' : 'border-transparent'
-              )}
-              aria-label={opt.label}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Note content */}
-      <div className="space-y-1.5">
-        <div className="flex justify-between items-center">
-          <Label htmlFor="note-content">Your note</Label>
-          <span className={cn('text-xs', isOverLimit ? 'text-destructive' : 'text-muted-foreground')}>
-            {charCount}/200
-          </span>
-        </div>
-        <Textarea
-          id="note-content"
-          placeholder="A must-read! The characters are unforgettable..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="min-h-[80px] resize-none"
-          style={{ fontFamily: "'Caveat', cursive", fontSize: '18px' }}
-        />
-      </div>
-    </div>
-  );
-
-  // Desktop form: original layout
-  const formContent = (
-    <div className="space-y-4 px-4 sm:px-0">
-      {/* Note content */}
-      <div className="space-y-2">
-        <Label htmlFor="note-content">Your note</Label>
-        <Textarea
-          id="note-content"
-          placeholder="A must-read! The characters are unforgettable..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="min-h-[100px] resize-none"
-          style={{ fontFamily: "'Caveat', cursive", fontSize: '18px' }}
-        />
-        <p className={cn('text-xs text-right', isOverLimit ? 'text-destructive' : 'text-muted-foreground')}>
-          {charCount}/200
-        </p>
-      </div>
-
-      {/* Color picker */}
-      <div className="space-y-2">
-        <Label>Post-it color</Label>
-        <div className="flex gap-2">
-          {colorOptions.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setColor(opt.value)}
-              className={cn(
-                'w-8 h-8 rounded-md border-2 transition-all',
-                opt.bgClass,
-                color === opt.value ? 'border-foreground scale-110' : 'border-transparent'
-              )}
-              aria-label={opt.label}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
   const footerContent = (
-    <div className="flex flex-row justify-between sm:justify-between gap-2 w-full">
+    <div className="flex flex-row justify-between gap-2 w-full">
       {existingNote && onDelete && (
         <Button
           type="button"
@@ -182,56 +90,75 @@ export function BookNoteDialog({
         </Button>
       )}
       <div className="flex gap-2 ml-auto">
-        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+        <Button type="button" variant="outline" size={isMobile ? "sm" : "default"} onClick={() => onOpenChange(false)} disabled={saving}>
           Cancel
         </Button>
-        <Button type="button" onClick={handleSave} disabled={saving || isOverLimit || !content.trim()}>
-          {saving ? 'Saving...' : 'Save Note'}
+        <Button type="button" size={isMobile ? "sm" : "default"} onClick={handleSave} disabled={saving || isOverLimit || !content.trim()}>
+          {saving ? 'Saving...' : 'Save'}
         </Button>
       </div>
     </div>
   );
 
-  // Use Drawer on mobile for better keyboard handling
-  // Don't use viewport-based heights - they shrink when keyboard opens
-  if (isMobile) {
-    return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent>
-          <DrawerHeader className="text-left pb-2">
-            <DrawerTitle className="font-sans text-base">
-              {existingNote ? 'Edit Note' : 'Add Recommendation Note'}
-            </DrawerTitle>
-            <DrawerDescription className="text-sm text-muted-foreground">
-              Share why you love <span className="font-medium">{bookTitle}</span>
-            </DrawerDescription>
-          </DrawerHeader>
-
-          {mobileFormContent}
-
-          <DrawerFooter className="pt-3 pb-2">
-            {footerContent}
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
-    );
-  }
-
+  // Use a single Dialog for both mobile and desktop
+  // Drawer doesn't work well with iOS keyboard
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className={cn(
+        "sm:max-w-md",
+        // On mobile: position at top to avoid keyboard issues
+        isMobile && "top-[10%] translate-y-0 max-w-[calc(100%-2rem)] mx-auto"
+      )}>
         <DialogHeader>
-          <DialogTitle className="font-sans">
-            {existingNote ? 'Edit Note' : 'Add Recommendation Note'}
+          <DialogTitle className="font-sans text-base sm:text-lg">
+            {existingNote ? 'Edit Note' : 'Add Note'}
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
             Share why you love <span className="font-medium">{bookTitle}</span>
           </DialogDescription>
         </DialogHeader>
 
-        {formContent}
+        <div className="space-y-3">
+          {/* Color picker - always first for visibility */}
+          <div className="space-y-1.5">
+            <Label>Post-it color</Label>
+            <div className="flex gap-2">
+              {colorOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setColor(opt.value)}
+                  className={cn(
+                    'w-8 h-8 rounded-md border-2 transition-all',
+                    opt.bgClass,
+                    color === opt.value ? 'border-foreground scale-110' : 'border-transparent'
+                  )}
+                  aria-label={opt.label}
+                />
+              ))}
+            </div>
+          </div>
 
-        <DialogFooter className="flex-row justify-between sm:justify-between gap-2">
+          {/* Note content */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center">
+              <Label htmlFor="note-content">Your note</Label>
+              <span className={cn('text-xs', isOverLimit ? 'text-destructive' : 'text-muted-foreground')}>
+                {charCount}/200
+              </span>
+            </div>
+            <Textarea
+              id="note-content"
+              placeholder="A must-read! The characters are unforgettable..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className={cn("resize-none", isMobile ? "min-h-[60px]" : "min-h-[100px]")}
+              style={{ fontFamily: "'Caveat', cursive", fontSize: '18px' }}
+            />
+          </div>
+        </div>
+
+        <DialogFooter className="flex-row justify-between gap-2 pt-2">
           {footerContent}
         </DialogFooter>
       </DialogContent>
