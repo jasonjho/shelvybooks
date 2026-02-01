@@ -81,7 +81,7 @@ export function SettingsPanelDialog({ open, onOpenChange }: SettingsPanelDialogP
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 max-h-[85dvh] flex flex-col overflow-hidden">
+      <DialogContent className="sm:max-w-md p-0 h-[85dvh] max-h-[85dvh] flex flex-col overflow-hidden">
         <DialogHeader className="px-4 pt-3 pb-2 flex-shrink-0">
           <DialogTitle>Shelf Settings</DialogTitle>
         </DialogHeader>
