@@ -81,11 +81,11 @@ export function SettingsPanelDialog({ open, onOpenChange }: SettingsPanelDialogP
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 max-h-[90dvh] flex flex-col">
-        <DialogHeader className="px-4 pt-3 pb-2 flex-none">
+      <DialogContent className="sm:max-w-md p-0 max-h-[85dvh] flex flex-col overflow-hidden">
+        <DialogHeader className="px-4 pt-3 pb-2 flex-shrink-0">
           <DialogTitle>Shelf Settings</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="flex-1 px-4 pb-4">
+        <ScrollArea className="flex-1 min-h-0 px-4 pb-4">
           <div className="space-y-3">
             {/* Wood Finish */}
             <div className="space-y-1.5">
