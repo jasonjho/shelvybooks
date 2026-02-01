@@ -233,7 +233,7 @@ export default function Index() {
               <p className="text-sm text-muted-foreground hidden sm:block">Your personal bookshelf, beautifully organized</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0 flex-shrink">
             {user && (
               <ShelfSwitcher 
                 viewedUser={viewedUser}

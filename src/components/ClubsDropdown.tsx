@@ -16,10 +16,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Users, ChevronDown, Plus, Loader2, Link2 } from 'lucide-react';
 import { useBookClubs } from '@/hooks/useBookClubs';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function ClubsDropdown() {
   const { clubs, loading, createClub, joinClub } = useBookClubs();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'create' | 'join'>('create');
   const [clubName, setClubName] = useState('');
@@ -75,15 +77,15 @@ export function ClubsDropdown() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1.5 h-10 bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground">
+          <Button variant="outline" size="sm" className="gap-1.5 h-10 px-2.5 sm:px-3 bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground shrink-0">
             <Users className="w-4 h-4" />
-            Clubs
+            {!isMobile && "Clubs"}
             {clubs.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-primary/10 text-primary">
+              <span className="px-1.5 py-0.5 text-xs rounded-full bg-primary/10 text-primary">
                 {clubs.length}
               </span>
             )}
-            <ChevronDown className="w-3 h-3 ml-1" />
+            <ChevronDown className="w-3 h-3" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56 bg-popover">
