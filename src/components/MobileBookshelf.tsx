@@ -23,6 +23,10 @@ interface MobileBookshelfProps {
   likesPerBook?: Record<string, number>;
   /** Username to display on ribbon when viewing someone else's shelf */
   viewingUsername?: string;
+  /** When viewing someone else's shelf, allows adding books to your own shelf */
+  onAddToShelf?: (book: Book) => void;
+  /** Function to check if a book is already on the user's shelf */
+  isBookOnShelf?: (title: string, author: string) => boolean;
 }
 
 const BOOK_WIDTH = 55; // Width of mobile book covers
@@ -140,6 +144,8 @@ function MiniShelfRow({
   notes,
   onAddNote,
   likesPerBook,
+  onAddToShelf,
+  isBookOnShelf,
 }: {
   books: Book[]; 
   skin: ShelfSkin; 
@@ -154,6 +160,8 @@ function MiniShelfRow({
   notes: Map<string, BookNote>;
   onAddNote: (book: Book) => void;
   likesPerBook?: Record<string, number>;
+  onAddToShelf?: (book: Book) => void;
+  isBookOnShelf?: (title: string, author: string) => boolean;
 }) {
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
   
@@ -218,6 +226,8 @@ function MiniShelfRow({
                 note={note}
                 onAddNote={() => onAddNote(item.book)}
                 newLikesCount={newLikesCount}
+                onAddToShelf={onAddToShelf}
+                isOnShelf={isBookOnShelf?.(item.book.title, item.book.author)}
               />
             );
           }
@@ -253,6 +263,8 @@ export function MobileBookshelf({
   onSelectBook,
   likesPerBook,
   viewingUsername,
+  onAddToShelf,
+  isBookOnShelf,
 }: MobileBookshelfProps) {
   const [internalSelectedBook, setInternalSelectedBook] = useState<Book | null>(null);
   const [noteBook, setNoteBook] = useState<Book | null>(null);
@@ -354,6 +366,8 @@ export function MobileBookshelf({
               notes={notes}
               onAddNote={setNoteBook}
               likesPerBook={likesPerBook}
+              onAddToShelf={onAddToShelf}
+              isBookOnShelf={isBookOnShelf}
             />
           ))}
         </div>

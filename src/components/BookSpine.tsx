@@ -37,6 +37,10 @@ interface BookSpineProps {
   note?: BookNote;
   onAddNote?: () => void;
   newLikesCount?: number;
+  /** When viewing someone else's shelf, allows adding the book to your own shelf */
+  onAddToShelf?: (book: Book) => void;
+  /** Whether this book is already on the user's shelf */
+  isOnShelf?: boolean;
 }
 
 const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -58,10 +62,12 @@ type BookCoverProps = {
   newLikesCount?: number;
   onMove?: (id: string, status: BookStatus) => void;
   onRemove?: (id: string) => void;
+  onAddToShelf?: (book: Book) => void;
+  isOnShelf?: boolean;
 };
 
 const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
-  ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo, note, onAddNote, isInteractive = true, newLikesCount = 0, onMove, onRemove }, ref) => {
+  ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo, note, onAddNote, isInteractive = true, newLikesCount = 0, onMove, onRemove, onAddToShelf, isOnShelf }, ref) => {
   const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -282,6 +288,8 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
               clubInfo={clubInfo}
               onMove={isInteractive ? onMove : undefined}
               onRemove={isInteractive ? onRemove : undefined}
+              onAddToShelf={onAddToShelf}
+              isOnShelf={isOnShelf}
             />
             {/* Arrow pointing to book */}
             <div 
@@ -302,15 +310,30 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
 
 BookCover.displayName = 'BookCover';
 
-export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true, isGrayed = false, clubInfo, note, onAddNote, newLikesCount }: BookSpineProps) {
+export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true, isGrayed = false, clubInfo, note, onAddNote, newLikesCount, onAddToShelf, isOnShelf }: BookSpineProps) {
   const { recentlyAddedBooks, recentlyCompletedBooks } = useBookAnimations();
   
   const isWobbling = recentlyAddedBooks.has(book.id);
   const isSparkle = recentlyCompletedBooks.has(book.id);
 
-  // If not interactive, just render the book without context menu
+  // If not interactive (no move/remove), just render the book without context menu
+  // But still pass onAddToShelf if available (for viewing friend's shelf)
   if (!isInteractive || !onMove || !onRemove) {
-    return <BookCover book={book} onSelect={onSelect} isGrayed={isGrayed} isWobbling={isWobbling} isSparkle={isSparkle} clubInfo={clubInfo} note={note} isInteractive={false} newLikesCount={newLikesCount} />;
+    return (
+      <BookCover 
+        book={book} 
+        onSelect={onSelect} 
+        isGrayed={isGrayed} 
+        isWobbling={isWobbling} 
+        isSparkle={isSparkle} 
+        clubInfo={clubInfo} 
+        note={note} 
+        isInteractive={false} 
+        newLikesCount={newLikesCount}
+        onAddToShelf={onAddToShelf}
+        isOnShelf={isOnShelf}
+      />
+    );
   }
 
   return (
