@@ -14,10 +14,18 @@
 /* Fonts loaded via index.html for better performance */
 
 @layer base {
-  /* Prevent horizontal scroll on mobile */
-  html, body {
+  /* Prevent horizontal scroll and iOS elastic scrolling */
+  html {
     overflow-x: hidden;
     overscroll-behavior-x: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  body {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+    position: relative;
+    width: 100%;
     max-width: 100vw;
   }
   
@@ -26,6 +34,7 @@
     overflow-x: hidden;
     max-width: 100vw;
     overscroll-behavior-x: none;
+    position: relative;
   }
 
   :root {
