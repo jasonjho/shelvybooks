@@ -77,7 +77,7 @@ export function FollowingList() {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
       {followedUsers.map((user) => (
         <div
           key={user.userId}
