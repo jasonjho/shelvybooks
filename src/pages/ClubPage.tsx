@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClubDetails, useBookClubs, VoteWithUser, ClubMemberWithProfile } from '@/hooks/useBookClubs';
 import { useBookSearch, getCoverUrl } from '@/hooks/useBookSearch';
-import { useBooks } from '@/hooks/useBooks';
+import { useBooksContext } from '@/contexts/BooksContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -93,7 +93,7 @@ export default function ClubPage() {
     return votes.filter(v => v.suggestionId === suggestionId);
   };
 
-  const { addBook, books } = useBooks();
+  const { addBook, books } = useBooksContext();
   const [copied, setCopied] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
