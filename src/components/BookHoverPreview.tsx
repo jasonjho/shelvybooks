@@ -119,6 +119,21 @@ export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, 
                   <span>{opt.label}</span>
                 </button>
               ))}
+            {onOpenNote && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenNote(book);
+                }}
+                className={cn(
+                  'flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors',
+                  'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
+                )}
+              >
+                <StickyNote className="w-3.5 h-3.5" />
+                <span>Note</span>
+              </button>
+            )}
             {onRemove && (
               <button
                 onClick={(e) => {
@@ -128,18 +143,6 @@ export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, 
                 className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors bg-destructive/10 hover:bg-destructive/20 text-destructive"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            )}
-            {onOpenNote && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenNote(book);
-                }}
-                className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-200"
-              >
-                <StickyNote className="w-3.5 h-3.5" />
-                <span>Note</span>
               </button>
             )}
           </div>
