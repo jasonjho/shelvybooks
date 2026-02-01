@@ -297,6 +297,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
               clubInfo={clubInfo}
               onMove={isInteractive ? onMove : undefined}
               onRemove={isInteractive ? onRemove : undefined}
+              onOpenNote={isInteractive && onAddNote ? () => onAddNote() : undefined}
               onAddToShelf={onAddToShelf}
               isOnShelf={isOnShelf}
             />

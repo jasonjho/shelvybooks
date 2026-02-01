@@ -1,5 +1,5 @@
 import { Book, BookStatus } from '@/types/book';
-import { BookOpen, Hash, Tag, FileText, BookMarked, CheckCircle, Trash2, Plus } from 'lucide-react';
+import { BookOpen, Hash, Tag, FileText, BookMarked, CheckCircle, Trash2, Plus, StickyNote } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getAmazonBookUrl } from '@/lib/amazonLinks';
 import { cn } from '@/lib/utils';
@@ -11,6 +11,8 @@ interface BookHoverPreviewProps {
   clubInfo?: Array<{ clubName: string; status: string }>;
   onMove?: (id: string, status: BookStatus) => void;
   onRemove?: (id: string) => void;
+  /** Callback to open the note dialog for this book */
+  onOpenNote?: (book: Book) => void;
   /** When viewing someone else's shelf, allows adding the book to your own shelf */
   onAddToShelf?: (book: Book) => void;
   /** Whether this book is already on the user's shelf */
@@ -23,7 +25,7 @@ const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode 
   { status: 'read', label: 'Read', icon: <CheckCircle className="w-3.5 h-3.5" /> },
 ];
 
-export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, onRemove, onAddToShelf, isOnShelf }: BookHoverPreviewProps) {
+export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, onRemove, onOpenNote, onAddToShelf, isOnShelf }: BookHoverPreviewProps) {
   const finalAmazonUrl = amazonUrl || getAmazonBookUrl(book.title, book.author, book.isbn);
   const hasMetadata = book.pageCount || book.isbn || book.categories?.length || book.description;
   const isInteractive = !!onMove;
@@ -126,6 +128,18 @@ export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, 
                 className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors bg-destructive/10 hover:bg-destructive/20 text-destructive"
               >
                 <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+            {onOpenNote && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenNote(book);
+                }}
+                className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-200"
+              >
+                <StickyNote className="w-3.5 h-3.5" />
+                <span>Note</span>
               </button>
             )}
           </div>
