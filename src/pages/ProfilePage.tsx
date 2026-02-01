@@ -94,9 +94,9 @@ export default function ProfilePage() {
               <div className="p-2.5 rounded-lg bg-gradient-to-br from-amber-700 to-amber-900 shadow-md">
                 <Library className="w-7 h-7 text-amber-100" />
               </div>
-              <span className="text-2xl font-display bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent">
-                Shelvy
-              </span>
+            <span className="text-4xl font-display leading-[1.2] bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent">
+              Shelvy
+            </span>
             </Link>
             <div className="flex items-center gap-2">
               <ThemeToggle />
@@ -138,7 +138,7 @@ export default function ProfilePage() {
             <div className="p-2.5 rounded-lg bg-gradient-to-br from-amber-700 to-amber-900 shadow-md">
               <Library className="w-7 h-7 text-amber-100" />
             </div>
-            <span className="text-2xl font-display bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent">
+            <span className="text-4xl font-display leading-[1.2] bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent">
               Shelvy
             </span>
           </Link>
