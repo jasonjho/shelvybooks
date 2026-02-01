@@ -254,7 +254,7 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
                 onClick={() => setNoteDialogOpen(true)}
               >
                 <StickyNote className="w-3.5 h-3.5" />
-                Add Note
+                Note
               </Button>
               {onRemove && (
                 <Button
