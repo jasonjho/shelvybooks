@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  /* Enables iOS momentum scrolling inside overflow containers (e.g., popovers) */
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
