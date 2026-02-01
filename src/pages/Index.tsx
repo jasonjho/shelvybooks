@@ -18,7 +18,7 @@ import { BookActionsDropdown } from '@/components/BookActionsDropdown';
 
 import { Button } from '@/components/ui/button';
 
-import { useBooks } from '@/hooks/useBooks';
+import { useBooksContext } from '@/contexts/BooksContext';
 import { useClubBooks } from '@/hooks/useBookClubs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -103,14 +103,12 @@ export default function Index() {
     books,
     loading: booksLoading,
     shelfSkin, 
-    setShelfSkin, 
     settings,
-    updateSettings,
     addBook, 
     removeBook, 
     moveBook,
     updateBookCompletedAt,
-  } = useBooks();
+  } = useBooksContext();
 
   // Get club books for highlighting
   const { getBookClubs } = useClubBooks();
