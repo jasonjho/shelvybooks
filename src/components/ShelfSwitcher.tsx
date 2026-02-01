@@ -133,9 +133,8 @@ export function ShelfSwitcher({ viewedUser, onSelectUser, onSelectOwnShelf }: Sh
             </span>
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="min-w-[180px] flex flex-col max-h-[300px]">
-          {/* Scrollable content area */}
-          <div className="overflow-y-auto flex-1">
+        <SelectContent className="min-w-[180px]">
+          <div className="max-h-[200px] overflow-y-auto">
             <SelectItem value="own" className="gap-2">
               <div className="flex items-center gap-2">
                 <span className="font-medium">Your shelf</span>
@@ -172,15 +171,14 @@ export function ShelfSwitcher({ viewedUser, onSelectUser, onSelectOwnShelf }: Sh
             )}
           </div>
           
-          {/* Sticky footer - Find friends */}
-          <div className="sticky bottom-0 bg-popover border-t border-border">
-            <SelectItem value="find-friends" className="gap-2">
-              <div className="flex items-center gap-2">
-                <Search className="w-4 h-4" />
-                <span>Find friends...</span>
-              </div>
-            </SelectItem>
-          </div>
+          {/* Fixed at bottom - outside scrollable area */}
+          <SelectSeparator />
+          <SelectItem value="find-friends" className="gap-2">
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4" />
+              <span>Find friends...</span>
+            </div>
+          </SelectItem>
         </SelectContent>
       </Select>
 
