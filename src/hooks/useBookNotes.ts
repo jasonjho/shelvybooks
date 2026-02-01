@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
+// Force clean module reload after HMR corruption
+
 export type NoteColor = 'yellow' | 'pink' | 'blue' | 'green';
 
 export interface BookNote {
