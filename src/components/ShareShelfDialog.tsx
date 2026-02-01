@@ -10,8 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Share2, Copy, Check, Globe, Lock } from 'lucide-react';
+import { Share2, Copy, Check, Globe } from 'lucide-react';
 import { useShelfSettingsContext } from '@/contexts/ShelfSettingsContext';
 import { toast } from 'sonner';
 
@@ -21,7 +20,7 @@ interface ShareShelfDialogProps {
 }
 
 export function ShareShelfDialog({ open: controlledOpen, onOpenChange: controlledOnOpenChange }: ShareShelfDialogProps = {}) {
-  const { settings, loading, togglePublic, updateDisplayName, getShareUrl } = useShelfSettingsContext();
+  const { settings, loading, updateDisplayName, getShareUrl } = useShelfSettingsContext();
   const [internalOpen, setInternalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [displayNameInput, setDisplayNameInput] = useState('');
@@ -67,35 +66,22 @@ export function ShareShelfDialog({ open: controlledOpen, onOpenChange: controlle
       <DialogHeader>
         <DialogTitle>Share Your Shelf</DialogTitle>
         <DialogDescription>
-          Make your bookshelf public so friends can see what you're reading.
+          Share your bookshelf so friends can see what you're reading.
         </DialogDescription>
       </DialogHeader>
 
       <div className="space-y-6 py-4">
-        {/* Public toggle */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {settings.is_public ? (
-              <Globe className="w-5 h-5 text-primary" />
-            ) : (
-              <Lock className="w-5 h-5 text-muted-foreground" />
-            )}
-            <div>
-              <Label htmlFor="public-toggle" className="text-base font-medium">
-                Public Shelf
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                {settings.is_public 
-                  ? 'Anyone with the link can view' 
-                  : 'Only you can see your shelf'}
-              </p>
-            </div>
+        {/* Public status indicator */}
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+          <Globe className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div>
+            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+              Your shelf is public
+            </p>
+            <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80">
+              Anyone with the link can view your books
+            </p>
           </div>
-          <Switch
-            id="public-toggle"
-            checked={settings.is_public}
-            onCheckedChange={togglePublic}
-          />
         </div>
 
         {/* Display name */}
@@ -132,7 +118,7 @@ export function ShareShelfDialog({ open: controlledOpen, onOpenChange: controlle
         </div>
 
         {/* Share link */}
-        {settings.is_public && shareUrl && (
+        {shareUrl && (
           <div className="space-y-2">
             <Label>Share Link</Label>
             <div className="flex gap-2 items-center">

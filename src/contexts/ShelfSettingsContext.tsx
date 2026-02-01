@@ -4,7 +4,6 @@ import { useShelfSettings, ShelfSettings } from '@/hooks/useShelfSettings';
 interface ShelfSettingsContextType {
   settings: ShelfSettings | null;
   loading: boolean;
-  togglePublic: () => Promise<void>;
   updateDisplayName: (displayName: string) => Promise<void>;
   getShareUrl: () => string | null;
   refetch: () => Promise<void>;

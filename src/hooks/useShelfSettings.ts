@@ -61,27 +61,7 @@ export function useShelfSettings() {
     fetchSettings();
   }, [fetchSettings]);
 
-  // Toggle public status
-  const togglePublic = useCallback(async () => {
-    if (!settings) return;
-
-    const newIsPublic = !settings.is_public;
-    
-    try {
-      const { error } = await supabase
-        .from('shelf_settings')
-        .update({ is_public: newIsPublic })
-        .eq('id', settings.id);
-
-      if (error) throw error;
-
-      setSettings(prev => prev ? { ...prev, is_public: newIsPublic } : null);
-      toast.success(newIsPublic ? 'Shelf is now public!' : 'Shelf is now private');
-    } catch (err) {
-      console.error('Error updating shelf visibility:', err);
-      toast.error('Failed to update visibility');
-    }
-  }, [settings]);
+  // Note: All shelves are now public by default - no toggle needed
 
   // Update display name
   const updateDisplayName = useCallback(async (displayName: string) => {
@@ -112,7 +92,6 @@ export function useShelfSettings() {
   return {
     settings,
     loading,
-    togglePublic,
     updateDisplayName,
     getShareUrl,
     refetch: fetchSettings,

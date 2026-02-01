@@ -9,8 +9,6 @@ import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
-import { ShareNudge } from '@/components/ShareNudge';
-import { ShelfPrivacyIndicator } from '@/components/ShelfPrivacyIndicator';
 import { ShareShelfDialog } from '@/components/ShareShelfDialog';
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { ShelfSwitcher } from '@/components/ShelfSwitcher';
@@ -313,10 +311,7 @@ export default function Index() {
                       compact={isMobile}
                     />
                     {user && (
-                      <>
-                        <ShelfPrivacyIndicator onClick={() => setMobileShareOpen(true)} />
-                        <ShareShelfDialog open={mobileShareOpen} onOpenChange={setMobileShareOpen} />
-                      </>
+                      <ShareShelfDialog open={mobileShareOpen} onOpenChange={setMobileShareOpen} />
                     )}
                   </div>
                   
@@ -373,8 +368,6 @@ export default function Index() {
       {/* Onboarding tips for new users */}
       {user && ownBooks.length > 0 && !isViewingFriend && <OnboardingTips />}
       
-      {/* Share nudge after 5+ books */}
-      {user && !isViewingFriend && <ShareNudge bookCount={ownBooks.length} />}
     </div>
   );
 }
