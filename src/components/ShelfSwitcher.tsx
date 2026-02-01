@@ -133,49 +133,54 @@ export function ShelfSwitcher({ viewedUser, onSelectUser, onSelectOwnShelf }: Sh
             </span>
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="min-w-[180px]">
-          <SelectItem value="own" className="gap-2">
-            <div className="flex items-center gap-2">
-              <span className="font-medium">Your shelf</span>
-            </div>
-          </SelectItem>
-          
-          {usersWithShelves.length > 0 && (
-            <>
-              <SelectSeparator />
-              <div className="px-2 py-1.5 text-xs text-muted-foreground">Following</div>
-              {usersWithShelves.map((u) => (
-                <SelectItem key={u.userId} value={u.userId}>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="w-5 h-5">
-                      <AvatarImage src={u.avatarUrl || undefined} alt={u.username} />
-                      <AvatarFallback className="text-[10px] bg-primary/15 text-primary">
-                        {u.username.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>@{u.username}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </>
-          )}
-          
-          {loading && (
-            <>
-              <SelectSeparator />
-              <div className="flex items-center justify-center py-2">
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+        <SelectContent className="min-w-[180px] flex flex-col max-h-[300px]">
+          {/* Scrollable content area */}
+          <div className="overflow-y-auto flex-1">
+            <SelectItem value="own" className="gap-2">
+              <div className="flex items-center gap-2">
+                <span className="font-medium">Your shelf</span>
               </div>
-            </>
-          )}
+            </SelectItem>
+            
+            {usersWithShelves.length > 0 && (
+              <>
+                <SelectSeparator />
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">Following</div>
+                {usersWithShelves.map((u) => (
+                  <SelectItem key={u.userId} value={u.userId}>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="w-5 h-5">
+                        <AvatarImage src={u.avatarUrl || undefined} alt={u.username} />
+                        <AvatarFallback className="text-[10px] bg-primary/15 text-primary">
+                          {u.username.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>@{u.username}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </>
+            )}
+            
+            {loading && (
+              <>
+                <SelectSeparator />
+                <div className="flex items-center justify-center py-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                </div>
+              </>
+            )}
+          </div>
           
-          <SelectSeparator />
-          <SelectItem value="find-friends" className="gap-2">
-            <div className="flex items-center gap-2">
-              <Search className="w-4 h-4" />
-              <span>Find friends...</span>
-            </div>
-          </SelectItem>
+          {/* Sticky footer - Find friends */}
+          <div className="sticky bottom-0 bg-popover border-t border-border">
+            <SelectItem value="find-friends" className="gap-2">
+              <div className="flex items-center gap-2">
+                <Search className="w-4 h-4" />
+                <span>Find friends...</span>
+              </div>
+            </SelectItem>
+          </div>
         </SelectContent>
       </Select>
 
