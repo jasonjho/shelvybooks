@@ -72,17 +72,27 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState<'above' | 'below'>('above');
-  const bookRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const amazonUrl = getAmazonBookUrl(book.title, book.author, book.isbn);
   const hasClubInfo = clubInfo && clubInfo.length > 0;
   const isCurrentlyReading = clubInfo?.some(c => c.status === 'reading');
   const showPlaceholder = !book.coverUrl || book.coverUrl === '/placeholder.svg' || imageError;
   const coverSrc = normalizeCoverUrl(book.coverUrl);
 
+  const setCombinedRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      rootRef.current = node;
+      if (!ref) return;
+      if (typeof ref === 'function') ref(node);
+      else (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    },
+    [ref]
+  );
+
   // Check if tooltip would be clipped at top and adjust position
   const updateTooltipPosition = useCallback(() => {
-    if (bookRef.current) {
-      const rect = bookRef.current.getBoundingClientRect();
+    if (rootRef.current) {
+      const rect = rootRef.current.getBoundingClientRect();
       // If book is within 280px of viewport top, show tooltip below
       // 280px accounts for tooltip height (~220px) + padding
       const shouldShowBelow = rect.top < 280;
@@ -131,7 +141,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
 
   return (
     <div 
-      ref={bookRef} 
+      ref={setCombinedRef}
       className={cn(
         'book-spine group/book relative hover:z-50 focus-within:z-50',
         isGrayed && 'book-grayed',
@@ -337,7 +347,7 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger>
+      <ContextMenuTrigger asChild>
         <BookCover 
           book={book} 
           onSelect={onSelect} 
