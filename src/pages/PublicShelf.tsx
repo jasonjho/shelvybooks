@@ -8,6 +8,7 @@ import { ShelfControls } from '@/components/ShelfControls';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
 import { FollowButton } from '@/components/FollowButton';
+import { CopyShelfLink } from '@/components/CopyShelfLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBooks } from '@/hooks/useBooks';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -321,6 +322,9 @@ export default function PublicShelf() {
             <FollowButton targetUserId={shelfOwner.user_id} />
           )}
           
+          {/* Share button */}
+          {shareId && <CopyShelfLink shareId={shareId} />}
+          
           <ShelfControls
             activeFilters={activeFilters}
             onFilterChange={setActiveFilters}
@@ -350,6 +354,9 @@ export default function PublicShelf() {
           {shelfOwner?.user_id && user?.id !== shelfOwner.user_id && (
             <FollowButton targetUserId={shelfOwner.user_id} iconOnly />
           )}
+          
+          {/* Share button - compact on mobile */}
+          {shareId && <CopyShelfLink shareId={shareId} compact />}
           
           <ShelfControls
             activeFilters={activeFilters}
