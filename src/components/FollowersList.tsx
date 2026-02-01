@@ -89,11 +89,11 @@ export function FollowersList({ targetUserId, initiallyExpanded = false }: Follo
   }
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
       <CollapsibleTrigger asChild>
         <Button
           variant="ghost"
-          className="gap-2 text-muted-foreground hover:text-foreground"
+          className="gap-2 text-muted-foreground hover:text-foreground px-0 justify-start"
         >
           <Users className="w-4 h-4" />
           <span className="font-medium">
@@ -110,8 +110,8 @@ export function FollowersList({ targetUserId, initiallyExpanded = false }: Follo
       </CollapsibleTrigger>
 
       {followerCount > 0 && (
-        <CollapsibleContent className="mt-4">
-          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+        <CollapsibleContent className="mt-2">
+          <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
             {followers.map((follower) => (
               <div
                 key={follower.userId}
