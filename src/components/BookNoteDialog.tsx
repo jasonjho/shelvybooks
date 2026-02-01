@@ -82,6 +82,50 @@ export function BookNoteDialog({
   const charCount = content.trim().length;
   const isOverLimit = charCount > 200;
 
+  // Mobile form: color picker ABOVE textarea so it's never clipped by keyboard
+  const mobileFormContent = (
+    <div className="space-y-3 px-4">
+      {/* Color picker - shown first on mobile */}
+      <div className="space-y-1.5">
+        <Label>Post-it color</Label>
+        <div className="flex gap-2">
+          {colorOptions.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setColor(opt.value)}
+              className={cn(
+                'w-8 h-8 rounded-md border-2 transition-all',
+                opt.bgClass,
+                color === opt.value ? 'border-foreground scale-110' : 'border-transparent'
+              )}
+              aria-label={opt.label}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Note content */}
+      <div className="space-y-1.5">
+        <div className="flex justify-between items-center">
+          <Label htmlFor="note-content">Your note</Label>
+          <span className={cn('text-xs', isOverLimit ? 'text-destructive' : 'text-muted-foreground')}>
+            {charCount}/200
+          </span>
+        </div>
+        <Textarea
+          id="note-content"
+          placeholder="A must-read! The characters are unforgettable..."
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="min-h-[80px] resize-none"
+          style={{ fontFamily: "'Caveat', cursive", fontSize: '18px' }}
+        />
+      </div>
+    </div>
+  );
+
+  // Desktop form: original layout
   const formContent = (
     <div className="space-y-4 px-4 sm:px-0">
       {/* Note content */}
@@ -149,12 +193,13 @@ export function BookNoteDialog({
   );
 
   // Use Drawer on mobile for better keyboard handling
+  // Don't use viewport-based heights - they shrink when keyboard opens
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="h-[85dvh] overflow-hidden">
-          <DrawerHeader className="text-left">
-            <DrawerTitle className="font-sans">
+        <DrawerContent>
+          <DrawerHeader className="text-left pb-2">
+            <DrawerTitle className="font-sans text-base">
               {existingNote ? 'Edit Note' : 'Add Recommendation Note'}
             </DrawerTitle>
             <DrawerDescription className="text-sm text-muted-foreground">
@@ -162,15 +207,9 @@ export function BookNoteDialog({
             </DrawerDescription>
           </DrawerHeader>
 
-          {/*
-            Make the body scrollable so the header/color picker/buttons don't get clipped
-            when the on-screen keyboard reduces the viewport height.
-          */}
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            {formContent}
-          </div>
+          {mobileFormContent}
 
-          <DrawerFooter className="pt-4">
+          <DrawerFooter className="pt-3 pb-2">
             {footerContent}
           </DrawerFooter>
         </DrawerContent>
