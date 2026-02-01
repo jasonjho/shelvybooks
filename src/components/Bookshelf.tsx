@@ -22,6 +22,10 @@ interface BookshelfProps {
   likesPerBook?: Record<string, number>;
   /** Username to display on ribbon when viewing someone else's shelf */
   viewingUsername?: string;
+  /** When viewing someone else's shelf, allows adding books to your own shelf */
+  onAddToShelf?: (book: Book) => void;
+  /** Function to check if a book is already on the user's shelf */
+  isBookOnShelf?: (title: string, author: string) => boolean;
 }
 
 function Bookend() {
@@ -131,6 +135,8 @@ interface ShelfRowProps {
   notes: Map<string, BookNote>;
   onAddNote: (book: Book) => void;
   likesPerBook?: Record<string, number>;
+  onAddToShelf?: (book: Book) => void;
+  isBookOnShelf?: (title: string, author: string) => boolean;
 }
 
 function ShelfRow({
@@ -147,6 +153,8 @@ function ShelfRow({
   notes,
   onAddNote,
   likesPerBook,
+  onAddToShelf,
+  isBookOnShelf,
 }: ShelfRowProps) {
   const hasBooks = books.length > 0;
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
@@ -219,6 +227,8 @@ function ShelfRow({
                 note={bookNote}
                 onAddNote={() => onAddNote(item.book)}
                 newLikesCount={newLikesCount}
+                onAddToShelf={onAddToShelf}
+                isOnShelf={isBookOnShelf?.(item.book.title, item.book.author)}
               />
             );
           }
@@ -255,7 +265,7 @@ function ShelfRow({
   );
 }
 
-export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo, onSelectBook, likesPerBook, viewingUsername }: BookshelfProps) {
+export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo, onSelectBook, likesPerBook, viewingUsername, onAddToShelf, isBookOnShelf }: BookshelfProps) {
   const [internalSelectedBook, setInternalSelectedBook] = useState<Book | null>(null);
   const [noteBook, setNoteBook] = useState<Book | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -365,6 +375,8 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
           notes={notes}
           onAddNote={setNoteBook}
           likesPerBook={likesPerBook}
+          onAddToShelf={onAddToShelf}
+          isBookOnShelf={isBookOnShelf}
         />
       ))}
 

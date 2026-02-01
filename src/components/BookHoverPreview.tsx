@@ -1,5 +1,5 @@
 import { Book, BookStatus } from '@/types/book';
-import { BookOpen, Hash, Tag, FileText, BookMarked, CheckCircle, Trash2 } from 'lucide-react';
+import { BookOpen, Hash, Tag, FileText, BookMarked, CheckCircle, Trash2, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getAmazonBookUrl } from '@/lib/amazonLinks';
 import { cn } from '@/lib/utils';
@@ -11,6 +11,10 @@ interface BookHoverPreviewProps {
   clubInfo?: Array<{ clubName: string; status: string }>;
   onMove?: (id: string, status: BookStatus) => void;
   onRemove?: (id: string) => void;
+  /** When viewing someone else's shelf, allows adding the book to your own shelf */
+  onAddToShelf?: (book: Book) => void;
+  /** Whether this book is already on the user's shelf */
+  isOnShelf?: boolean;
 }
 
 const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -19,7 +23,7 @@ const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode 
   { status: 'read', label: 'Read', icon: <CheckCircle className="w-3.5 h-3.5" /> },
 ];
 
-export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, onRemove }: BookHoverPreviewProps) {
+export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, onRemove, onAddToShelf, isOnShelf }: BookHoverPreviewProps) {
   const finalAmazonUrl = amazonUrl || getAmazonBookUrl(book.title, book.author, book.isbn);
   const hasMetadata = book.pageCount || book.isbn || book.categories?.length || book.description;
   const isInteractive = !!onMove;
@@ -91,7 +95,7 @@ export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, 
         </div>
       )}
       
-      {/* Status actions - only show for interactive books */}
+      {/* Status actions - only show for interactive books (own shelf) */}
       {isInteractive && (
         <div className="mt-3 pt-3 border-t border-border/50">
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -125,6 +129,29 @@ export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, 
               </button>
             )}
           </div>
+        </div>
+      )}
+      
+      {/* Add to shelf action - only show when viewing someone else's shelf */}
+      {onAddToShelf && (
+        <div className="mt-3 pt-3 border-t border-border/50">
+          {isOnShelf ? (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <CheckCircle className="w-3.5 h-3.5" />
+              <span>Already on your shelf</span>
+            </div>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToShelf(book);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors bg-primary hover:bg-primary/90 text-primary-foreground w-full justify-center"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add to my shelf</span>
+            </button>
+          )}
         </div>
       )}
       

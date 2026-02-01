@@ -26,6 +26,7 @@ import { useViewedShelf } from '@/hooks/useViewedShelf';
 import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
 import { Library } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 // Seeded random for consistent shuffle per session
 function seededShuffle<T>(array: T[], seed: number): T[] {
@@ -130,6 +131,28 @@ export default function Index() {
   const ownBooks = useMemo(() => {
     return user ? books : isbndbDemoBooks;
   }, [user, books, isbndbDemoBooks]);
+
+  // Check if a book is already on the user's shelf (for "Add to my shelf" feature)
+  const isBookOnShelf = useCallback((title: string, author: string) => {
+    return ownBooks.some(
+      (b) => b.title.toLowerCase() === title.toLowerCase() && 
+             b.author.toLowerCase() === author.toLowerCase()
+    );
+  }, [ownBooks]);
+
+  // Handler for adding a book from a friend's shelf to own shelf
+  const handleAddToShelf = useCallback(async (book: Book) => {
+    if (isBookOnShelf(book.title, book.author)) {
+      return; // Already on shelf
+    }
+    await addBook({
+      title: book.title,
+      author: book.author,
+      coverUrl: book.coverUrl || '',
+      status: 'want-to-read',
+    });
+    toast.success(`Added "${book.title}" to your shelf`);
+  }, [addBook, isBookOnShelf]);
 
   // Display books: friend's shelf when viewing, otherwise own books
   const displayBooks = useMemo(() => {
@@ -336,6 +359,8 @@ export default function Index() {
                      getBookClubInfo={user && !isViewingFriend ? getBookClubInfo : undefined}
                      likesPerBook={user && !isViewingFriend ? totalLikesPerBook : undefined}
                      viewingUsername={viewedUser?.username}
+                     onAddToShelf={user && isViewingFriend ? handleAddToShelf : undefined}
+                     isBookOnShelf={user && isViewingFriend ? isBookOnShelf : undefined}
                    />
                  ) : (
                    <Bookshelf
@@ -349,6 +374,8 @@ export default function Index() {
                      getBookClubInfo={user && !isViewingFriend ? getBookClubInfo : undefined}
                      likesPerBook={user && !isViewingFriend ? totalLikesPerBook : undefined}
                      viewingUsername={viewedUser?.username}
+                     onAddToShelf={user && isViewingFriend ? handleAddToShelf : undefined}
+                     isBookOnShelf={user && isViewingFriend ? isBookOnShelf : undefined}
                    />
                  )}
               </>
