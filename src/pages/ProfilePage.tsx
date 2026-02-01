@@ -6,12 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
-import { FollowingList } from '@/components/FollowingList';
-import { FollowersList } from '@/components/FollowersList';
-import { Library, ArrowLeft, BookOpen, User, ExternalLink, Users } from 'lucide-react';
+import { FollowTabs } from '@/components/FollowTabs';
+import { Library, ArrowLeft, BookOpen, User, ExternalLink } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import type { Profile } from '@/hooks/useProfile';
-import { Separator } from '@/components/ui/separator';
 
 interface PublicShelfInfo {
   shareId: string;
@@ -163,14 +161,9 @@ export default function ProfilePage() {
           <h1 className="text-2xl font-sans font-semibold mb-1">{profile.username}</h1>
           <p className="text-sm text-muted-foreground mb-4">Member since {memberSince}</p>
 
-          {/* Follower count */}
-          <div className="mb-6">
-            <FollowersList targetUserId={profile.userId} />
-          </div>
-
           {/* Public shelf link */}
           {shelfInfo && shelfInfo.shareId && (
-            <Button asChild variant="outline" className="gap-2">
+            <Button asChild variant="outline" className="gap-2 mb-6">
               <Link to={`/shelf/${shelfInfo.shareId}`}>
                 <BookOpen className="w-4 h-4" />
                 View {shelfInfo.displayName || profile.username}'s bookshelf
@@ -180,25 +173,16 @@ export default function ProfilePage() {
           )}
 
           {!shelfInfo && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-6">
               This user hasn't made their bookshelf public yet.
             </p>
           )}
-        </div>
 
-        {/* Following Section - Only shown on own profile */}
-        {isOwnProfile && (
-          <>
-            <Separator className="my-10 max-w-lg mx-auto" />
-            <div className="max-w-md mx-auto">
-              <div className="flex items-center gap-2 mb-4">
-                <Users className="w-5 h-5 text-muted-foreground" />
-                <h2 className="text-lg font-sans font-semibold">Following</h2>
-              </div>
-              <FollowingList />
-            </div>
-          </>
-        )}
+          {/* Followers/Following Tabs */}
+          <div className="flex justify-center">
+            <FollowTabs targetUserId={profile.userId} isOwnProfile={isOwnProfile} />
+          </div>
+        </div>
       </main>
     </div>
   );
