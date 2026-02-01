@@ -137,6 +137,8 @@ interface ShelfRowProps {
   likesPerBook?: Record<string, number>;
   onAddToShelf?: (book: Book) => void;
   isBookOnShelf?: (title: string, author: string) => boolean;
+  /** When true, spread items evenly to fill the row width */
+  isFullRow?: boolean;
 }
 
 function ShelfRow({
@@ -155,6 +157,7 @@ function ShelfRow({
   likesPerBook,
   onAddToShelf,
   isBookOnShelf,
+  isFullRow,
 }: ShelfRowProps) {
   const hasBooks = books.length > 0;
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
@@ -203,7 +206,7 @@ function ShelfRow({
       {settings.showBookends && hasBooks && <Bookend />}
       
       {/* Books and decorations */}
-      <div className="books-grid flex-1">
+      <div className={cn('books-grid flex-1', isFullRow && 'full-row')}>
         {items.map((item, index) => {
           // Check if book should be grayed out based on filters
           const isGrayed = item.type === 'book' && 
@@ -383,26 +386,31 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
       <div className="bookcase-rosette top-right" />
       <div className="bookcase-rosette bottom-left" />
       <div className="bookcase-rosette bottom-right" />
-      {bookRows.map((rowBooks, rowIndex) => (
-        <ShelfRow
-          key={rowIndex}
-          books={rowBooks}
-          rowIndex={rowIndex}
-          decorSlotsPerRow={decorSlotsPerRow}
-          skin={skin}
-          settings={settings}
-          activeFilters={activeFilters}
-          onMoveBook={onMoveBook}
-          onRemoveBook={onRemoveBook}
-          onSelectBook={handleSelectBook}
-          getBookClubInfo={getBookClubInfo}
-          notes={notes}
-          onAddNote={setNoteBook}
-          likesPerBook={likesPerBook}
-          onAddToShelf={onAddToShelf}
-          isBookOnShelf={isBookOnShelf}
-        />
-      ))}
+      {bookRows.map((rowBooks, rowIndex) => {
+        // A row is "full" if it has the max capacity
+        const isFullRow = rowBooks.length >= booksPerRow;
+        return (
+          <ShelfRow
+            key={rowIndex}
+            books={rowBooks}
+            rowIndex={rowIndex}
+            decorSlotsPerRow={decorSlotsPerRow}
+            skin={skin}
+            settings={settings}
+            activeFilters={activeFilters}
+            onMoveBook={onMoveBook}
+            onRemoveBook={onRemoveBook}
+            onSelectBook={handleSelectBook}
+            getBookClubInfo={getBookClubInfo}
+            notes={notes}
+            onAddNote={setNoteBook}
+            likesPerBook={likesPerBook}
+            onAddToShelf={onAddToShelf}
+            isBookOnShelf={isBookOnShelf}
+            isFullRow={isFullRow}
+          />
+        );
+      })}
 
       {/* Book detail dialog - only render if using internal state */}
       {!onSelectBook && (
