@@ -323,7 +323,7 @@ export default function PublicShelf() {
           )}
           
           {/* Share button */}
-          {shareId && <CopyShelfLink shareId={shareId} />}
+          <CopyShelfLink />
           
           <ShelfControls
             activeFilters={activeFilters}
@@ -356,7 +356,7 @@ export default function PublicShelf() {
           )}
           
           {/* Share button - compact on mobile */}
-          {shareId && <CopyShelfLink shareId={shareId} compact />}
+          <CopyShelfLink compact />
           
           <ShelfControls
             activeFilters={activeFilters}

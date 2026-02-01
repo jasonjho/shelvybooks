@@ -10,15 +10,15 @@ import { Share2, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface CopyShelfLinkProps {
-  shareId: string;
   compact?: boolean;
 }
 
-export function CopyShelfLink({ shareId, compact = false }: CopyShelfLinkProps) {
+export function CopyShelfLink({ compact = false }: CopyShelfLinkProps) {
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const shareUrl = `${window.location.origin}/shelf/${shareId}`;
+  // Use the current page URL since we're already on the public shelf
+  const shareUrl = window.location.href;
 
   const handleCopy = async () => {
     try {
