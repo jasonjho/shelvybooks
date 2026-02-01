@@ -616,6 +616,11 @@
     width: 100%;
   }
 
+  /* Full row: spread items evenly to fill shelf width */
+  .books-grid.full-row {
+    justify-content: space-between;
+  }
+
   .books-grid > div {
     flex: 0 0 auto;
     width: 70px;
