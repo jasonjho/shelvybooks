@@ -384,11 +384,9 @@ export default function Index() {
         )}
       </main>
       {/* Footer */}
-      <footer className="relative z-10 py-6 mt-auto">
-        <div className="container text-center text-sm text-muted-foreground space-y-1">
-          <p className="text-xs opacity-70">
-            Made with <span className="text-red-500">♥</span> in NY
-          </p>
+      <footer className="relative z-10 py-6 mt-auto border-t border-border/50">
+        <div className="container text-center text-sm text-muted-foreground">
+          <p>© {new Date().getFullYear()} Shelvy. All rights reserved.</p>
         </div>
       </footer>
 
