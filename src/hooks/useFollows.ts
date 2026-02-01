@@ -64,6 +64,12 @@ export function useFollows() {
         .single();
       
       if (error) throw error;
+      
+      // Send email notification (fire and forget - don't block on this)
+      supabase.functions.invoke('notify-new-follower', {
+        body: { followedUserId: targetUserId, followerUserId: user.id }
+      }).catch(err => console.error('Failed to send follower notification:', err));
+      
       return data as Follow;
     },
     onMutate: async (targetUserId: string) => {
