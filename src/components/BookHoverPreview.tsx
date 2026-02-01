@@ -31,7 +31,7 @@ export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, 
   const isInteractive = !!onMove;
 
   return (
-    <div className="bg-popover text-popover-foreground px-4 py-3 rounded-lg text-sm min-w-[240px] max-w-[320px] shadow-xl border border-border">
+    <div className="bg-popover text-popover-foreground px-4 py-3 rounded-lg text-sm min-w-[240px] max-w-[320px] shadow-xl border border-border max-h-[calc(100vh-120px)] overflow-y-auto overscroll-contain">
       {/* Title & Author */}
       <button 
         onClick={(e) => {
