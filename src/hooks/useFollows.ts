@@ -57,12 +57,14 @@ export function useFollows() {
     mutationFn: async (targetUserId: string) => {
       if (!user) throw new Error('Not authenticated');
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('follows')
-        .insert({ follower_id: user.id, following_id: targetUserId });
+        .insert({ follower_id: user.id, following_id: targetUserId })
+        .select()
+        .single();
       
       if (error) throw error;
-      return targetUserId;
+      return data as Follow;
     },
     onMutate: async (targetUserId: string) => {
       // Cancel outgoing refetches to avoid overwriting optimistic update
@@ -79,7 +81,11 @@ export function useFollows() {
       
       return { previousFollowing };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Replace optimistic entry with real data (no refetch needed)
+      queryClient.setQueryData<Follow[]>(['following', user?.id], (old = []) =>
+        old.map(f => f.id === 'optimistic' && f.following_id === data.following_id ? data : f)
+      );
       toast.success('Now following this shelf');
     },
     onError: (error: Error, _targetUserId, context) => {
@@ -89,10 +95,6 @@ export function useFollows() {
       }
       console.error('Follow error:', error);
       toast.error('Failed to follow');
-    },
-    onSettled: () => {
-      // Sync with server in background
-      queryClient.invalidateQueries({ queryKey: ['following', user?.id] });
     },
   });
 
@@ -124,6 +126,7 @@ export function useFollows() {
     },
     onSuccess: () => {
       toast.success('Unfollowed');
+      // No invalidation needed - optimistic update already removed it
     },
     onError: (error: Error, _targetUserId, context) => {
       if (context?.previousFollowing) {
@@ -131,9 +134,6 @@ export function useFollows() {
       }
       console.error('Unfollow error:', error);
       toast.error('Failed to unfollow');
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['following', user?.id] });
     },
   });
 
