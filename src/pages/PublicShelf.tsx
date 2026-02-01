@@ -296,7 +296,7 @@ export default function PublicShelf() {
       <main className="container py-8 relative z-10">
         {/* Owner info - simplified header */}
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-display">
+          <h2 className="text-2xl font-semibold font-sans">
             {shelfTitle}
             <span className="text-base font-normal text-muted-foreground ml-2">
               ({books.length})
