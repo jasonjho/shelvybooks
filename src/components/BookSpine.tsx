@@ -286,21 +286,26 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
           side={tooltipPosition === 'above' ? 'top' : 'bottom'}
           sideOffset={16}
           align="center"
-          className="w-auto p-0 border-none bg-transparent shadow-none hidden sm:block"
+          avoidCollisions={true}
+          collisionPadding={20}
+          sticky="always"
+          className="w-auto p-0 border-none bg-transparent shadow-none hidden sm:block z-50"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="relative">
-            <BookHoverPreview 
-              book={book} 
-              amazonUrl={amazonUrl} 
-              onSelect={onSelect}
-              clubInfo={clubInfo}
-              onMove={isInteractive ? onMove : undefined}
-              onRemove={isInteractive ? onRemove : undefined}
-              onOpenNote={isInteractive && onAddNote ? () => onAddNote() : undefined}
-              onAddToShelf={onAddToShelf}
-              isOnShelf={isOnShelf}
-            />
+            <div className="max-h-[min(320px,calc(100dvh-80px))] overflow-y-auto overscroll-contain rounded-lg">
+              <BookHoverPreview 
+                book={book} 
+                amazonUrl={amazonUrl} 
+                onSelect={onSelect}
+                clubInfo={clubInfo}
+                onMove={isInteractive ? onMove : undefined}
+                onRemove={isInteractive ? onRemove : undefined}
+                onOpenNote={isInteractive && onAddNote ? () => onAddNote() : undefined}
+                onAddToShelf={onAddToShelf}
+                isOnShelf={isOnShelf}
+              />
+            </div>
             {/* Arrow pointing to book */}
             <div 
               className={cn(
