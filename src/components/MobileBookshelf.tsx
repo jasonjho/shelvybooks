@@ -382,6 +382,8 @@ export function MobileBookshelf({
           onUpdateCompletedAt={onUpdateCompletedAt}
           onMove={onMoveBook}
           onRemove={onRemoveBook}
+          onAddToShelf={onAddToShelf}
+          isOnShelf={selectedBook ? isBookOnShelf?.(selectedBook.title, selectedBook.author) : false}
         />
       )}
 

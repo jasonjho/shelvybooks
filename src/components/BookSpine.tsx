@@ -185,239 +185,123 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
           </PopoverContent>
         </Popover>
       )}
-      {/* Mobile: Use Popover (tap-triggered), Desktop: Use HoverCard */}
-      {isMobile ? (
-        <Popover>
-          <PopoverTrigger asChild>
-            <div
-              className={cn(
-                'book-cover w-[70px] h-[105px] cursor-pointer relative overflow-hidden',
-                hasClubInfo && 'ring-2 ring-primary/60 ring-offset-1 ring-offset-background',
-                isCurrentlyReading && 'ring-amber-500/80'
-              )}
-            >
-              {/* Loading skeleton - subtle shimmer, fades out as image loads */}
-              {!showPlaceholder && (
-                <div 
-                  className={cn(
-                    "absolute inset-0 w-full h-full bg-muted animate-shimmer-subtle transition-opacity duration-300",
-                    imageLoaded ? "opacity-0" : "opacity-100"
-                  )} 
-                />
-              )}
-              
-              {/* Actual cover image */}
-              {!showPlaceholder && (
-                <img
-                  src={coverSrc}
-                  alt={book.title}
-                  loading="lazy"
-                  onLoad={handleImageLoad}
-                  onError={() => {
-                    setImageError(true);
-                    setImageLoaded(true);
-                  }}
-                  className={cn(
-                    'absolute inset-0 w-full h-full object-cover transition-opacity duration-300',
-                    imageLoaded ? 'opacity-100' : 'opacity-0'
-                  )}
-                  referrerPolicy="no-referrer"
-                />
-              )}
-              
-              {/* 3D book edge effect */}
-              <div className="book-edge" />
-              
-              {/* Top edge highlight */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-b from-white/20 to-transparent" />
-              
-              {/* Club badge */}
-              {hasClubInfo && (
-                <div 
-                  className={cn(
-                    'absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center shadow-md z-10',
-                    isCurrentlyReading 
-                      ? 'bg-amber-500 text-white' 
-                      : 'bg-primary text-primary-foreground'
-                  )}
-                  title={clubInfo.map(c => `${c.clubName}${c.status === 'reading' ? ' (Reading)' : ''}`).join(', ')}
-                >
-                  <Users className="w-3 h-3" />
-                </div>
-              )}
-
-              {/* New likes badge */}
-              {!hasClubInfo && newLikesCount > 0 && (
-                <BookLikeBadge count={newLikesCount} />
-              )}
-              
-              {/* Fallback if no cover or error */}
-              {showPlaceholder && (
-                <div className="absolute inset-0 flex items-center justify-center p-2 bg-gradient-to-br from-secondary to-muted">
-                  <span className="text-[9px] text-center font-display text-secondary-foreground leading-tight line-clamp-4">
-                    {book.title}
-                  </span>
-                </div>
-              )}
-
-              {/* Sparkle particles for completed books */}
-              {isSparkle && (
-                <>
-                  <div className="sparkle-particle" style={{ top: '-5px', left: '20%', animationDelay: '0s' }} />
-                  <div className="sparkle-particle" style={{ top: '-8px', left: '50%', animationDelay: '0.15s' }} />
-                  <div className="sparkle-particle" style={{ top: '-3px', left: '75%', animationDelay: '0.3s' }} />
-                </>
-              )}
-            </div>
-          </PopoverTrigger>
-          <PopoverContent
-            side={tooltipPosition === 'above' ? 'top' : 'bottom'}
-            sideOffset={16}
-            align="center"
-            className="w-auto p-0 border-none bg-transparent shadow-none"
-            onClick={(e) => e.stopPropagation()}
+      {/* Use HoverCard for desktop hover behavior, with Popover nested for mobile tap */}
+      <HoverCard openDelay={120} closeDelay={80}>
+        <HoverCardTrigger asChild>
+          <div
+            className={cn(
+              'book-cover w-[70px] h-[105px] cursor-pointer relative overflow-hidden',
+              hasClubInfo && 'ring-2 ring-primary/60 ring-offset-1 ring-offset-background',
+              isCurrentlyReading && 'ring-amber-500/80'
+            )}
+            onClick={onSelect}
           >
-            <div className="relative">
-              <BookHoverPreview 
-                book={book} 
-                amazonUrl={amazonUrl} 
-                onSelect={onSelect}
-                clubInfo={clubInfo}
-                onMove={isInteractive ? onMove : undefined}
-                onRemove={isInteractive ? onRemove : undefined}
-                onAddToShelf={onAddToShelf}
-                isOnShelf={isOnShelf}
-              />
-              {/* Arrow pointing to book */}
+            {/* Loading skeleton - subtle shimmer, fades out as image loads */}
+            {!showPlaceholder && (
               <div 
                 className={cn(
-                  "absolute left-1/2 -translate-x-1/2 border-[8px] border-transparent",
-                  tooltipPosition === 'above' 
-                    ? '-bottom-4 border-t-popover' 
-                    : '-top-4 border-b-popover'
+                  "absolute inset-0 w-full h-full bg-muted animate-shimmer-subtle transition-opacity duration-300",
+                  imageLoaded ? "opacity-0" : "opacity-100"
                 )} 
               />
-            </div>
-          </PopoverContent>
-        </Popover>
-      ) : (
-        <HoverCard openDelay={120} closeDelay={80}>
-          <HoverCardTrigger asChild>
-            <div
-              className={cn(
-                'book-cover w-[70px] h-[105px] cursor-pointer relative overflow-hidden',
-                hasClubInfo && 'ring-2 ring-primary/60 ring-offset-1 ring-offset-background',
-                isCurrentlyReading && 'ring-amber-500/80'
-              )}
-              onClick={onSelect}
-            >
-              {/* Loading skeleton - subtle shimmer, fades out as image loads */}
-              {!showPlaceholder && (
-                <div 
-                  className={cn(
-                    "absolute inset-0 w-full h-full bg-muted animate-shimmer-subtle transition-opacity duration-300",
-                    imageLoaded ? "opacity-0" : "opacity-100"
-                  )} 
-                />
-              )}
-              
-              {/* Actual cover image */}
-              {!showPlaceholder && (
-                <img
-                  src={coverSrc}
-                  alt={book.title}
-                  loading="lazy"
-                  onLoad={handleImageLoad}
-                  onError={() => {
-                    setImageError(true);
-                    setImageLoaded(true);
-                  }}
-                  className={cn(
-                    'absolute inset-0 w-full h-full object-cover transition-opacity duration-300',
-                    imageLoaded ? 'opacity-100' : 'opacity-0'
-                  )}
-                  referrerPolicy="no-referrer"
-                />
-              )}
-              
-              {/* 3D book edge effect */}
-              <div className="book-edge" />
-              
-              {/* Top edge highlight */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-b from-white/20 to-transparent" />
-              
-              {/* Club badge */}
-              {hasClubInfo && (
-                <div 
-                  className={cn(
-                    'absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center shadow-md z-10',
-                    isCurrentlyReading 
-                      ? 'bg-amber-500 text-white' 
-                      : 'bg-primary text-primary-foreground'
-                  )}
-                  title={clubInfo.map(c => `${c.clubName}${c.status === 'reading' ? ' (Reading)' : ''}`).join(', ')}
-                >
-                  <Users className="w-3 h-3" />
-                </div>
-              )}
-
-              {/* New likes badge */}
-              {!hasClubInfo && newLikesCount > 0 && (
-                <BookLikeBadge count={newLikesCount} />
-              )}
-              
-              {/* Fallback if no cover or error */}
-              {showPlaceholder && (
-                <div className="absolute inset-0 flex items-center justify-center p-2 bg-gradient-to-br from-secondary to-muted">
-                  <span className="text-[9px] text-center font-display text-secondary-foreground leading-tight line-clamp-4">
-                    {book.title}
-                  </span>
-                </div>
-              )}
-
-              {/* Sparkle particles for completed books */}
-              {isSparkle && (
-                <>
-                  <div className="sparkle-particle" style={{ top: '-5px', left: '20%', animationDelay: '0s' }} />
-                  <div className="sparkle-particle" style={{ top: '-8px', left: '50%', animationDelay: '0.15s' }} />
-                  <div className="sparkle-particle" style={{ top: '-3px', left: '75%', animationDelay: '0.3s' }} />
-                </>
-              )}
-            </div>
-          </HoverCardTrigger>
-
-          {/* Hover tooltip with metadata - portaled to avoid being clipped by sticky header stacking contexts */}
-          <HoverCardContent
-            side={tooltipPosition === 'above' ? 'top' : 'bottom'}
-            sideOffset={16}
-            align="center"
-            className="w-auto p-0 border-none bg-transparent shadow-none"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative">
-              <BookHoverPreview 
-                book={book} 
-                amazonUrl={amazonUrl} 
-                onSelect={onSelect}
-                clubInfo={clubInfo}
-                onMove={isInteractive ? onMove : undefined}
-                onRemove={isInteractive ? onRemove : undefined}
-                onAddToShelf={onAddToShelf}
-                isOnShelf={isOnShelf}
+            )}
+            
+            {/* Actual cover image */}
+            {!showPlaceholder && (
+              <img
+                src={coverSrc}
+                alt={book.title}
+                loading="lazy"
+                onLoad={handleImageLoad}
+                onError={() => {
+                  setImageError(true);
+                  setImageLoaded(true);
+                }}
+                className={cn(
+                  'absolute inset-0 w-full h-full object-cover transition-opacity duration-300',
+                  imageLoaded ? 'opacity-100' : 'opacity-0'
+                )}
+                referrerPolicy="no-referrer"
               />
-              {/* Arrow pointing to book */}
+            )}
+            
+            {/* 3D book edge effect */}
+            <div className="book-edge" />
+            
+            {/* Top edge highlight */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-b from-white/20 to-transparent" />
+            
+            {/* Club badge */}
+            {hasClubInfo && (
               <div 
                 className={cn(
-                  "absolute left-1/2 -translate-x-1/2 border-[8px] border-transparent",
-                  tooltipPosition === 'above' 
-                    ? '-bottom-4 border-t-popover' 
-                    : '-top-4 border-b-popover'
-                )} 
-              />
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      )}
+                  'absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center shadow-md z-10',
+                  isCurrentlyReading 
+                    ? 'bg-amber-500 text-white' 
+                    : 'bg-primary text-primary-foreground'
+                )}
+                title={clubInfo.map(c => `${c.clubName}${c.status === 'reading' ? ' (Reading)' : ''}`).join(', ')}
+              >
+                <Users className="w-3 h-3" />
+              </div>
+            )}
+
+            {/* New likes badge */}
+            {!hasClubInfo && newLikesCount > 0 && (
+              <BookLikeBadge count={newLikesCount} />
+            )}
+            
+            {/* Fallback if no cover or error */}
+            {showPlaceholder && (
+              <div className="absolute inset-0 flex items-center justify-center p-2 bg-gradient-to-br from-secondary to-muted">
+                <span className="text-[9px] text-center font-display text-secondary-foreground leading-tight line-clamp-4">
+                  {book.title}
+                </span>
+              </div>
+            )}
+
+            {/* Sparkle particles for completed books */}
+            {isSparkle && (
+              <>
+                <div className="sparkle-particle" style={{ top: '-5px', left: '20%', animationDelay: '0s' }} />
+                <div className="sparkle-particle" style={{ top: '-8px', left: '50%', animationDelay: '0.15s' }} />
+                <div className="sparkle-particle" style={{ top: '-3px', left: '75%', animationDelay: '0.3s' }} />
+              </>
+            )}
+          </div>
+        </HoverCardTrigger>
+
+        {/* Hover tooltip with metadata - desktop only (hidden on mobile) */}
+        <HoverCardContent
+          side={tooltipPosition === 'above' ? 'top' : 'bottom'}
+          sideOffset={16}
+          align="center"
+          className="w-auto p-0 border-none bg-transparent shadow-none hidden sm:block"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="relative">
+            <BookHoverPreview 
+              book={book} 
+              amazonUrl={amazonUrl} 
+              onSelect={onSelect}
+              clubInfo={clubInfo}
+              onMove={isInteractive ? onMove : undefined}
+              onRemove={isInteractive ? onRemove : undefined}
+              onAddToShelf={onAddToShelf}
+              isOnShelf={isOnShelf}
+            />
+            {/* Arrow pointing to book */}
+            <div 
+              className={cn(
+                "absolute left-1/2 -translate-x-1/2 border-[8px] border-transparent",
+                tooltipPosition === 'above' 
+                  ? '-bottom-4 border-t-popover' 
+                  : '-top-4 border-b-popover'
+              )} 
+            />
+          </div>
+        </HoverCardContent>
+      </HoverCard>
     </div>
   );
   }
