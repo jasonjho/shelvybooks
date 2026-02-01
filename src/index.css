@@ -63,7 +63,7 @@
     /* Borders */
     --border: 30 25% 82%;
     --input: 30 25% 82%;
-    --ring: 152 35% 28%;
+    --ring: 24 10% 50%;
 
     --radius: 0.5rem;
 
@@ -135,7 +135,7 @@
 
     --border: 24 15% 25%;
     --input: 24 15% 25%;
-    --ring: 152 40% 45%;
+    --ring: 30 10% 45%;
 
     /* Dark mode wall colors */
     --wall: 24 15% 12%;
