@@ -133,8 +133,8 @@ export function ShelfSwitcher({ viewedUser, onSelectUser, onSelectOwnShelf }: Sh
             </span>
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="min-w-[180px]">
-          <div className="max-h-[200px] overflow-y-auto">
+        <SelectContent className="min-w-[180px] overflow-x-hidden">
+          <div className="max-h-[200px] overflow-y-auto overflow-x-hidden">
             <SelectItem value="own" className="gap-2">
               <div className="flex items-center gap-2">
                 <span className="font-medium">Your shelf</span>
