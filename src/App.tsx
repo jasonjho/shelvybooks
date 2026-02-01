@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProfileProvider } from "@/contexts/ProfileContext";
 import { BookAnimationProvider } from "@/contexts/BookAnimationContext";
+import { BooksProvider } from "@/contexts/BooksContext";
 import { ProfileSetupWrapper } from "@/components/ProfileSetupWrapper";
 import Index from "./pages/Index";
 import PublicShelf from "./pages/PublicShelf";
@@ -24,23 +25,25 @@ const App = () => (
       <AuthProvider>
         <ProfileProvider>
           <BookAnimationProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <ProfileSetupWrapper />
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/shelf/:shareId" element={<PublicShelf />} />
-                  <Route path="/clubs/:clubId" element={<ClubPage />} />
-                  <Route path="/clubs/join/:inviteCode" element={<JoinClubPage />} />
-                  <Route path="/u/:username" element={<ProfilePage />} />
-                  <Route path="/admin" element={<AdminPage />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </TooltipProvider>
+            <BooksProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <ProfileSetupWrapper />
+                <BrowserRouter>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/shelf/:shareId" element={<PublicShelf />} />
+                    <Route path="/clubs/:clubId" element={<ClubPage />} />
+                    <Route path="/clubs/join/:inviteCode" element={<JoinClubPage />} />
+                    <Route path="/u/:username" element={<ProfilePage />} />
+                    <Route path="/admin" element={<AdminPage />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </TooltipProvider>
+            </BooksProvider>
           </BookAnimationProvider>
         </ProfileProvider>
       </AuthProvider>

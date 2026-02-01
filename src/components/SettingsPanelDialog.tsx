@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Lamp, Trees, BookmarkMinus, Sparkles, Check, Image, Sun, Moon, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
-import { useBooks } from '@/hooks/useBooks';
+import { useBooksContext } from '@/contexts/BooksContext';
 
 interface SettingsPanelDialogProps {
   open: boolean;
@@ -77,7 +77,7 @@ const themeOptions: { value: string; label: string; icon: typeof Sun }[] = [
 
 export function SettingsPanelDialog({ open, onOpenChange }: SettingsPanelDialogProps) {
   const { theme, setTheme } = useTheme();
-  const { shelfSkin, setShelfSkin, settings, updateSettings } = useBooks();
+  const { shelfSkin, setShelfSkin, settings, updateSettings } = useBooksContext();
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
