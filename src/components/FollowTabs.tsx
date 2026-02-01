@@ -109,17 +109,17 @@ export function FollowTabs({ targetUserId, isOwnProfile }: FollowTabsProps) {
     <Link
       key={userInfo.userId}
       to={userInfo.shareId ? `/shelf/${userInfo.shareId}` : `/u/${userInfo.username}`}
-      className="flex items-center gap-2 py-2 px-2 rounded-md hover:bg-muted/50 transition-colors group"
+      className="flex items-center gap-2 py-2 px-2 rounded-md hover:bg-muted/50 transition-colors group text-left"
     >
-      <Avatar className="w-7 h-7">
+      <Avatar className="w-7 h-7 shrink-0">
         <AvatarImage src={userInfo.avatarUrl || undefined} alt={userInfo.username} />
         <AvatarFallback className="text-xs font-sans">
           {userInfo.username.slice(0, 2).toUpperCase()}
         </AvatarFallback>
       </Avatar>
-      <span className="text-sm font-sans flex-1 truncate">{userInfo.username}</span>
+      <span className="text-sm font-sans flex-1 truncate text-left">{userInfo.username}</span>
       {userInfo.shareId && (
-        <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+        <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
       )}
     </Link>
   );
