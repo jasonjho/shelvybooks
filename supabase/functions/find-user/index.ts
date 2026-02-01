@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       matchedBy: 'username' | 'email';
     }> = [];
 
-    // 1. Search by username in profiles (only users with public shelves)
+    // 1. Search by username in profiles
     const { data: profileMatches } = await adminClient
       .from('profiles')
       .select('user_id, username, avatar_url')
@@ -73,27 +73,24 @@ Deno.serve(async (req) => {
       .limit(10);
 
     if (profileMatches && profileMatches.length > 0) {
-      // Get shelf settings for these users
+      // Get shelf settings for these users (all shelves are public now)
       const userIds = profileMatches.map(p => p.user_id);
       const { data: shelfData } = await adminClient
         .from('shelf_settings')
-        .select('user_id, share_id, is_public')
-        .in('user_id', userIds)
-        .eq('is_public', true);
+        .select('user_id, share_id')
+        .in('user_id', userIds);
 
       const shelfMap = new Map(shelfData?.map(s => [s.user_id, s.share_id]) || []);
 
       for (const profile of profileMatches) {
         const shareId = shelfMap.get(profile.user_id);
-        if (shareId) {
-          results.push({
-            userId: profile.user_id,
-            username: profile.username,
-            avatarUrl: profile.avatar_url,
-            shareId,
-            matchedBy: 'username',
-          });
-        }
+        results.push({
+          userId: profile.user_id,
+          username: profile.username,
+          avatarUrl: profile.avatar_url,
+          shareId: shareId || null,
+          matchedBy: 'username',
+        });
       }
     }
 
@@ -117,12 +114,11 @@ Deno.serve(async (req) => {
             .select('user_id, username, avatar_url')
             .in('user_id', emailUserIds);
 
-          // Get shelf settings
+          // Get shelf settings (all shelves are public now)
           const { data: emailShelfData } = await adminClient
             .from('shelf_settings')
-            .select('user_id, share_id, is_public')
-            .in('user_id', emailUserIds)
-            .eq('is_public', true);
+            .select('user_id, share_id')
+            .in('user_id', emailUserIds);
 
           const profileMap = new Map(emailProfiles?.map(p => [p.user_id, p]) || []);
           const shelfMap = new Map(emailShelfData?.map(s => [s.user_id, s.share_id]) || []);
@@ -131,15 +127,15 @@ Deno.serve(async (req) => {
             const profile = profileMap.get(authUser.id);
             const shareId = shelfMap.get(authUser.id);
 
-            // Only include if they have a profile and public shelf
-            if (profile && shareId) {
+            // Only include if they have a profile (all users have public shelves now)
+            if (profile) {
               // Check if already in results from username search
               if (!results.some(r => r.userId === authUser.id)) {
                 results.push({
                   userId: authUser.id,
                   username: profile.username,
                   avatarUrl: profile.avatar_url,
-                  shareId,
+                  shareId: shareId || null,
                   matchedBy: 'email',
                 });
               }
