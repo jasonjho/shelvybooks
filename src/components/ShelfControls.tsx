@@ -34,6 +34,8 @@ interface ShelfControlsProps {
   compact?: boolean;
   /** Show share button (only on own shelf) */
   showShare?: boolean;
+  /** The share URL to copy (defaults to current URL if not provided) */
+  shareUrl?: string;
 }
 
 const statusFilters: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -61,14 +63,16 @@ export function ShelfControls({
   onCategoryFilterChange,
   compact = false,
   showShare = false,
+  shareUrl,
 }: ShelfControlsProps) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
+    const urlToCopy = shareUrl || window.location.href;
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(urlToCopy);
       setCopied(true);
       toast.success('Link copied!');
       setTimeout(() => setCopied(false), 2000);
