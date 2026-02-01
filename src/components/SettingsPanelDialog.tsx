@@ -149,30 +149,30 @@ export function SettingsPanelDialog({ open, onOpenChange }: SettingsPanelDialogP
             </div>
 
             {/* Decor Density */}
-            {settings.showPlant && (
-              <div className="space-y-2 pt-2 border-t border-border">
-                <div className="flex items-center gap-2">
-                  <Trees className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Decor Density</span>
-                </div>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {densityOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => updateSettings({ decorDensity: option.value })}
-                      className={cn(
-                        "flex flex-col items-center gap-1 p-2 rounded-md text-xs transition-colors",
-                        settings.decorDensity === option.value
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary/50 hover:bg-secondary text-secondary-foreground"
-                      )}
-                    >
-                      <span className="font-medium">{option.label}</span>
-                    </button>
-                  ))}
-                </div>
+            <div className="space-y-2 pt-2 border-t border-border">
+              <div className="flex items-center gap-2">
+                <Trees className={cn("w-4 h-4", settings.showPlant ? "text-muted-foreground" : "text-muted-foreground/40")} />
+                <span className={cn("text-sm font-medium", !settings.showPlant && "text-muted-foreground/60")}>Decor Density</span>
               </div>
-            )}
+              <div className="grid grid-cols-3 gap-1.5">
+                {densityOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => updateSettings({ decorDensity: option.value })}
+                    disabled={!settings.showPlant}
+                    className={cn(
+                      "flex flex-col items-center gap-1 p-2 rounded-md text-xs transition-colors",
+                      settings.decorDensity === option.value
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary/50 hover:bg-secondary text-secondary-foreground",
+                      !settings.showPlant && "opacity-40 cursor-not-allowed hover:bg-secondary/50"
+                    )}
+                  >
+                    <span className="font-medium">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Background Theme */}
             <div className="space-y-2 pt-2 border-t border-border">
