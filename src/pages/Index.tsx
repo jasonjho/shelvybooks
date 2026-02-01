@@ -23,6 +23,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useIsbndbDemoBooks } from '@/hooks/useIsbndbDemoBooks';
 import { useViewedShelf } from '@/hooks/useViewedShelf';
+import { useShelfSettingsContext } from '@/contexts/ShelfSettingsContext';
 import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
 import { Library } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -108,6 +109,20 @@ export default function Index() {
     moveBook,
     updateBookCompletedAt,
   } = useBooksContext();
+
+  // Get current user's shelf settings for share URL
+  const { settings: shelfSettings } = useShelfSettingsContext();
+
+  // Compute the correct share URL based on what shelf is being viewed
+  const currentShareUrl = useMemo(() => {
+    if (isViewingFriend && viewedUser?.shareId) {
+      return `${window.location.origin}/shelf/${viewedUser.shareId}`;
+    }
+    if (shelfSettings?.share_id) {
+      return `${window.location.origin}/shelf/${shelfSettings.share_id}`;
+    }
+    return undefined;
+  }, [isViewingFriend, viewedUser?.shareId, shelfSettings?.share_id]);
 
   // Get club books for highlighting
   const { getBookClubs } = useClubBooks();
@@ -333,6 +348,7 @@ export default function Index() {
                       onCategoryFilterChange={setActiveCategoryFilters}
                       compact={isMobile}
                       showShare={!!user}
+                      shareUrl={currentShareUrl}
                     />
                   </div>
                   
