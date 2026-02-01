@@ -165,7 +165,9 @@ interface FollowedBook {
 export function useFollowedUsersBooks() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  // Initialize to current time to prevent flash of "new" notifications before we load the actual lastSeenAt
   const [lastSeenAt, setLastSeenAt] = useState<Date | null>(null);
+  const [lastSeenLoaded, setLastSeenLoaded] = useState(false);
 
   // Fetch last seen timestamp
   useEffect(() => {
@@ -180,6 +182,7 @@ export function useFollowedUsersBooks() {
         if (data?.last_seen_follows_at) {
           setLastSeenAt(new Date(data.last_seen_follows_at));
         }
+        setLastSeenLoaded(true);
       });
   }, [user]);
 
@@ -252,8 +255,9 @@ export function useFollowedUsersBooks() {
   });
 
   // Filter to only show books added after last seen
-  const newBooks = allBooks.filter(book => {
-    if (!lastSeenAt) return true; // If never seen, show all
+  // Don't show any as "new" until we've loaded the lastSeenAt to prevent flash
+  const newBooks = !lastSeenLoaded ? [] : allBooks.filter(book => {
+    if (!lastSeenAt) return true; // If never seen (new user), show all
     return new Date(book.created_at) > lastSeenAt;
   });
 
