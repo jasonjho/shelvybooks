@@ -9,13 +9,14 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
 import { FollowButton } from '@/components/FollowButton';
 import { CopyShelfLink } from '@/components/CopyShelfLink';
+import { InlineShelfNameEditor } from '@/components/InlineShelfNameEditor';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBooks } from '@/hooks/useBooks';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Book, ShelfSettings as ShelfSettingsType, BookStatus, SortOption } from '@/types/book';
-import { Library, Loader2, ArrowLeft, Lock, BookOpen } from 'lucide-react';
+import { Library, Loader2, Lock, BookOpen, User, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface ShelfOwner {
   display_name: string | null;
@@ -86,7 +87,6 @@ function sortBooks(books: Book[], sortOption: SortOption, shuffleSeed: number): 
 export default function PublicShelf() {
   const { shareId } = useParams<{ shareId: string }>();
   const { user } = useAuth();
-  const { toast } = useToast();
   const isMobile = useIsMobile();
   const { addBook, books: userBooks } = useBooks();
   
@@ -110,7 +110,7 @@ export default function PublicShelf() {
 
   const handleAddToShelf = useCallback(async (book: Book) => {
     if (isBookOnShelf(book.title, book.author)) {
-      toast({ title: 'Already on your shelf', description: `"${book.title}" is already in your library.` });
+      toast.info(`"${book.title}" is already in your library.`);
       return;
     }
     await addBook({
@@ -119,8 +119,8 @@ export default function PublicShelf() {
       coverUrl: book.coverUrl || '',
       status: 'want-to-read',
     });
-    toast({ title: 'Added to your shelf!', description: `"${book.title}" has been added.` });
-  }, [addBook, isBookOnShelf, toast]);
+    toast.success(`"${book.title}" has been added to your shelf!`);
+  }, [addBook, isBookOnShelf]);
 
   useEffect(() => {
     async function loadPublicShelf() {
@@ -297,22 +297,38 @@ export default function PublicShelf() {
       <main className="container py-8 relative z-10">
         {/* Owner info - simplified header */}
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-semibold font-sans">
-            {shelfTitle}
-            <span className="text-base font-normal text-muted-foreground ml-2">
-              ({books.length})
-            </span>
-          </h2>
+          <InlineShelfNameEditor
+            displayName={shelfOwner?.display_name || null}
+            username={shelfOwner?.username || null}
+            bookCount={books.length}
+            isOwner={!!user && user.id === shelfOwner?.user_id}
+            onSave={async (newName) => {
+              // Update display name in database
+              const { error } = await supabase
+                .from('shelf_settings')
+                .update({ display_name: newName || null })
+                .eq('user_id', user!.id);
+              
+              if (error) {
+                toast.error('Failed to update shelf name');
+                throw error;
+              }
+              
+              // Update local state
+              setShelfOwner(prev => prev ? { ...prev, display_name: newName || null } : null);
+              toast.success('Shelf name updated!');
+            }}
+          />
         </div>
 
         {/* Controls row - Desktop */}
         <div className="hidden sm:flex flex-wrap items-center justify-center gap-3 mb-6">
-          {/* Back to My Shelf - for logged-in users */}
+          {/* My Account - for logged-in users */}
           {user && (
             <Link to="/">
               <Button variant="outline" size="sm" className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                My Shelf
+                <User className="w-4 h-4" />
+                My Account
               </Button>
             </Link>
           )}
