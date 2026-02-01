@@ -163,11 +163,13 @@ export default function ProfilePage() {
 
           {/* Public shelf link */}
           {shelfInfo && shelfInfo.shareId && (
-            <Button asChild variant="outline" className="gap-2 mb-6">
-              <Link to={`/shelf/${shelfInfo.shareId}`}>
-                <BookOpen className="w-4 h-4" />
-                View {shelfInfo.displayName || profile.username}'s bookshelf
-                <ExternalLink className="w-3 h-3" />
+            <Button asChild variant="outline" className="gap-2 mb-6 max-w-full">
+              <Link to={`/shelf/${shelfInfo.shareId}`} className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 shrink-0" />
+                <span className="truncate">
+                  View {(shelfInfo.displayName || profile.username).slice(0, 20)}{(shelfInfo.displayName || profile.username).length > 20 ? '…' : ''}'s bookshelf
+                </span>
+                <ExternalLink className="w-3 h-3 shrink-0" />
               </Link>
             </Button>
           )}
