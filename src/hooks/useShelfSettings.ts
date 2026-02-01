@@ -40,10 +40,10 @@ export function useShelfSettings() {
       if (data) {
         setSettings(data as ShelfSettings);
       } else {
-        // Create default settings if none exist
+        // Create default settings if none exist (public by default)
         const { data: newSettings, error: insertError } = await supabase
           .from('shelf_settings')
-          .insert({ user_id: user.id, is_public: false })
+          .insert({ user_id: user.id, is_public: true })
           .select()
           .single();
 
