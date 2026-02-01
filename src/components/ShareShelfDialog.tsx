@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Share2, Copy, Check, Globe, Lock } from 'lucide-react';
-import { useShelfSettings } from '@/hooks/useShelfSettings';
+import { useShelfSettingsContext } from '@/contexts/ShelfSettingsContext';
 import { toast } from 'sonner';
 
 interface ShareShelfDialogProps {
@@ -21,7 +21,7 @@ interface ShareShelfDialogProps {
 }
 
 export function ShareShelfDialog({ open: controlledOpen, onOpenChange: controlledOnOpenChange }: ShareShelfDialogProps = {}) {
-  const { settings, loading, togglePublic, updateDisplayName, getShareUrl } = useShelfSettings();
+  const { settings, loading, togglePublic, updateDisplayName, getShareUrl } = useShelfSettingsContext();
   const [internalOpen, setInternalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [displayNameInput, setDisplayNameInput] = useState('');

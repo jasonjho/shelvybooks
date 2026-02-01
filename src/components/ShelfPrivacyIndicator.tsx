@@ -1,5 +1,5 @@
 import { Globe, Lock } from 'lucide-react';
-import { useShelfSettings } from '@/hooks/useShelfSettings';
+import { useShelfSettingsContext } from '@/contexts/ShelfSettingsContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import {
@@ -14,7 +14,7 @@ interface ShelfPrivacyIndicatorProps {
 }
 
 export function ShelfPrivacyIndicator({ onClick, className }: ShelfPrivacyIndicatorProps) {
-  const { settings, loading } = useShelfSettings();
+  const { settings, loading } = useShelfSettingsContext();
   const isMobile = useIsMobile();
 
   if (loading || !settings) return null;
