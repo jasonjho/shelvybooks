@@ -152,7 +152,7 @@ export function BookNoteDialog({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent>
+        <DrawerContent className="h-[85dvh] overflow-hidden">
           <DrawerHeader className="text-left">
             <DrawerTitle className="font-sans">
               {existingNote ? 'Edit Note' : 'Add Recommendation Note'}
@@ -161,9 +161,15 @@ export function BookNoteDialog({
               Share why you love <span className="font-medium">{bookTitle}</span>
             </DrawerDescription>
           </DrawerHeader>
-          
-          {formContent}
-          
+
+          {/*
+            Make the body scrollable so the header/color picker/buttons don't get clipped
+            when the on-screen keyboard reduces the viewport height.
+          */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            {formContent}
+          </div>
+
           <DrawerFooter className="pt-4">
             {footerContent}
           </DrawerFooter>

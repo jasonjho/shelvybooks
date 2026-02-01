@@ -31,7 +31,9 @@ const DrawerContent = React.forwardRef<
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
+        // Use a viewport-based max height instead of a large top margin.
+        // On mobile (especially when the keyboard is open), `mt-24` can push content off-screen and clip the top.
+        "fixed inset-x-0 bottom-0 z-50 flex max-h-[96dvh] flex-col rounded-t-[10px] border bg-background pb-[env(safe-area-inset-bottom)]",
         className,
       )}
       {...props}
