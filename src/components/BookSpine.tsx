@@ -293,7 +293,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
           onClick={(e) => e.stopPropagation()}
         >
           <div className="relative">
-            <div className="max-h-[min(320px,calc(100dvh-80px))] overflow-y-auto overscroll-contain rounded-lg">
+            <div className="max-h-[calc(100dvh-64px)] overflow-y-auto overscroll-contain rounded-lg touch-pan-y scroll-touch">
               <BookHoverPreview 
                 book={book} 
                 amazonUrl={amazonUrl} 
