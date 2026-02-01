@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.isbndb-search]
 verify_jwt = false
+
+[functions.notify-new-follower]
+verify_jwt = false

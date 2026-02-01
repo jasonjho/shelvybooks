@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
 import { FollowingList } from '@/components/FollowingList';
+import { FollowersList } from '@/components/FollowersList';
 import { Library, ArrowLeft, BookOpen, User, ExternalLink, Users } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import type { Profile } from '@/hooks/useProfile';
@@ -160,7 +161,12 @@ export default function ProfilePage() {
 
           {/* Username */}
           <h1 className="text-2xl font-sans font-semibold mb-1">{profile.username}</h1>
-          <p className="text-sm text-muted-foreground mb-6">Member since {memberSince}</p>
+          <p className="text-sm text-muted-foreground mb-4">Member since {memberSince}</p>
+
+          {/* Follower count */}
+          <div className="mb-6">
+            <FollowersList targetUserId={profile.userId} />
+          </div>
 
           {/* Public shelf link */}
           {shelfInfo && shelfInfo.shareId && (
