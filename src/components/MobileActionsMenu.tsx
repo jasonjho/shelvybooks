@@ -14,7 +14,6 @@ import {
   Sparkles, 
   Library, 
   Users, 
-  Share2, 
   Search, 
   Mail,
 } from 'lucide-react';
@@ -23,7 +22,6 @@ import { AddBookDialog } from '@/components/AddBookDialog';
 import { MagicRecommender } from '@/components/MagicRecommender';
 import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { FindFriendsDialog } from '@/components/FindFriendsDialog';
-import { ShareShelfDialog } from '@/components/ShareShelfDialog';
 import { Book } from '@/types/book';
 
 interface MobileActionsMenuProps {
@@ -41,7 +39,6 @@ export function MobileActionsMenu({
   const [discoverOpen, setDiscoverOpen] = useState(false);
   const [findFriendsOpen, setFindFriendsOpen] = useState(false);
   const [inviteFriendsOpen, setInviteFriendsOpen] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
 
   return (
     <>
@@ -111,13 +108,6 @@ export function MobileActionsMenu({
             <Mail className="w-4 h-4" />
             Invite Friends
           </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={() => setShareOpen(true)}
-            className="gap-2 cursor-pointer"
-          >
-            <Share2 className="w-4 h-4" />
-            Share Shelf
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -155,7 +145,6 @@ export function MobileActionsMenu({
         onOpenChange={setInviteFriendsOpen} 
         initialTab="invite"
       />
-      <ShareShelfDialog open={shareOpen} onOpenChange={setShareOpen} />
     </>
   );
 }

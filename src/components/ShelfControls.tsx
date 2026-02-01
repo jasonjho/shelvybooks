@@ -1,5 +1,5 @@
 import { BookStatus, SortOption } from '@/types/book';
-import { BookOpen, BookMarked, CheckCircle, Shuffle, ArrowDownAZ, Clock, Layers, Filter, ChevronDown, Tag } from 'lucide-react';
+import { BookOpen, BookMarked, CheckCircle, Shuffle, ArrowDownAZ, Clock, Layers, Filter, ChevronDown, Tag, Share2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,8 +13,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { toast } from 'sonner';
 
 interface ShelfControlsProps {
   activeFilters: BookStatus[];
@@ -31,6 +32,8 @@ interface ShelfControlsProps {
   onCategoryFilterChange?: (categories: string[]) => void;
   /** Compact mode - hides labels, shows only icons */
   compact?: boolean;
+  /** Show share button (only on own shelf) */
+  showShare?: boolean;
 }
 
 const statusFilters: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -57,9 +60,22 @@ export function ShelfControls({
   activeCategoryFilters = [],
   onCategoryFilterChange,
   compact = false,
+  showShare = false,
 }: ShelfControlsProps) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      toast.success('Link copied!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Failed to copy link');
+    }
+  };
 
   const toggleFilter = (status: BookStatus) => {
     if (activeFilters.includes(status)) {
@@ -247,6 +263,24 @@ export function ShelfControls({
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Share Button */}
+      {showShare && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleShare}
+          className="gap-1.5"
+          title="Copy shelf link"
+        >
+          {copied ? (
+            <Check className="w-4 h-4 text-green-600" />
+          ) : (
+            <Share2 className="w-4 h-4" />
+          )}
+          {!compact && <span className="hidden sm:inline">Share</span>}
+        </Button>
+      )}
     </div>
   );
 }
