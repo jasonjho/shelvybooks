@@ -34,6 +34,10 @@ export function FollowButton({ targetUserId, iconOnly = false }: FollowButtonPro
     }
   };
 
+  // Keep consistent width by always rendering the same structure
+  const Icon = isPending ? Loader2 : following ? UserMinus : UserPlus;
+  const label = following ? "Following" : "Follow";
+
   return (
     <Button
       variant={following ? "outline" : "default"}
@@ -45,19 +49,8 @@ export function FollowButton({ targetUserId, iconOnly = false }: FollowButtonPro
         : "gap-1.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-sans"
       }
     >
-      {isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : following ? (
-        <>
-          <UserMinus className="h-4 w-4" />
-          {!iconOnly && "Following"}
-        </>
-      ) : (
-        <>
-          <UserPlus className="h-4 w-4" />
-          {!iconOnly && "Follow"}
-        </>
-      )}
+      <Icon className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
+      {!iconOnly && label}
     </Button>
   );
 }
