@@ -9,6 +9,7 @@ import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
+import { RecommendBookDialog } from '@/components/RecommendBookDialog';
 
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { ShelfSwitcher } from '@/components/ShelfSwitcher';
@@ -86,6 +87,7 @@ export default function Index() {
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
+  const [recommendDialogOpen, setRecommendDialogOpen] = useState(false);
   
   
   const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
@@ -375,6 +377,9 @@ export default function Index() {
                      viewingUsername={viewedUser?.username}
                      onAddToShelf={user && isViewingFriend ? handleAddToShelf : undefined}
                      isBookOnShelf={user && isViewingFriend ? isBookOnShelf : undefined}
+                     isOwner={!isViewingFriend}
+                     ownerName={viewedUser?.username}
+                     onRecommendBook={user && isViewingFriend && viewedBooks.length === 0 ? () => setRecommendDialogOpen(true) : undefined}
                    />
                  ) : (
                    <Bookshelf
@@ -390,6 +395,9 @@ export default function Index() {
                      viewingUsername={viewedUser?.username}
                      onAddToShelf={user && isViewingFriend ? handleAddToShelf : undefined}
                      isBookOnShelf={user && isViewingFriend ? isBookOnShelf : undefined}
+                     isOwner={!isViewingFriend}
+                     ownerName={viewedUser?.username}
+                     onRecommendBook={user && isViewingFriend && viewedBooks.length === 0 ? () => setRecommendDialogOpen(true) : undefined}
                    />
                  )}
               </>
@@ -406,6 +414,16 @@ export default function Index() {
 
       {/* Onboarding tips for new users */}
       {user && ownBooks.length > 0 && !isViewingFriend && <OnboardingTips />}
+
+      {/* Recommend book dialog for empty friend shelves */}
+      {viewedUser && (
+        <RecommendBookDialog
+          open={recommendDialogOpen}
+          onOpenChange={setRecommendDialogOpen}
+          targetUserId={viewedUser.userId}
+          targetUsername={viewedUser.username}
+        />
+      )}
       
     </div>
   );
