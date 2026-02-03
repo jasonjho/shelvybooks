@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { sortCategoriesByRelevance } from '@/lib/categoryPriority';
 
 interface BookDetailDialogProps {
   book: Book | null;
@@ -122,7 +123,7 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
                   <div className="flex items-start gap-1.5 text-xs">
                     <Tag className="w-3.5 h-3.5 shrink-0 mt-0.5 text-muted-foreground" />
                     <div className="flex flex-wrap gap-1">
-                      {book.categories.slice(0, 4).map((cat, i) => (
+                      {sortCategoriesByRelevance(book.categories).slice(0, 4).map((cat, i) => (
                         <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0">
                           {cat.length > 25 ? cat.slice(0, 25) + '…' : cat}
                         </Badge>
