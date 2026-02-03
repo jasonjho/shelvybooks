@@ -18,6 +18,7 @@ import { Book, ShelfSettings as ShelfSettingsType, BookStatus, SortOption, Shelf
 import { Library, Loader2, Lock, BookOpen, User, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface ShelfOwner {
   display_name: string | null;
@@ -276,6 +277,35 @@ export default function PublicShelf() {
     setSortOption('random');
   }, []);
 
+  // Background theme helpers (same mapping as main shelf)
+  const getBackgroundClass = (theme: BackgroundTheme) => {
+    switch (theme) {
+      case 'library': return 'bg-theme-library';
+      case 'cozy': return 'bg-theme-cozy';
+      case 'space': return 'bg-theme-space';
+      case 'forest': return 'bg-theme-forest';
+      case 'ocean': return 'bg-theme-ocean';
+      case 'sunset': return 'bg-theme-sunset';
+      case 'lavender': return 'bg-theme-lavender';
+      default: return 'office-wall';
+    }
+  };
+
+  const getAmbientGradient = (theme: BackgroundTheme) => {
+    switch (theme) {
+      case 'library': return 'radial-gradient(ellipse at center top, hsla(35, 60%, 65%, 0.25) 0%, hsla(30, 50%, 50%, 0.08) 40%, transparent 70%)';
+      case 'cozy': return 'radial-gradient(ellipse at center top, hsla(30, 70%, 70%, 0.3) 0%, hsla(25, 60%, 55%, 0.1) 40%, transparent 70%)';
+      case 'forest': return 'radial-gradient(ellipse at center top, hsla(50, 60%, 70%, 0.25) 0%, hsla(80, 40%, 50%, 0.08) 40%, transparent 70%)';
+      case 'ocean': return 'radial-gradient(ellipse at center top, hsla(195, 50%, 75%, 0.2) 0%, hsla(200, 40%, 60%, 0.08) 40%, transparent 70%)';
+      case 'sunset': return 'radial-gradient(ellipse at center top, hsla(35, 80%, 75%, 0.35) 0%, hsla(20, 70%, 60%, 0.12) 40%, transparent 70%)';
+      case 'lavender': return 'radial-gradient(ellipse at center top, hsla(270, 50%, 80%, 0.25) 0%, hsla(260, 40%, 65%, 0.08) 40%, transparent 70%)';
+      case 'space': return null;
+      default: return 'radial-gradient(ellipse at center top, hsla(45, 70%, 75%, 0.3) 0%, hsla(35, 60%, 60%, 0.1) 40%, transparent 70%)';
+    }
+  };
+
+  const ambientGradient = getAmbientGradient(shelfAppearance.settings.backgroundTheme);
+
   // Build shelf title: prefer display_name, then username, then fallback
   const shelfTitle = shelfOwner?.display_name 
     || (shelfOwner?.username ? `${shelfOwner.username}'s Bookshelf` : "Someone's Bookshelf");
@@ -305,7 +335,16 @@ export default function PublicShelf() {
   }
 
   return (
-    <div className="min-h-screen office-wall overflow-x-hidden">
+    <div className={cn('min-h-screen overflow-x-hidden', getBackgroundClass(shelfAppearance.settings.backgroundTheme))}>
+
+      {/* Ambient top light - uses owner's saved settings */}
+      {shelfAppearance.settings.showAmbientLight && ambientGradient && (
+        <div 
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] pointer-events-none transition-opacity duration-500"
+          style={{ background: ambientGradient }}
+        />
+      )}
+
       {/* Header */}
       <header className="relative border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-20">
         <div className="container py-4 flex flex-wrap items-center justify-between gap-3">
