@@ -14,7 +14,7 @@ import { InlineShelfNameEditor } from '@/components/InlineShelfNameEditor';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBooks } from '@/hooks/useBooks';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Book, ShelfSettings as ShelfSettingsType, BookStatus, SortOption } from '@/types/book';
+import { Book, ShelfSettings as ShelfSettingsType, BookStatus, SortOption, ShelfSkin, BackgroundTheme } from '@/types/book';
 import { Library, Loader2, Lock, BookOpen, User, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -26,13 +26,21 @@ interface ShelfOwner {
   user_id: string | null;
 }
 
-const DEFAULT_SETTINGS: ShelfSettingsType = {
-  showBookends: true,
-  showWoodGrain: true,
-  showAmbientLight: true,
-  showPlant: true,
-  decorDensity: 'balanced',
-  backgroundTheme: 'office',
+interface ShelfAppearance {
+  shelfSkin: ShelfSkin;
+  settings: ShelfSettingsType;
+}
+
+const DEFAULT_APPEARANCE: ShelfAppearance = {
+  shelfSkin: 'oak',
+  settings: {
+    showBookends: true,
+    showWoodGrain: true,
+    showAmbientLight: true,
+    showPlant: true,
+    decorDensity: 'balanced',
+    backgroundTheme: 'office',
+  },
 };
 
 const STATUS_ORDER: Record<BookStatus, number> = {
@@ -94,6 +102,7 @@ export default function PublicShelf() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [shelfOwner, setShelfOwner] = useState<ShelfOwner | null>(null);
+  const [shelfAppearance, setShelfAppearance] = useState<ShelfAppearance>(DEFAULT_APPEARANCE);
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [activeFilters, setActiveFilters] = useState<BookStatus[]>([]);
@@ -142,10 +151,11 @@ export default function PublicShelf() {
       try {
         // Fetch shelf info, owner username, and owner user_id using secure RPC functions
         // This prevents bulk enumeration of public shelves
-        const [shelfResult, usernameResult, ownerIdResult] = await Promise.all([
+        const [shelfResult, usernameResult, ownerIdResult, appearanceResult] = await Promise.all([
           supabase.rpc('get_public_shelf_info', { _share_id: shareId }),
           supabase.rpc('get_public_shelf_owner_username', { _share_id: shareId }),
           supabase.rpc('get_public_shelf_owner_id', { _share_id: shareId }),
+          supabase.rpc('get_public_shelf_appearance', { _share_id: shareId }),
         ]);
 
         if (shelfResult.error) throw shelfResult.error;
@@ -155,6 +165,22 @@ export default function PublicShelf() {
           setError('Shelf not found');
           setLoading(false);
           return;
+        }
+
+        // Set shelf appearance if available
+        const appearanceData = appearanceResult.data?.[0];
+        if (appearanceData) {
+          setShelfAppearance({
+            shelfSkin: (appearanceData.shelf_skin || 'oak') as ShelfSkin,
+            settings: {
+              showBookends: appearanceData.show_bookends ?? true,
+              showWoodGrain: appearanceData.show_wood_grain ?? true,
+              showAmbientLight: appearanceData.show_ambient_light ?? true,
+              showPlant: appearanceData.show_plant ?? true,
+              decorDensity: (appearanceData.decor_density as 'minimal' | 'balanced' | 'cozy') || 'balanced',
+              backgroundTheme: (appearanceData.background_theme || 'office') as BackgroundTheme,
+            },
+          });
         }
 
         setShelfOwner({
@@ -411,8 +437,8 @@ export default function PublicShelf() {
         {isMobile ? (
           <MobileBookshelf
             books={sortedBooks}
-            skin="oak"
-            settings={DEFAULT_SETTINGS}
+            skin={shelfAppearance.shelfSkin}
+            settings={shelfAppearance.settings}
             activeFilters={activeFilters}
             onSelectBook={setSelectedBook}
             isOwner={isOwner}
@@ -422,8 +448,8 @@ export default function PublicShelf() {
         ) : (
           <Bookshelf
             books={sortedBooks}
-            skin="oak"
-            settings={DEFAULT_SETTINGS}
+            skin={shelfAppearance.shelfSkin}
+            settings={shelfAppearance.settings}
             activeFilters={activeFilters}
             onSelectBook={setSelectedBook}
             isOwner={isOwner}
