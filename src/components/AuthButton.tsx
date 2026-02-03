@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/contexts/ProfileContext';
+import { useShelfSettingsContext } from '@/contexts/ShelfSettingsContext';
 import { LogIn, LogOut, User, Settings, Shield, Palette } from 'lucide-react';
 import {
   Dialog,
@@ -25,12 +26,14 @@ import { ProfileEditDialog } from '@/components/ProfileEditDialog';
 import { AccountSettingsDialog } from '@/components/AccountSettingsDialog';
 import { SettingsPanelDialog } from '@/components/SettingsPanelDialog';
 import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export function AuthButton() {
   const { user, loading, signIn, signUp, signOut, authDialogOpen, setAuthDialogOpen } = useAuth();
   const { profile } = useProfile();
+  const { settings: shelfSettings } = useShelfSettingsContext();
   const { toast } = useToast();
+  const location = useLocation();
   const open = authDialogOpen;
   const setOpen = setAuthDialogOpen;
   const [isSignUp, setIsSignUp] = useState(false);
@@ -40,6 +43,12 @@ export function AuthButton() {
   const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [accountSettingsOpen, setAccountSettingsOpen] = useState(false);
   const [shelfSettingsOpen, setShelfSettingsOpen] = useState(false);
+
+  // Hide shelf settings when viewing someone else's public shelf
+  const isOnPublicShelf = location.pathname.startsWith('/shelf/');
+  const currentShelfShareId = isOnPublicShelf ? location.pathname.split('/shelf/')[1] : null;
+  const isOwnPublicShelf = currentShelfShareId && shelfSettings?.share_id === currentShelfShareId;
+  const showShelfSettings = !isOnPublicShelf || isOwnPublicShelf;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
@@ -194,10 +203,12 @@ export function AuthButton() {
             <User className="w-4 h-4" />
             Edit profile
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShelfSettingsOpen(true)} className="gap-2 cursor-pointer">
-            <Palette className="w-4 h-4" />
-            Shelf settings
-          </DropdownMenuItem>
+          {showShelfSettings && (
+            <DropdownMenuItem onClick={() => setShelfSettingsOpen(true)} className="gap-2 cursor-pointer">
+              <Palette className="w-4 h-4" />
+              Shelf settings
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={() => setAccountSettingsOpen(true)} className="gap-2 cursor-pointer">
             <Shield className="w-4 h-4" />
             Account settings
