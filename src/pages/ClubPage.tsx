@@ -101,12 +101,18 @@ export default function ClubPage() {
   const [editDescription, setEditDescription] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Check if a book is already on the user's shelf
+  // Check if a book is already on the user's shelf (fuzzy match - handles subtitle variations)
   const isOnShelf = (title: string, author: string) => {
-    return books.some(
-      (b) => b.title.toLowerCase() === title.toLowerCase() && 
-             b.author.toLowerCase() === author.toLowerCase()
-    );
+    const normalizedTitle = title.toLowerCase().split(':')[0].trim();
+    const normalizedAuthor = author.toLowerCase().split(',')[0].trim();
+    
+    return books.some((b) => {
+      const shelfTitle = b.title.toLowerCase().split(':')[0].trim();
+      const shelfAuthor = b.author.toLowerCase().split(',')[0].trim();
+      
+      // Match if main title (before colon) and primary author match
+      return shelfTitle === normalizedTitle && shelfAuthor === normalizedAuthor;
+    });
   };
 
   const handleAddToShelf = async (title: string, author: string, coverUrl?: string | null) => {
