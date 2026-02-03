@@ -231,7 +231,7 @@ export function RecommendBookDialog({
                         key={book.id}
                         onClick={() => handleSelectBook(book)}
                         className={cn(
-                          'w-full flex gap-3 p-2 rounded-lg text-left transition-colors',
+                          'w-full flex items-center gap-3 p-2 rounded-lg text-left transition-colors',
                           'hover:bg-muted/80 focus:outline-none focus:ring-2 focus:ring-ring'
                         )}
                       >
@@ -239,14 +239,14 @@ export function RecommendBookDialog({
                           <img
                             src={coverUrl}
                             alt={book.volumeInfo.title}
-                            className="w-10 h-14 object-cover rounded shadow-sm"
+                            className="w-10 h-14 object-cover rounded shadow-sm shrink-0"
                           />
                         ) : (
-                          <div className="w-10 h-14 bg-muted rounded flex items-center justify-center">
+                          <div className="w-10 h-14 bg-muted rounded flex items-center justify-center shrink-0">
                             <BookOpen className="w-4 h-4 text-muted-foreground" />
                           </div>
                         )}
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
                           <p className="font-medium text-sm truncate">
                             {book.volumeInfo.title}
                           </p>
