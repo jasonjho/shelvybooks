@@ -531,10 +531,23 @@ export function useClubDetails(clubId: string | undefined) {
         .in('suggestion_id', suggestionIds);
 
       if (allVotes && allVotes.length > 0) {
-        // Get shelf settings for all voters using the secure RPC
+        // Get shelf settings and profiles for all voters
         const voterIds = [...new Set(allVotes.map(v => v.user_id))];
         
         const voterShelfMap = new Map<string, { displayName: string | null; shareId: string | null; isPublic: boolean }>();
+        const voterProfileMap = new Map<string, string>(); // userId -> username
+        
+        // Fetch profiles for all voters
+        const { data: voterProfiles } = await supabase
+          .from('profiles')
+          .select('user_id, username')
+          .in('user_id', voterIds);
+        
+        if (voterProfiles) {
+          voterProfiles.forEach(p => {
+            voterProfileMap.set(p.user_id, p.username);
+          });
+        }
         
         // Get current user's shelf first (RLS allows this)
         if (voterIds.includes(user.id)) {
@@ -572,11 +585,14 @@ export function useClubDetails(clubId: string | undefined) {
         setVotes(
           allVotes.map(v => {
             const shelf = voterShelfMap.get(v.user_id);
+            const username = voterProfileMap.get(v.user_id);
+            // Priority: shelf display_name > profile username's Bookshelf > null
+            const displayName = shelf?.displayName || (username ? `${username}'s Bookshelf` : null);
             return {
               id: v.id,
               suggestionId: v.suggestion_id,
               userId: v.user_id,
-              displayName: shelf?.displayName || null,
+              displayName,
               shareId: shelf?.shareId || null,
               isPublic: shelf?.isPublic || false,
             };
