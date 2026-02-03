@@ -18,6 +18,34 @@ const defaultSettings: ShelfSettings = {
   backgroundTheme: 'office',
 };
 
+function normalizeShelfSkin(value: unknown): ShelfSkin {
+  if (value === 'oak' || value === 'walnut' || value === 'white' || value === 'dark') return value;
+  // Back-compat if older values ever existed
+  if (value === 'ebony') return 'dark';
+  return 'oak';
+}
+
+function normalizeDecorDensity(value: unknown): ShelfSettings['decorDensity'] {
+  if (value === 'minimal' || value === 'balanced' || value === 'cozy') return value;
+  return 'balanced';
+}
+
+function normalizeBackgroundTheme(value: unknown): ShelfSettings['backgroundTheme'] {
+  if (
+    value === 'office' ||
+    value === 'library' ||
+    value === 'cozy' ||
+    value === 'space' ||
+    value === 'forest' ||
+    value === 'ocean' ||
+    value === 'sunset' ||
+    value === 'lavender'
+  ) {
+    return value;
+  }
+  return 'office';
+}
+
 export function useBooks() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -25,15 +53,60 @@ export function useBooks() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [shelfSkin, setShelfSkin] = useState<ShelfSkin>(() => {
+  const [shelfSkin, setShelfSkinState] = useState<ShelfSkin>(() => {
     const stored = localStorage.getItem(SKIN_KEY);
-    return (stored as ShelfSkin) || 'oak';
+    return normalizeShelfSkin(stored);
   });
 
-  const [settings, setSettings] = useState<ShelfSettings>(() => {
+  const [settings, setSettingsState] = useState<ShelfSettings>(() => {
     const stored = localStorage.getItem(SETTINGS_KEY);
     return stored ? { ...defaultSettings, ...JSON.parse(stored) } : defaultSettings;
   });
+
+  // Load/persist shelf appearance to backend so shared shelves reflect it.
+  // localStorage remains as a fast fallback, but the backend is source-of-truth for public views.
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchAppearance = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('shelf_settings')
+          .select('shelf_skin, background_theme, decor_density, show_ambient_light, show_bookends, show_plant, show_wood_grain')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        // Ensure a row exists so later updates always work
+        let row = data;
+        if (!row) {
+          const { data: created, error: insertError } = await supabase
+            .from('shelf_settings')
+            .insert({ user_id: user.id, is_public: true })
+            .select('shelf_skin, background_theme, decor_density, show_ambient_light, show_bookends, show_plant, show_wood_grain')
+            .single();
+          if (insertError) throw insertError;
+          row = created;
+        }
+
+        setShelfSkinState(normalizeShelfSkin(row.shelf_skin));
+        setSettingsState({
+          showPlant: row.show_plant ?? defaultSettings.showPlant,
+          showBookends: row.show_bookends ?? defaultSettings.showBookends,
+          showAmbientLight: row.show_ambient_light ?? defaultSettings.showAmbientLight,
+          showWoodGrain: row.show_wood_grain ?? defaultSettings.showWoodGrain,
+          decorDensity: normalizeDecorDensity(row.decor_density),
+          backgroundTheme: normalizeBackgroundTheme(row.background_theme),
+        });
+      } catch (err) {
+        console.error('Error fetching shelf appearance:', err);
+        // Keep localStorage values as fallback
+      }
+    };
+
+    fetchAppearance();
+  }, [user]);
 
   // Fetch books from database when user changes
   useEffect(() => {
@@ -89,6 +162,37 @@ export function useBooks() {
   useEffect(() => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   }, [settings]);
+
+  const persistShelfAppearance = useCallback(
+    (patch: {
+      shelf_skin?: ShelfSkin | null;
+      background_theme?: ShelfSettings['backgroundTheme'] | null;
+      decor_density?: ShelfSettings['decorDensity'] | null;
+      show_ambient_light?: boolean | null;
+      show_bookends?: boolean | null;
+      show_plant?: boolean | null;
+      show_wood_grain?: boolean | null;
+    }) => {
+      if (!user) return;
+      // fire-and-forget; UI should stay snappy even if network is slow
+      supabase
+        .from('shelf_settings')
+        .update(patch)
+        .eq('user_id', user.id)
+        .then(({ error }) => {
+          if (error) console.error('Error saving shelf appearance:', error);
+        });
+    },
+    [user]
+  );
+
+  const setShelfSkin = useCallback(
+    (skin: ShelfSkin) => {
+      setShelfSkinState(skin);
+      persistShelfAppearance({ shelf_skin: skin });
+    },
+    [persistShelfAppearance]
+  );
 
   // Enrich book with ISBNdb metadata before saving
   const enrichBook = useCallback(
@@ -351,9 +455,23 @@ export function useBooks() {
     [books]
   );
 
-  const updateSettings = useCallback((newSettings: Partial<ShelfSettings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
-  }, []);
+  const updateSettings = useCallback(
+    (newSettings: Partial<ShelfSettings>) => {
+      setSettingsState((prev) => {
+        const next = { ...prev, ...newSettings };
+        persistShelfAppearance({
+          background_theme: next.backgroundTheme,
+          decor_density: next.decorDensity,
+          show_ambient_light: next.showAmbientLight,
+          show_bookends: next.showBookends,
+          show_plant: next.showPlant,
+          show_wood_grain: next.showWoodGrain,
+        });
+        return next;
+      });
+    },
+    [persistShelfAppearance]
+  );
 
   return {
     books,
