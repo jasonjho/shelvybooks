@@ -67,9 +67,9 @@ export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, 
           {book.categories && book.categories.length > 0 && (
             <div className="flex items-start gap-1.5 text-xs">
               <Tag className="w-3 h-3 shrink-0 mt-0.5 text-muted-foreground" />
-              <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto pr-1">
-                {sortCategoriesByRelevance(book.categories).map((cat, i) => (
-                  <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0">
+              <div className="flex flex-wrap gap-1">
+                {sortCategoriesByRelevance(book.categories).slice(0, 3).map((cat, i) => (
+                  <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0">
                     {cat.length > 20 ? cat.slice(0, 20) + '…' : cat}
                   </Badge>
                 ))}

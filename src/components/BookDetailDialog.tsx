@@ -122,9 +122,9 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
                 {book.categories && book.categories.length > 0 && (
                   <div className="flex items-start gap-1.5 text-xs">
                     <Tag className="w-3.5 h-3.5 shrink-0 mt-0.5 text-muted-foreground" />
-                    <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto pr-1">
-                      {sortCategoriesByRelevance(book.categories).map((cat, i) => (
-                        <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0">
+                    <div className="flex flex-wrap gap-1">
+                      {sortCategoriesByRelevance(book.categories).slice(0, 5).map((cat, i) => (
+                        <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0">
                           {cat.length > 25 ? cat.slice(0, 25) + '…' : cat}
                         </Badge>
                       ))}
