@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Bookshelf } from '@/components/Bookshelf';
 import { MobileBookshelf } from '@/components/MobileBookshelf';
 import { BookDetailDialog } from '@/components/BookDetailDialog';
+import { RecommendBookDialog } from '@/components/RecommendBookDialog';
 import { ShelfControls } from '@/components/ShelfControls';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
@@ -99,6 +100,14 @@ export default function PublicShelf() {
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
+  const [recommendDialogOpen, setRecommendDialogOpen] = useState(false);
+
+  // Determine if this is the owner viewing their own shelf
+  const isOwner = user?.id === shelfOwner?.user_id;
+  
+  // Get a friendly name for the shelf owner
+  const ownerDisplayName = shelfOwner?.display_name 
+    || (shelfOwner?.username ? shelfOwner.username : 'This reader');
 
   // Check if a book is already on the user's shelf
   const isBookOnShelf = useCallback((title: string, author: string) => {
@@ -406,6 +415,9 @@ export default function PublicShelf() {
             settings={DEFAULT_SETTINGS}
             activeFilters={activeFilters}
             onSelectBook={setSelectedBook}
+            isOwner={isOwner}
+            ownerName={ownerDisplayName}
+            onRecommendBook={user && shelfOwner?.user_id && !isOwner ? () => setRecommendDialogOpen(true) : undefined}
           />
         ) : (
           <Bookshelf
@@ -414,6 +426,9 @@ export default function PublicShelf() {
             settings={DEFAULT_SETTINGS}
             activeFilters={activeFilters}
             onSelectBook={setSelectedBook}
+            isOwner={isOwner}
+            ownerName={ownerDisplayName}
+            onRecommendBook={user && shelfOwner?.user_id && !isOwner ? () => setRecommendDialogOpen(true) : undefined}
           />
         )}
       </main>
@@ -426,6 +441,16 @@ export default function PublicShelf() {
         onAddToShelf={handleAddToShelf}
         isOnShelf={selectedBook ? isBookOnShelf(selectedBook.title, selectedBook.author) : false}
       />
+
+      {/* Recommend book dialog */}
+      {shelfOwner?.user_id && (
+        <RecommendBookDialog
+          open={recommendDialogOpen}
+          onOpenChange={setRecommendDialogOpen}
+          targetUserId={shelfOwner.user_id}
+          targetUsername={ownerDisplayName}
+        />
+      )}
     </div>
   );
 }

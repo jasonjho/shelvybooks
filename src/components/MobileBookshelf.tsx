@@ -27,6 +27,12 @@ interface MobileBookshelfProps {
   onAddToShelf?: (book: Book) => void;
   /** Function to check if a book is already on the user's shelf */
   isBookOnShelf?: (title: string, author: string) => boolean;
+  /** Whether the current viewer is the owner of this shelf */
+  isOwner?: boolean;
+  /** Name to display in empty state for non-owners */
+  ownerName?: string;
+  /** Callback when visitor wants to recommend a book */
+  onRecommendBook?: () => void;
 }
 
 const BOOK_WIDTH = 55; // Width of mobile book covers
@@ -265,6 +271,9 @@ export function MobileBookshelf({
   viewingUsername,
   onAddToShelf,
   isBookOnShelf,
+  isOwner,
+  ownerName,
+  onRecommendBook,
 }: MobileBookshelfProps) {
   const [internalSelectedBook, setInternalSelectedBook] = useState<Book | null>(null);
   const [noteBook, setNoteBook] = useState<Book | null>(null);
@@ -345,8 +354,22 @@ export function MobileBookshelf({
     <div ref={containerRef} className={cn('mobile-bookcase relative', skinClass, grainClass)}>
       
       {books.length === 0 ? (
-        <div className="flex items-center justify-center py-12 text-muted-foreground text-sm italic">
-          Add some books to your shelf...
+        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-sm gap-3">
+          {isOwner !== false ? (
+            <span className="italic">Add some books to your shelf...</span>
+          ) : (
+            <>
+              <span className="italic">{ownerName || 'This reader'} hasn't added any books yet</span>
+              {onRecommendBook && (
+                <button
+                  onClick={onRecommendBook}
+                  className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full transition-colors flex items-center gap-1.5"
+                >
+                  💌 Recommend a book
+                </button>
+              )}
+            </>
+          )}
         </div>
       ) : (
         <div className="mobile-shelf-list">

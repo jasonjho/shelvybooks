@@ -26,6 +26,12 @@ interface BookshelfProps {
   onAddToShelf?: (book: Book) => void;
   /** Function to check if a book is already on the user's shelf */
   isBookOnShelf?: (title: string, author: string) => boolean;
+  /** Whether the current viewer is the owner of this shelf */
+  isOwner?: boolean;
+  /** Name to display in empty state for non-owners */
+  ownerName?: string;
+  /** Callback when visitor wants to recommend a book */
+  onRecommendBook?: () => void;
 }
 
 function Bookend() {
@@ -139,6 +145,12 @@ interface ShelfRowProps {
   isBookOnShelf?: (title: string, author: string) => boolean;
   /** When true, spread items evenly to fill the row width */
   isFullRow?: boolean;
+  /** Whether the current viewer is the owner of this shelf */
+  isOwner?: boolean;
+  /** Name to display in empty state for non-owners */
+  ownerName?: string;
+  /** Callback when visitor wants to recommend a book */
+  onRecommendBook?: () => void;
 }
 
 function ShelfRow({
@@ -158,6 +170,9 @@ function ShelfRow({
   onAddToShelf,
   isBookOnShelf,
   isFullRow,
+  isOwner,
+  ownerName,
+  onRecommendBook,
 }: ShelfRowProps) {
   const hasBooks = books.length > 0;
   const grainClass = settings.showWoodGrain ? '' : 'no-grain';
@@ -255,9 +270,23 @@ function ShelfRow({
       {settings.showBookends && hasBooks && <Bookend />}
       
       {/* Empty shelf message */}
-      {!hasBooks && (
-        <div className="flex items-center justify-center w-full h-24 text-background/80 text-sm italic drop-shadow-md">
-          Add some books to your shelf...
+      {!hasBooks && rowIndex === 0 && (
+        <div className="flex flex-col items-center justify-center w-full h-24 text-background/80 text-sm drop-shadow-md gap-2">
+          {isOwner !== false ? (
+            <span className="italic">Add some books to your shelf...</span>
+          ) : (
+            <>
+              <span className="italic">{ownerName || 'This reader'} hasn't added any books yet</span>
+              {onRecommendBook && (
+                <button
+                  onClick={onRecommendBook}
+                  className="text-xs bg-background/20 hover:bg-background/30 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5"
+                >
+                  💌 Recommend a book
+                </button>
+              )}
+            </>
+          )}
         </div>
       )}
       
@@ -268,7 +297,7 @@ function ShelfRow({
   );
 }
 
-export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo, onSelectBook, likesPerBook, viewingUsername, onAddToShelf, isBookOnShelf }: BookshelfProps) {
+export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, onRemoveBook, onUpdateCompletedAt, getBookClubInfo, onSelectBook, likesPerBook, viewingUsername, onAddToShelf, isBookOnShelf, isOwner, ownerName, onRecommendBook }: BookshelfProps) {
   const [internalSelectedBook, setInternalSelectedBook] = useState<Book | null>(null);
   const [noteBook, setNoteBook] = useState<Book | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -408,6 +437,9 @@ export function Bookshelf({ books, skin, settings, activeFilters, onMoveBook, on
             onAddToShelf={onAddToShelf}
             isBookOnShelf={isBookOnShelf}
             isFullRow={isFullRow}
+            isOwner={isOwner}
+            ownerName={ownerName}
+            onRecommendBook={onRecommendBook}
           />
         );
       })}
