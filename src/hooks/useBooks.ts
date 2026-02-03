@@ -109,50 +109,50 @@ export function useBooks() {
   }, [user]);
 
   // Fetch books from database when user changes
-  useEffect(() => {
+  const fetchBooks = useCallback(async () => {
     if (!user) {
       setBooks([]);
       setLoading(false);
       return;
     }
 
-    const fetchBooks = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: true });
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('books')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching books:', error);
-        toast({
-          title: 'Error loading books',
-          description: error.message,
-          variant: 'destructive',
-        });
-      } else {
-        setBooks(
-          data.map((row) => ({
-            id: row.id,
-            title: row.title,
-            author: row.author,
-            coverUrl: row.cover_url || '',
-            status: row.status as BookStatus,
-            openLibraryKey: undefined,
-            completedAt: row.completed_at || undefined,
-            pageCount: row.page_count || undefined,
-            isbn: row.isbn || undefined,
-            description: row.description || undefined,
-            categories: row.categories || undefined,
-          }))
-        );
-      }
-      setLoading(false);
-    };
-
-    fetchBooks();
+    if (error) {
+      console.error('Error fetching books:', error);
+      toast({
+        title: 'Error loading books',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      setBooks(
+        data.map((row) => ({
+          id: row.id,
+          title: row.title,
+          author: row.author,
+          coverUrl: row.cover_url || '',
+          status: row.status as BookStatus,
+          openLibraryKey: undefined,
+          completedAt: row.completed_at || undefined,
+          pageCount: row.page_count || undefined,
+          isbn: row.isbn || undefined,
+          description: row.description || undefined,
+          categories: row.categories || undefined,
+        }))
+      );
+    }
+    setLoading(false);
   }, [user, toast]);
+
+  useEffect(() => {
+    fetchBooks();
+  }, [fetchBooks]);
 
   // Persist settings to localStorage
   useEffect(() => {
@@ -488,5 +488,6 @@ export function useBooks() {
     getBooksByStatus,
     missingCoverCount,
     triggerBatchRefresh,
+    refetchBooks: fetchBooks,
   };
 }

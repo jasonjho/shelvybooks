@@ -17,6 +17,7 @@ interface BooksContextType {
   getBooksByStatus: (status: BookStatus) => Book[];
   missingCoverCount: number;
   triggerBatchRefresh: () => void;
+  refetchBooks: () => Promise<void>;
 }
 
 const BooksContext = createContext<BooksContextType | null>(null);
