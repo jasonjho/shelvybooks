@@ -586,13 +586,12 @@ export function useClubDetails(clubId: string | undefined) {
           allVotes.map(v => {
             const shelf = voterShelfMap.get(v.user_id);
             const username = voterProfileMap.get(v.user_id);
-            // Priority: shelf display_name > profile username's Bookshelf > null
-            const displayName = shelf?.displayName || (username ? `${username}'s Bookshelf` : null);
+            // Use plain username for votes (like followers), not shelf name format
             return {
               id: v.id,
               suggestionId: v.suggestion_id,
               userId: v.user_id,
-              displayName,
+              displayName: username || null,
               shareId: shelf?.shareId || null,
               isPublic: shelf?.isPublic || false,
             };
