@@ -560,71 +560,74 @@ function SuggestionCard({
   const canRemove = isOwner || suggestion.suggestedBy === currentUserId;
 
   return (
-    <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-colors">
-      {suggestion.coverUrl ? (
-        <img
-          src={suggestion.coverUrl}
-          alt={suggestion.title}
-          className="w-12 h-16 object-cover rounded shrink-0"
-        />
-      ) : (
-        <div className="w-12 h-16 bg-muted rounded flex items-center justify-center shrink-0">
-          <Library className="w-5 h-5 text-muted-foreground" />
-        </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <p className="font-medium truncate font-sans">{suggestion.title}</p>
-        <p className="text-sm text-muted-foreground truncate font-sans">{suggestion.author}</p>
-        {voters.length > 0 && (
-          <HoverCard>
-            <HoverCardTrigger asChild>
-              <button className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                <div className="flex -space-x-1.5">
-                  {voters.slice(0, 3).map((voter, idx) => (
-                    <Avatar key={voter.id} className="h-5 w-5 border-2 border-background">
-                      <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
-                        {(voter.displayName || 'A').slice(0, 1).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+    <div className="p-3 rounded-lg border hover:bg-muted/30 transition-colors">
+      <div className="flex items-start gap-3">
+        {suggestion.coverUrl ? (
+          <img
+            src={suggestion.coverUrl}
+            alt={suggestion.title}
+            className="w-12 h-16 object-cover rounded shrink-0"
+          />
+        ) : (
+          <div className="w-12 h-16 bg-muted rounded flex items-center justify-center shrink-0">
+            <Library className="w-5 h-5 text-muted-foreground" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="font-medium truncate font-sans">{suggestion.title}</p>
+          <p className="text-sm text-muted-foreground truncate font-sans">{suggestion.author}</p>
+          {voters.length > 0 && (
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <button className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <div className="flex -space-x-1.5">
+                    {voters.slice(0, 3).map((voter, idx) => (
+                      <Avatar key={voter.id} className="h-5 w-5 border-2 border-background">
+                        <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
+                          {(voter.displayName || 'A').slice(0, 1).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    ))}
+                  </div>
+                  <span>
+                    {voters.length === 1 
+                      ? `${voters[0].displayName || 'Someone'} voted`
+                      : `${voters.length} votes`}
+                  </span>
+                </button>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-48 p-2" align="start">
+                <p className="text-xs font-medium mb-2">Voted by:</p>
+                <div className="space-y-1.5">
+                  {voters.map((voter) => (
+                    <div key={voter.id} className="flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
+                          {(voter.displayName || 'A').slice(0, 1).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      {voter.isPublic && voter.shareId ? (
+                        <Link 
+                          to={`/shelf/${voter.shareId}`} 
+                          className="text-xs hover:underline truncate flex-1"
+                        >
+                          {voter.displayName || 'Anonymous'}
+                        </Link>
+                      ) : (
+                        <span className="text-xs text-muted-foreground truncate flex-1">
+                          {voter.displayName || 'Anonymous'}
+                        </span>
+                      )}
+                    </div>
                   ))}
                 </div>
-                <span>
-                  {voters.length === 1 
-                    ? `${voters[0].displayName || 'Someone'} voted`
-                    : `${voters.length} votes`}
-                </span>
-              </button>
-            </HoverCardTrigger>
-            <HoverCardContent className="w-48 p-2" align="start">
-              <p className="text-xs font-medium mb-2">Voted by:</p>
-              <div className="space-y-1.5">
-                {voters.map((voter) => (
-                  <div key={voter.id} className="flex items-center gap-2">
-                    <Avatar className="h-5 w-5">
-                      <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
-                        {(voter.displayName || 'A').slice(0, 1).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    {voter.isPublic && voter.shareId ? (
-                      <Link 
-                        to={`/shelf/${voter.shareId}`} 
-                        className="text-xs hover:underline truncate flex-1"
-                      >
-                        {voter.displayName || 'Anonymous'}
-                      </Link>
-                    ) : (
-                      <span className="text-xs text-muted-foreground truncate flex-1">
-                        {voter.displayName || 'Anonymous'}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-        )}
+              </HoverCardContent>
+            </HoverCard>
+          )}
+        </div>
       </div>
-      <div className="flex items-center gap-1 shrink-0">
+      {/* Action buttons - separate row on mobile to prevent clipping */}
+      <div className="flex items-center gap-1 mt-3 ml-[60px]">
         <Button
           variant={suggestion.hasVoted ? 'default' : 'outline'}
           size="sm"
