@@ -53,12 +53,10 @@ export function InlineShelfNameEditor({
 
   const handleSave = async () => {
     const trimmed = editValue.trim();
-    // Remove redundant "Bookshelf" suffix
-    const cleaned = trimmed.replace(/\s*Bookshelf$/i, '').trim();
     
     setIsSaving(true);
     try {
-      await onSave(cleaned);
+      await onSave(trimmed);
       setIsEditing(false);
     } catch {
       // Error handled by parent
