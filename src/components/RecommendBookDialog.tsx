@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/ProfileContext';
 import { useBookSearch, getCoverUrl } from '@/hooks/useBookSearch';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -32,6 +33,7 @@ export function RecommendBookDialog({
   targetUsername,
 }: RecommendBookDialogProps) {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { results, isLoading, searchBooks, clearResults } = useBookSearch();
   
   const [query, setQuery] = useState('');
@@ -77,12 +79,13 @@ export function RecommendBookDialog({
     try {
       const coverUrl = getCoverUrl(selectedBook);
       const author = selectedBook.volumeInfo.authors?.join(', ') || 'Unknown Author';
+      const bookTitle = selectedBook.volumeInfo.title;
 
       // Insert into book_recommendations table instead of directly into books
       const { error } = await supabase.from('book_recommendations').insert({
         from_user_id: user.id,
         to_user_id: targetUserId,
-        title: selectedBook.volumeInfo.title,
+        title: bookTitle,
         author,
         cover_url: coverUrl || null,
         message: message || null,
@@ -94,6 +97,22 @@ export function RecommendBookDialog({
       });
 
       if (error) throw error;
+
+      // Send email notification (don't await - fire and forget)
+      const senderUsername = profile?.username || 'A friend';
+      supabase.functions.invoke('notify-book-recommendation', {
+        body: {
+          recipientUserId: targetUserId,
+          senderUsername,
+          bookTitle,
+          bookAuthor: author,
+          message: message || undefined,
+        },
+      }).then(({ error: emailError }) => {
+        if (emailError) {
+          console.log('Email notification failed (non-blocking):', emailError);
+        }
+      });
 
       setSent(true);
       toast.success(`Book recommended to ${targetUsername}!`);
