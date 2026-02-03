@@ -138,6 +138,23 @@ export function useBooks() {
         return;
       }
 
+      // Check for duplicate (case-insensitive title + author match)
+      const normalizedTitle = book.title.trim().toLowerCase();
+      const normalizedAuthor = book.author.trim().toLowerCase();
+      const existingBook = books.find(
+        (b) =>
+          b.title.trim().toLowerCase() === normalizedTitle &&
+          b.author.trim().toLowerCase() === normalizedAuthor
+      );
+
+      if (existingBook) {
+        toast({
+          title: 'Already on your shelf',
+          description: `"${book.title}" is already in your library.`,
+        });
+        return;
+      }
+
       // Enrich with ISBNdb before saving
       const enrichedBook = await enrichBook(book);
 
