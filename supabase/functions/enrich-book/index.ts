@@ -139,9 +139,9 @@ async function searchGoogleBooks(title: string, author: string, apiKey?: string)
         result.description = stripHtml(volumeInfo.description)?.slice(0, 2000);
       }
       
-      // Get categories
+      // Get categories (no limit - store all available)
       if (volumeInfo.categories && volumeInfo.categories.length > 0) {
-        result.categories = volumeInfo.categories.slice(0, 5);
+        result.categories = volumeInfo.categories;
       }
       
       // Get ISBN
@@ -207,9 +207,9 @@ async function searchOpenLibrary(title: string, author: string): Promise<OpenLib
         result.pageCount = doc.number_of_pages_median;
       }
       
-      // Get categories
+      // Get categories (no limit - store all available)
       if (doc.subject && doc.subject.length > 0) {
-        result.categories = doc.subject.slice(0, 5);
+        result.categories = doc.subject;
       }
       
       // Get ISBN
@@ -337,7 +337,7 @@ serve(async (req) => {
       }
       
       if (isbndbBook.subjects && isbndbBook.subjects.length > 0) {
-        result.categories = isbndbBook.subjects.slice(0, 5);
+        result.categories = isbndbBook.subjects;
       }
 
       // Use ISBNdb cover if available
