@@ -5,6 +5,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useFollowedUsersBooks } from '@/hooks/useFollows';
 import { useFollowerNotifications } from '@/hooks/useFollowerNotifications';
 import { useBookRecommendations, BookRecommendation } from '@/hooks/useBookRecommendations';
+import { useBooksContext } from '@/contexts/BooksContext';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
@@ -31,6 +32,7 @@ export function NotificationBell() {
     declineRecommendation,
     markAsSeen: markRecommendationsAsSeen 
   } = useBookRecommendations();
+  const { refetchBooks } = useBooksContext();
 
   // Activity = likes + new followers + recommendations
   const activityCount = newLikesCount + newFollowersCount + newRecommendationsCount;
@@ -52,6 +54,8 @@ export function NotificationBell() {
 
   const handleAccept = async (recommendation: BookRecommendation) => {
     await acceptRecommendation(recommendation);
+    // Refetch books to show the newly added book on the shelf
+    await refetchBooks();
   };
 
   const handleDecline = async (recommendationId: string) => {
