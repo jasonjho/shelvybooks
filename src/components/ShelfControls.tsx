@@ -118,12 +118,12 @@ export function ShelfControls({
 
   // Get label for category filter button
   const getCategoryLabel = () => {
-    if (activeCategoryFilters.length === 0) return 'Genre';
+    if (activeCategoryFilters.length === 0) return 'Tags';
     if (activeCategoryFilters.length === 1) {
       const cat = activeCategoryFilters[0];
       return cat.length > 12 ? cat.slice(0, 12) + '…' : cat;
     }
-    return `${activeCategoryFilters.length} genres`;
+    return `${activeCategoryFilters.length} tags`;
   };
 
   // Show category filter only if there are categories available
@@ -208,13 +208,13 @@ export function ShelfControls({
           </PopoverTrigger>
           <PopoverContent className="w-64 p-2 bg-popover" align="start">
             <div className="flex flex-col gap-1">
-              <Button
+            <Button
                 variant={activeCategoryFilters.length === 0 ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => onCategoryFilterChange?.([])}
                 className="justify-start gap-2"
               >
-                All Genres
+                All Tags
               </Button>
               
               <ScrollArea className="max-h-[240px]">
