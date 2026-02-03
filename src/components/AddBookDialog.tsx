@@ -64,7 +64,7 @@ export function AddBookDialog({ onAddBook, defaultStatus, open: controlledOpen, 
       pageCount: book.volumeInfo.pageCount,
       isbn,
       description: book.volumeInfo.description,
-      categories: book.volumeInfo.categories?.slice(0, 5),
+      categories: book.volumeInfo.categories,
     });
     setOpen(false);
     setQuery('');
