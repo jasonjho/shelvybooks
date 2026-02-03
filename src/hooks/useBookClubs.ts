@@ -407,14 +407,30 @@ export function useClubDetails(clubId: string | undefined) {
 
     setIsOwner(clubData.owner_id === user.id);
 
-    // Fetch members with their shelf settings
+    // Fetch members with their shelf settings and profiles
     const { data: memberData } = await supabase
       .from('book_club_members')
       .select('*')
       .eq('club_id', clubId);
 
     if (memberData) {
+      const memberIds = memberData.map(m => m.user_id);
+      
+      // Create maps for shelf settings and profiles
       const shelfMap = new Map<string, { displayName: string | null; shareId: string | null; isPublic: boolean }>();
+      const profileMap = new Map<string, string>(); // userId -> username
+      
+      // Fetch profiles for all members (RLS allows viewing profiles of users with public shelves or shared clubs)
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('user_id, username')
+        .in('user_id', memberIds);
+      
+      if (profileData) {
+        profileData.forEach(p => {
+          profileMap.set(p.user_id, p.username);
+        });
+      }
       
       // For the current user, we can get their shelf settings directly (RLS allows this)
       const { data: currentUserShelf } = await supabase
@@ -432,7 +448,6 @@ export function useClubDetails(clubId: string | undefined) {
       }
 
       // For other members' public shelves, use the secure RPC function
-      const memberIds = memberData.map(m => m.user_id);
       const { data: publicShelfData } = await supabase
         .rpc('get_public_shelf_info_for_users' as 'get_public_shelf_books', { _user_ids: memberIds } as unknown as { _share_id: string });
       
@@ -451,13 +466,16 @@ export function useClubDetails(clubId: string | undefined) {
       setMembers(
         memberData.map((m) => {
           const shelf = shelfMap.get(m.user_id);
+          const username = profileMap.get(m.user_id);
+          // Priority: shelf display_name > profile username > null
+          const displayName = shelf?.displayName || (username ? `${username}'s Bookshelf` : null);
           return {
             id: m.id,
             clubId: m.club_id,
             userId: m.user_id,
             role: m.role as 'owner' | 'member',
             joinedAt: m.joined_at,
-            displayName: shelf?.displayName || null,
+            displayName,
             shareId: shelf?.shareId || null,
             isPublic: shelf?.isPublic || false,
           };
