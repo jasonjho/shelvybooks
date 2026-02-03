@@ -507,9 +507,6 @@ function MemberCard({ member, ownerId }: MemberCardProps) {
             <Crown className="w-3.5 h-3.5 text-amber-500 shrink-0" />
           )}
         </div>
-        {member.isPublic && member.shareId && (
-          <p className="text-xs text-muted-foreground">Has public shelf</p>
-        )}
       </div>
       {member.isPublic && member.shareId && (
         <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
