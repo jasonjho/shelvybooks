@@ -78,19 +78,19 @@ export function RecommendBookDialog({
       const coverUrl = getCoverUrl(selectedBook);
       const author = selectedBook.volumeInfo.authors?.join(', ') || 'Unknown Author';
 
-      const { error } = await supabase.from('books').insert({
-        user_id: targetUserId,
+      // Insert into book_recommendations table instead of directly into books
+      const { error } = await supabase.from('book_recommendations').insert({
+        from_user_id: user.id,
+        to_user_id: targetUserId,
         title: selectedBook.volumeInfo.title,
         author,
         cover_url: coverUrl || null,
-        status: 'want-to-read',
-        color: `hsl(${Math.floor(Math.random() * 360)}, 45%, 35%)`,
-        description: message 
-          ? `💌 Recommended by a friend: "${message}"`
-          : selectedBook.volumeInfo.description || null,
+        message: message || null,
+        description: selectedBook.volumeInfo.description || null,
         categories: selectedBook.volumeInfo.categories || null,
         page_count: selectedBook.volumeInfo.pageCount || null,
         isbn: selectedBook.volumeInfo.industryIdentifiers?.[0]?.identifier || null,
+        status: 'pending',
       });
 
       if (error) throw error;

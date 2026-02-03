@@ -248,6 +248,57 @@ export type Database = {
           },
         ]
       }
+      book_recommendations: {
+        Row: {
+          author: string
+          categories: string[] | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          from_user_id: string
+          id: string
+          isbn: string | null
+          message: string | null
+          page_count: number | null
+          responded_at: string | null
+          status: string
+          title: string
+          to_user_id: string
+        }
+        Insert: {
+          author: string
+          categories?: string[] | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          from_user_id: string
+          id?: string
+          isbn?: string | null
+          message?: string | null
+          page_count?: number | null
+          responded_at?: string | null
+          status?: string
+          title: string
+          to_user_id: string
+        }
+        Update: {
+          author?: string
+          categories?: string[] | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          from_user_id?: string
+          id?: string
+          isbn?: string | null
+          message?: string | null
+          page_count?: number | null
+          responded_at?: string | null
+          status?: string
+          title?: string
+          to_user_id?: string
+        }
+        Relationships: []
+      }
       books: {
         Row: {
           author: string
@@ -333,6 +384,7 @@ export type Database = {
           last_seen_followers_at: string
           last_seen_follows_at: string
           last_seen_likes_at: string
+          last_seen_recommendations_at: string
           updated_at: string
           user_id: string
         }
@@ -342,6 +394,7 @@ export type Database = {
           last_seen_followers_at?: string
           last_seen_follows_at?: string
           last_seen_likes_at?: string
+          last_seen_recommendations_at?: string
           updated_at?: string
           user_id: string
         }
@@ -351,6 +404,7 @@ export type Database = {
           last_seen_followers_at?: string
           last_seen_follows_at?: string
           last_seen_likes_at?: string
+          last_seen_recommendations_at?: string
           updated_at?: string
           user_id?: string
         }
