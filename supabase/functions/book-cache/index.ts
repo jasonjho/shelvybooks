@@ -120,6 +120,7 @@ serve(async (req) => {
         .select('id, title, author, description, cover_url, categories, page_count, isbn')
         .eq('isbn', isbn)
         .not('cover_url', 'is', null)
+        .neq('cover_url', '')
         .limit(1);
 
       if (error) {
@@ -175,6 +176,7 @@ serve(async (req) => {
       .select('id, title, author, description, cover_url, categories, page_count, isbn')
       .or(`title.ilike.${searchPattern},author.ilike.${searchPattern}`)
       .not('cover_url', 'is', null)
+      .neq('cover_url', '')
       .limit(50); // Get more so we can dedupe and rank
 
     if (error) {
