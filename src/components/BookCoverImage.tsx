@@ -27,6 +27,33 @@ function isPlaceholderUrl(url: string | null | undefined): boolean {
 }
 
 /**
+ * Known placeholder image dimensions from various sources.
+ * When an image loads with these exact dimensions, it's likely a "no cover" placeholder.
+ */
+function isPlaceholderDimensions(width: number, height: number): boolean {
+  // 1x1 placeholders (common fallback)
+  if (width <= 1 && height <= 1) return true;
+  
+  // Google's "image not available" placeholders
+  if (
+    (width === 120 && height === 192) ||
+    (width === 128 && height === 188) ||
+    (width === 128 && height === 196) ||
+    (width === 128 && height === 197)
+  ) return true;
+  
+  // Open Library "no image available" placeholders (various sizes)
+  // These have "no image available" text baked into the image
+  if (
+    (width === 180 && height === 270) ||  // -M size placeholder
+    (width === 130 && height === 195) ||  // -S size placeholder
+    (width === 260 && height === 390)     // -L size placeholder
+  ) return true;
+  
+  return false;
+}
+
+/**
  * Shared book cover component with intelligent placeholder detection.
  * 
  * Handles:
@@ -58,17 +85,7 @@ export function BookCoverImage({
     const img = e.currentTarget;
     const { naturalWidth, naturalHeight } = img;
     
-    // Detect placeholder images by their dimensions:
-    // 1. 1x1 placeholders (Open Library when cover is missing)
-    // 2. Google's "image not available" placeholders (various sizes)
-    const isOneByOne = naturalWidth <= 1 && naturalHeight <= 1;
-    const isGooglePlaceholder = 
-      (naturalWidth === 120 && naturalHeight === 192) ||
-      (naturalWidth === 128 && naturalHeight === 188) ||
-      (naturalWidth === 128 && naturalHeight === 196) ||
-      (naturalWidth === 128 && naturalHeight === 197);
-
-    if (isOneByOne || isGooglePlaceholder) {
+    if (isPlaceholderDimensions(naturalWidth, naturalHeight)) {
       setShowFallback(true);
     }
     
