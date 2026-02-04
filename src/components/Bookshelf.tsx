@@ -271,7 +271,7 @@ function ShelfRow({
       
       {/* Empty shelf message */}
       {!hasBooks && rowIndex === 0 && (
-        <div className="flex flex-col items-center justify-center w-full h-24 text-background/80 text-sm drop-shadow-md gap-2">
+        <div className="flex flex-col items-center justify-center w-full h-24 text-white text-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] gap-2">
           {isOwner !== false ? (
             <span className="italic">Add some books to your shelf...</span>
           ) : (
@@ -280,7 +280,7 @@ function ShelfRow({
               {onRecommendBook && (
                 <button
                   onClick={onRecommendBook}
-                  className="text-xs bg-background/20 hover:bg-background/30 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5"
+                  className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 backdrop-blur-sm"
                 >
                   💌 Recommend a book
                 </button>
