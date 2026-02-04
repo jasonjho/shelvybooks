@@ -6,8 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useBookAnimations } from '@/contexts/BookAnimationContext';
 import { useCoverRefresh } from '@/hooks/useCoverRefresh';
 
-const SKIN_KEY = 'bookshelf-skin';
-const SETTINGS_KEY = 'bookshelf-settings';
+// Note: Settings are stored server-side only - no localStorage caching
 
 const defaultSettings: ShelfSettings = {
   showPlant: true,
@@ -53,20 +52,20 @@ export function useBooks() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [shelfSkin, setShelfSkinState] = useState<ShelfSkin>(() => {
-    const stored = localStorage.getItem(SKIN_KEY);
-    return normalizeShelfSkin(stored);
-  });
+  // Always start with defaults - DB is sole source of truth for logged-in users
+  // Logged-out users always see defaults (no localStorage pollution)
+  const [shelfSkin, setShelfSkinState] = useState<ShelfSkin>('oak');
+  const [settings, setSettingsState] = useState<ShelfSettings>(defaultSettings);
 
-  const [settings, setSettingsState] = useState<ShelfSettings>(() => {
-    const stored = localStorage.getItem(SETTINGS_KEY);
-    return stored ? { ...defaultSettings, ...JSON.parse(stored) } : defaultSettings;
-  });
-
-  // Load/persist shelf appearance to backend so shared shelves reflect it.
-  // localStorage remains as a fast fallback, but the backend is source-of-truth for public views.
+  // Load shelf appearance from backend for logged-in users
+  // This is the ONLY source of truth - no localStorage fallback
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      // Reset to defaults when logged out
+      setShelfSkinState('oak');
+      setSettingsState(defaultSettings);
+      return;
+    }
 
     const fetchAppearance = async () => {
       try {
@@ -101,7 +100,7 @@ export function useBooks() {
         });
       } catch (err) {
         console.error('Error fetching shelf appearance:', err);
-        // Keep localStorage values as fallback
+        // Keep defaults on error
       }
     };
 
@@ -154,14 +153,7 @@ export function useBooks() {
     fetchBooks();
   }, [fetchBooks]);
 
-  // Persist settings to localStorage
-  useEffect(() => {
-    localStorage.setItem(SKIN_KEY, shelfSkin);
-  }, [shelfSkin]);
-
-  useEffect(() => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  }, [settings]);
+  // Settings are persisted to DB only (no localStorage)
 
   const persistShelfAppearance = useCallback(
     (patch: {
