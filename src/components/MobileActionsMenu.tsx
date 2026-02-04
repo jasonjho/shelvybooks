@@ -59,6 +59,13 @@ export function MobileActionsMenu({
             Add Books
           </DropdownMenuLabel>
           <DropdownMenuItem 
+            onClick={() => setAddBookOpen(true)}
+            className="gap-2 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Add Book
+          </DropdownMenuItem>
+          <DropdownMenuItem 
             onClick={() => setRecommenderOpen(true)}
             className="gap-2 cursor-pointer"
           >
@@ -73,13 +80,6 @@ export function MobileActionsMenu({
           >
             <Library className="w-4 h-4" />
             Discover Collections
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={() => setAddBookOpen(true)}
-            className="gap-2 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            Add Book
           </DropdownMenuItem>
           <DropdownMenuItem 
             onClick={() => setImportOpen(true)}
