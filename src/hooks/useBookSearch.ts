@@ -77,21 +77,26 @@ export function useBookSearch() {
         body: { query, mode: 'search' }
       });
 
-      // If cache has good results, use them
-      if (cacheData?.hit && cacheData?.items?.length >= 3) {
-        console.log(`Cache hit: ${cacheData.items.length} results`);
-        setResults(cacheData.items);
-        return;
+      const cacheItems: GoogleBook[] = cacheData?.items || [];
+      
+      // If cache has strong results (1+ with covers), show immediately while fetching more
+      if (cacheItems.length > 0) {
+        console.log(`Cache hit: ${cacheItems.length} results - showing immediately`);
+        setResults(cacheItems);
+        
+        // If we have 3+ cache results, we're done - no need for API calls
+        if (cacheItems.length >= 3) {
+          return;
+        }
       }
 
-      // Step 2: Try ISBNdb (primary external source)
+      // Step 2: Try ISBNdb (primary external source) for more options
       const { data, error: fnError } = await supabase.functions.invoke('isbndb-search', {
         body: { query, mode: 'search' }
       });
 
-      // If ISBNdb succeeds, merge with any cache results for better coverage
+      // If ISBNdb succeeds, merge with cache results (cache first)
       if (!fnError && !data?.error && data?.items?.length) {
-        const cacheItems = cacheData?.items || [];
         const merged = mergeSearchResults(cacheItems, data.items, query);
         setResults(merged);
         return;
@@ -112,8 +117,7 @@ export function useBookSearch() {
         throw new Error(getUserFriendlyError(fallbackData.error));
       }
 
-      // Merge fallback results with cache
-      const cacheItems = cacheData?.items || [];
+      // Merge fallback results with cache (cache first)
       const merged = mergeSearchResults(cacheItems, fallbackData?.items || [], query);
       setResults(merged);
     } catch (err) {
