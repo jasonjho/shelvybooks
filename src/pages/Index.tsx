@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Bookshelf } from '@/components/Bookshelf';
 import { MobileBookshelf } from '@/components/MobileBookshelf';
 import { ShelfControls } from '@/components/ShelfControls';
@@ -100,6 +100,13 @@ export default function Index() {
     isViewingFriend, 
     viewedBooks,
   } = useViewedShelf();
+
+  // Clear friend's shelf view when user logs out
+  useEffect(() => {
+    if (!user && isViewingFriend) {
+      clearViewedShelf();
+    }
+  }, [user, isViewingFriend, clearViewedShelf]);
 
   const {
     books,
