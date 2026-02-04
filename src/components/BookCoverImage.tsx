@@ -23,6 +23,11 @@ function isPlaceholderUrl(url: string | null | undefined): boolean {
     return true;
   }
   
+  // ISBNdb placeholder images contain "nocover" in the URL
+  if (url.includes('isbndb.com') && url.includes('nocover')) {
+    return true;
+  }
+  
   return false;
 }
 
@@ -42,12 +47,17 @@ function isPlaceholderDimensions(width: number, height: number): boolean {
     (width === 128 && height === 197)
   ) return true;
   
-  // Open Library "no image available" placeholders (various sizes)
-  // These have "no image available" text baked into the image
+  // Open Library "no image available" placeholders (legacy data)
   if (
-    (width === 180 && height === 270) ||  // -M size placeholder
-    (width === 130 && height === 195) ||  // -S size placeholder
-    (width === 260 && height === 390)     // -L size placeholder
+    (width === 180 && height === 270) ||
+    (width === 130 && height === 195) ||
+    (width === 260 && height === 390)
+  ) return true;
+  
+  // ISBNdb "BOOK COVER NOT AVAILABLE" placeholders
+  if (
+    (width === 200 && height === 300) ||
+    (width === 100 && height === 150)
   ) return true;
   
   return false;
