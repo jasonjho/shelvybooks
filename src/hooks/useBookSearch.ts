@@ -43,24 +43,40 @@ function getDedupeKey(book: GoogleBook): string {
   return `${title}|${author}`;
 }
 
+// Check if a book has a valid (non-placeholder) cover
+function hasValidCover(book: GoogleBook): boolean {
+  const url = book.volumeInfo?.imageLinks?.thumbnail || 
+              book.volumeInfo?.imageLinks?.smallThumbnail;
+  if (!url || url === '/placeholder.svg' || url.trim() === '') return false;
+  
+  // Known placeholder URL patterns
+  if (url.includes('books.google.com/books/content') && !url.includes('edge=curl')) return false;
+  if (url.includes('isbndb.com') && url.includes('nocover')) return false;
+  
+  return true;
+}
+
 // Merge cache results with API results, deduplicating by primary title + author
+// Prefers results with valid covers over those without
 function mergeSearchResults(cacheItems: GoogleBook[], apiItems: GoogleBook[], query: string): GoogleBook[] {
   const seen = new Map<string, GoogleBook>();
   
-  // Cache results first (they're already in our DB with good metadata)
-  for (const item of cacheItems) {
-    const key = getDedupeKey(item);
-    if (key && !seen.has(key)) {
-      seen.set(key, item);
-    }
-  }
+  // Process all items, preferring ones with valid covers
+  const allItems = [...cacheItems, ...apiItems];
   
-  // Then API results - only add if not already seen
-  for (const item of apiItems) {
+  for (const item of allItems) {
     const key = getDedupeKey(item);
-    if (key && !seen.has(key)) {
+    if (!key) continue;
+    
+    const existing = seen.get(key);
+    if (!existing) {
+      // First time seeing this book
+      seen.set(key, item);
+    } else if (!hasValidCover(existing) && hasValidCover(item)) {
+      // Replace if current has no cover but new one does
       seen.set(key, item);
     }
+    // Otherwise keep the existing one (it either has a cover or both lack covers)
   }
   
   return Array.from(seen.values()).slice(0, 12);
