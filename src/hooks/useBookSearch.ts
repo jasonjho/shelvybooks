@@ -31,6 +31,32 @@ function getUserFriendlyError(message: string): string {
   return 'Something went wrong. Please try again.';
 }
 
+// Merge cache results with API results, deduplicating by title
+function mergeSearchResults(cacheItems: GoogleBook[], apiItems: GoogleBook[], query: string): GoogleBook[] {
+  const seen = new Set<string>();
+  const merged: GoogleBook[] = [];
+  
+  // Cache results first (they're already in our DB with good metadata)
+  for (const item of cacheItems) {
+    const key = item.volumeInfo?.title?.toLowerCase().trim();
+    if (key && !seen.has(key)) {
+      seen.add(key);
+      merged.push(item);
+    }
+  }
+  
+  // Then API results
+  for (const item of apiItems) {
+    const key = item.volumeInfo?.title?.toLowerCase().trim();
+    if (key && !seen.has(key)) {
+      seen.add(key);
+      merged.push(item);
+    }
+  }
+  
+  return merged.slice(0, 12);
+}
+
 export function useBookSearch() {
   const [results, setResults] = useState<GoogleBook[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,32 +72,50 @@ export function useBookSearch() {
     setError(null);
 
     try {
-      // Try ISBNdb first
+      // Step 1: Check our database cache first (fastest, no API quota used)
+      const { data: cacheData } = await supabase.functions.invoke('book-cache', {
+        body: { query, mode: 'search' }
+      });
+
+      // If cache has good results, use them
+      if (cacheData?.hit && cacheData?.items?.length >= 3) {
+        console.log(`Cache hit: ${cacheData.items.length} results`);
+        setResults(cacheData.items);
+        return;
+      }
+
+      // Step 2: Try ISBNdb (primary external source)
       const { data, error: fnError } = await supabase.functions.invoke('isbndb-search', {
         body: { query, mode: 'search' }
       });
 
-      // If ISBNdb fails (rate limit, quota, etc.), fall back to book-search (Google + OpenLibrary)
-      if (fnError || data?.error || !data?.items?.length) {
-        console.log('ISBNdb unavailable, falling back to Google Books + Open Library');
-        
-        const { data: fallbackData, error: fallbackError } = await supabase.functions.invoke('book-search', {
-          body: { query }
-        });
-
-        if (fallbackError) {
-          throw new Error(getUserFriendlyError(fallbackError.message));
-        }
-
-        if (fallbackData?.error) {
-          throw new Error(getUserFriendlyError(fallbackData.error));
-        }
-
-        setResults(fallbackData?.items || []);
+      // If ISBNdb succeeds, merge with any cache results for better coverage
+      if (!fnError && !data?.error && data?.items?.length) {
+        const cacheItems = cacheData?.items || [];
+        const merged = mergeSearchResults(cacheItems, data.items, query);
+        setResults(merged);
         return;
       }
 
-      setResults(data.items || []);
+      // Step 3: Fall back to Google Books + OpenLibrary
+      console.log('ISBNdb unavailable, falling back to Google Books + Open Library');
+      
+      const { data: fallbackData, error: fallbackError } = await supabase.functions.invoke('book-search', {
+        body: { query }
+      });
+
+      if (fallbackError) {
+        throw new Error(getUserFriendlyError(fallbackError.message));
+      }
+
+      if (fallbackData?.error) {
+        throw new Error(getUserFriendlyError(fallbackData.error));
+      }
+
+      // Merge fallback results with cache
+      const cacheItems = cacheData?.items || [];
+      const merged = mergeSearchResults(cacheItems, fallbackData?.items || [], query);
+      setResults(merged);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An error occurred';
       setError(getUserFriendlyError(message));
