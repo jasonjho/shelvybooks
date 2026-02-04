@@ -76,7 +76,11 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
   const amazonUrl = getAmazonBookUrl(book.title, book.author, book.isbn);
   const hasClubInfo = clubInfo && clubInfo.length > 0;
   const isCurrentlyReading = clubInfo?.some(c => c.status === 'reading');
-  const showPlaceholder = !book.coverUrl || book.coverUrl === '/placeholder.svg' || imageError;
+  // Check for placeholder URLs before even loading
+  const isPlaceholderUrl = !book.coverUrl || 
+    book.coverUrl === '/placeholder.svg' || 
+    (book.coverUrl.includes('isbndb.com') && book.coverUrl.includes('nocover'));
+  const showPlaceholder = isPlaceholderUrl || imageError;
   const coverSrc = normalizeCoverUrl(book.coverUrl);
 
   const setCombinedRef = useCallback(
