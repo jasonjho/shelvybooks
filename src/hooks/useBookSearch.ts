@@ -31,30 +31,39 @@ function getUserFriendlyError(message: string): string {
   return 'Something went wrong. Please try again.';
 }
 
-// Merge cache results with API results, deduplicating by title
+// Extract primary title (before colon/subtitle) for fuzzy matching
+function getPrimaryTitle(title: string): string {
+  return title.split(':')[0].toLowerCase().trim();
+}
+
+// Create dedup key from primary title + primary author
+function getDedupeKey(book: GoogleBook): string {
+  const title = getPrimaryTitle(book.volumeInfo?.title || '');
+  const author = (book.volumeInfo?.authors?.[0] || '').split(',')[0].toLowerCase().trim();
+  return `${title}|${author}`;
+}
+
+// Merge cache results with API results, deduplicating by primary title + author
 function mergeSearchResults(cacheItems: GoogleBook[], apiItems: GoogleBook[], query: string): GoogleBook[] {
-  const seen = new Set<string>();
-  const merged: GoogleBook[] = [];
+  const seen = new Map<string, GoogleBook>();
   
   // Cache results first (they're already in our DB with good metadata)
   for (const item of cacheItems) {
-    const key = item.volumeInfo?.title?.toLowerCase().trim();
+    const key = getDedupeKey(item);
     if (key && !seen.has(key)) {
-      seen.add(key);
-      merged.push(item);
+      seen.set(key, item);
     }
   }
   
-  // Then API results
+  // Then API results - only add if not already seen
   for (const item of apiItems) {
-    const key = item.volumeInfo?.title?.toLowerCase().trim();
+    const key = getDedupeKey(item);
     if (key && !seen.has(key)) {
-      seen.add(key);
-      merged.push(item);
+      seen.set(key, item);
     }
   }
   
-  return merged.slice(0, 12);
+  return Array.from(seen.values()).slice(0, 12);
 }
 
 export function useBookSearch() {
