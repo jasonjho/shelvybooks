@@ -7,6 +7,7 @@ import { useBookSearch, getCoverUrl } from '@/hooks/useBookSearch';
 import { BookStatus, GoogleBook } from '@/types/book';
 import { Plus, Search, Loader2, PenLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BookCoverImage } from '@/components/BookCoverImage';
 
 interface AddBookDialogProps {
   onAddBook: (book: {
@@ -190,14 +191,12 @@ export function AddBookDialog({ onAddBook, defaultStatus, open: controlledOpen, 
                       'hover:bg-secondary focus:bg-secondary focus:outline-none'
                     )}
                   >
-                    <div className="aspect-[2/3] rounded overflow-hidden bg-muted mb-2">
-                      <img
-                        src={getCoverUrl(book)}
-                        alt={book.volumeInfo.title}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/placeholder.svg';
-                        }}
+                    <div className="aspect-[2/3] rounded overflow-hidden">
+                      <BookCoverImage
+                        coverUrl={getCoverUrl(book)}
+                        title={book.volumeInfo.title}
+                        author={book.volumeInfo.authors?.[0]}
+                        className="w-full h-full"
                       />
                     </div>
                     <p className="text-xs font-medium line-clamp-2 leading-tight">
