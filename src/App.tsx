@@ -18,7 +18,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient(); // HMR cache clear v2
+const queryClient = new QueryClient(); // HMR cache clear v3
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
