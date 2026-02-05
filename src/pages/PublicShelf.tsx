@@ -369,6 +369,24 @@ export default function PublicShelf() {
       </header>
 
       <main className="container py-8 relative z-10">
+        {/* Prominent Sign Up CTA for guests */}
+        {!user && (
+          <div className="mb-6 p-4 sm:p-6 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-200 dark:border-amber-800 text-center">
+            <h2 className="text-lg sm:text-xl font-display text-amber-900 dark:text-amber-100 mb-2">
+              Love what you see?
+            </h2>
+            <p className="text-sm text-amber-800/80 dark:text-amber-200/80 mb-4">
+              Create your own beautiful bookshelf and start tracking your reading journey.
+            </p>
+            <Link to="/">
+              <Button size="lg" className="gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-lg font-medium">
+                <BookOpen className="w-5 h-5" />
+                Create Your Free Shelf
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {/* Owner info - simplified header */}
         <div className="text-center mb-6">
           <InlineShelfNameEditor
@@ -426,16 +444,6 @@ export default function PublicShelf() {
             activeCategoryFilters={activeCategoryFilters}
             onCategoryFilterChange={setActiveCategoryFilters}
           />
-          
-          {/* CTA for logged-out users - inline with controls */}
-          {!user && (
-            <Link to="/">
-              <Button size="sm" className="gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md">
-                <BookOpen className="w-4 h-4" />
-                Start Your Shelf
-              </Button>
-            </Link>
-          )}
         </div>
 
         {/* Controls row - Mobile: more compact */}
