@@ -365,7 +365,7 @@ export function MobileBookshelf({
             </div>
           </div>
           {/* Empty state message overlay */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground text-sm gap-3 pointer-events-auto">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground text-sm gap-3 z-10">
             {isOwner !== false ? (
               <span className="italic">Add some books to your shelf...</span>
             ) : (
