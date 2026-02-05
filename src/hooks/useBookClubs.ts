@@ -468,7 +468,7 @@ export function useClubDetails(clubId: string | undefined) {
           const shelf = shelfMap.get(m.user_id);
           const username = profileMap.get(m.user_id);
           // Priority: shelf display_name > profile username > null
-          const displayName = shelf?.displayName || (username ? `${username}'s Bookshelf` : null);
+          const displayName = shelf?.displayName || username || null;
           return {
             id: m.id,
             clubId: m.club_id,
