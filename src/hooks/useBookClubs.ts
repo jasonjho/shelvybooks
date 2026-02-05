@@ -467,8 +467,8 @@ export function useClubDetails(clubId: string | undefined) {
         memberData.map((m) => {
           const shelf = shelfMap.get(m.user_id);
           const username = profileMap.get(m.user_id);
-          // Priority: shelf display_name > profile username > null
-          const displayName = shelf?.displayName || username || null;
+          // For club members, just show the username
+          const displayName = username || null;
           return {
             id: m.id,
             clubId: m.club_id,
