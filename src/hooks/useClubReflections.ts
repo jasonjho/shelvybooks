@@ -86,7 +86,8 @@ export function useClubReflections(clubId: string | undefined, suggestionId?: st
       profiles?.forEach(p => {
         const shelf = shelfMap.get(p.user_id);
         profileMap.set(p.user_id, {
-          displayName: shelf?.displayName || p.username,
+          // For reflections, show only the username (not the shelf display name)
+          displayName: p.username,
           shareId: shelf?.shareId || null,
         });
       });
