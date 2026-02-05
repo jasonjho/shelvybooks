@@ -99,6 +99,7 @@ export default function Index() {
     clearViewedShelf, 
     isViewingFriend, 
     viewedBooks,
+    loadingViewedBooks,
   } = useViewedShelf();
 
   // Clear friend's shelf view when user logs out
@@ -321,7 +322,7 @@ export default function Index() {
         )}
 
         {/* Shelf Controls & Bookshelf - fade in when loaded */}
-        {!authLoading && !booksLoading && (user || !demoLoading) && (
+        {!authLoading && !booksLoading && !loadingViewedBooks && (user || !demoLoading) && (
           <div className="animate-fade-in">
             {/* Empty shelf - show collection suggestions prominently */}
             {user && !isViewingFriend && ownBooks.length === 0 ? (
