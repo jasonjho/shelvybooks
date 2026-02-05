@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClubDetails, useBookClubs, VoteWithUser, ClubMemberWithProfile } from '@/hooks/useBookClubs';
+import { useClubReflections } from '@/hooks/useClubReflections';
 import { useBookSearch, getCoverUrl } from '@/hooks/useBookSearch';
 import { useBooksContext } from '@/contexts/BooksContext';
 import { Button } from '@/components/ui/button';
@@ -67,6 +68,7 @@ import {
 import { cn } from '@/lib/utils';
 import { GoogleBook } from '@/types/book';
 import { useToast } from '@/hooks/use-toast';
+import { PastReadCard } from '@/components/club/PastReadCard';
 
 export default function ClubPage() {
   const { clubId } = useParams<{ clubId: string }>();
@@ -87,6 +89,17 @@ export default function ClubPage() {
     removeSuggestion,
     updateClubDetails,
   } = useClubDetails(clubId);
+
+  // Reflections hook for past reads
+  const {
+    reflections,
+    addReflection,
+    updateReflection,
+    deleteReflection,
+    getReflectionsForSuggestion,
+    hasReflectedOn,
+    getAverageRating,
+  } = useClubReflections(clubId);
 
   // Get votes for a specific suggestion
   const getVotesForSuggestion = (suggestionId: string) => {
@@ -429,37 +442,37 @@ export default function ClubPage() {
         {pastReads.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+              <CheckCircle className="w-5 h-5 text-emerald-600" />
               <h2 className="text-lg font-semibold font-sans">Past Reads</h2>
               <Badge variant="outline">{pastReads.length}</Badge>
             </div>
             <div className="grid gap-3">
-              {pastReads.map((book) => (
-                <div
-                  key={book.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border bg-muted/10"
-                >
-                  {book.coverUrl ? (
-                    <img
-                      src={book.coverUrl}
-                      alt={book.title}
-                      className="w-12 h-16 object-cover rounded"
-                    />
-                  ) : (
-                    <div className="w-12 h-16 bg-muted rounded flex items-center justify-center">
-                      <Library className="w-5 h-5 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate font-sans">{book.title}</p>
-                    <p className="text-sm text-muted-foreground truncate font-sans">{book.author}</p>
-                  </div>
-                  <Badge variant="secondary" className="shrink-0">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Read
-                  </Badge>
-                </div>
-              ))}
+              {pastReads.map((book) => {
+                const bookReflections = getReflectionsForSuggestion(book.id);
+                const userReflection = bookReflections.find(r => r.userId === user?.id);
+                return (
+                  <PastReadCard
+                    key={book.id}
+                    suggestion={{
+                      id: book.id,
+                      title: book.title,
+                      author: book.author,
+                      coverUrl: book.coverUrl,
+                    }}
+                    reflections={bookReflections}
+                    averageRating={getAverageRating(book.id)}
+                    hasUserReflected={hasReflectedOn(book.id)}
+                    userReflection={userReflection}
+                    isOnShelf={isOnShelf(book.title, book.author)}
+                    onAddReflection={(rating, content, isAnonymous) => 
+                      addReflection(book.id, rating, content, isAnonymous)
+                    }
+                    onUpdateReflection={updateReflection}
+                    onDeleteReflection={deleteReflection}
+                    onAddToShelf={() => handleAddToShelf(book.title, book.author, book.coverUrl)}
+                  />
+                );
+              })}
             </div>
           </section>
         )}

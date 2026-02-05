@@ -46,6 +46,57 @@ export type Database = {
           },
         ]
       }
+      book_club_reflections: {
+        Row: {
+          club_id: string
+          content: string
+          created_at: string
+          id: string
+          is_anonymous: boolean
+          rating: number
+          suggestion_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          rating: number
+          suggestion_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          rating?: number
+          suggestion_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_club_reflections_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_club_reflections_suggestion_id_fkey"
+            columns: ["suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "book_club_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       book_club_suggestions: {
         Row: {
           author: string
