@@ -75,7 +75,7 @@ export function NotificationBell() {
           {totalCount > 0 && (
             <span 
               className={cn(
-                "absolute -top-2 -right-2 flex items-center justify-center",
+                "absolute -top-1 -right-1 z-10 flex items-center justify-center",
                 "min-w-[18px] h-[18px] px-1 rounded-full",
                 "bg-destructive text-destructive-foreground text-xs font-medium",
                 "animate-scale-in"
