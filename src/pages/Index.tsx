@@ -10,6 +10,7 @@ import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
 import { RecommendBookDialog } from '@/components/RecommendBookDialog';
+import { CurrentlyReading } from '@/components/CurrentlyReading';
 
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { ShelfSwitcher } from '@/components/ShelfSwitcher';
@@ -88,6 +89,7 @@ export default function Index() {
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
   const [recommendDialogOpen, setRecommendDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   
   const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
@@ -206,19 +208,39 @@ export default function Index() {
     );
   }, [displayBooks, activeCategoryFilters]);
 
+  // Filter books by search query
+  const searchFilteredBooks = useMemo(() => {
+    if (!searchQuery.trim()) return categoryFilteredBooks;
+    const query = searchQuery.toLowerCase().trim();
+    return categoryFilteredBooks.filter(book =>
+      book.title.toLowerCase().includes(query) ||
+      book.author.toLowerCase().includes(query)
+    );
+  }, [categoryFilteredBooks, searchQuery]);
+
   // Sort books
   const sortedBooks = useMemo(() => {
-    return sortBooks(categoryFilteredBooks, sortOption, shuffleSeed);
-  }, [categoryFilteredBooks, sortOption, shuffleSeed]);
+    return sortBooks(searchFilteredBooks, sortOption, shuffleSeed);
+  }, [searchFilteredBooks, sortOption, shuffleSeed]);
 
-  // Calculate book counts by status (from category-filtered books)
+  // Books for main shelf (exclude 'reading' when CurrentlyReading is shown)
+  const shelfBooks = useMemo(() => {
+    // Only exclude reading books if we're on our own shelf, not searching, and no active filters
+    const showCurrentlyReadingSection = user && !isViewingFriend && !searchQuery.trim() && activeFilters.length === 0;
+    if (showCurrentlyReadingSection) {
+      return sortedBooks.filter(b => b.status !== 'reading');
+    }
+    return sortedBooks;
+  }, [sortedBooks, user, isViewingFriend, searchQuery, activeFilters]);
+
+  // Calculate book counts by status (from category-filtered books for display)
   const bookCounts = useMemo(() => {
     return {
-      reading: categoryFilteredBooks.filter(b => b.status === 'reading').length,
-      'want-to-read': categoryFilteredBooks.filter(b => b.status === 'want-to-read').length,
-      read: categoryFilteredBooks.filter(b => b.status === 'read').length,
+      reading: searchFilteredBooks.filter(b => b.status === 'reading').length,
+      'want-to-read': searchFilteredBooks.filter(b => b.status === 'want-to-read').length,
+      read: searchFilteredBooks.filter(b => b.status === 'read').length,
     };
-  }, [categoryFilteredBooks]);
+  }, [searchFilteredBooks]);
 
   const handleShuffle = useCallback(() => {
     setShuffleSeed(Date.now());
@@ -359,6 +381,8 @@ export default function Index() {
                       compact={isMobile}
                       showShare={!!user}
                       shareUrl={currentShareUrl}
+                      searchQuery={searchQuery}
+                      onSearchChange={setSearchQuery}
                     />
                   </div>
                   
@@ -371,9 +395,24 @@ export default function Index() {
                   )}
                 </div>
 
+                 {/* Currently Reading Section - only on own shelf, not when filtering/searching */}
+                 {user && !isViewingFriend && !searchQuery.trim() && activeFilters.length === 0 && (
+                   <CurrentlyReading
+                     books={sortedBooks}
+                     skin={shelfSkin}
+                     settings={settings}
+                     onMoveBook={moveBook}
+                     onRemoveBook={removeBook}
+                     onSelectBook={() => {}} // Let BookSpine handle its own dialog
+                     getBookClubInfo={getBookClubInfo}
+                     likesPerBook={totalLikesPerBook}
+                     onAddNote={() => {}} // Notes handled by BookSpine
+                   />
+                 )}
+
                  {isMobile ? (
                    <MobileBookshelf
-                     books={sortedBooks}
+                     books={shelfBooks}
                      skin={shelfSkin}
                      settings={settings}
                      activeFilters={activeFilters}
@@ -391,7 +430,7 @@ export default function Index() {
                    />
                  ) : (
                    <Bookshelf
-                     books={sortedBooks}
+                     books={shelfBooks}
                      skin={shelfSkin}
                      settings={settings}
                      activeFilters={activeFilters}
