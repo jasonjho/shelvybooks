@@ -1,6 +1,7 @@
 import { BookStatus, SortOption } from '@/types/book';
-import { BookOpen, BookMarked, CheckCircle, Shuffle, ArrowDownAZ, Clock, Layers, Filter, ChevronDown, Tag, Share2, Check } from 'lucide-react';
+import { BookOpen, BookMarked, CheckCircle, Shuffle, ArrowDownAZ, Clock, Layers, Filter, ChevronDown, Tag, Share2, Check, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +37,10 @@ interface ShelfControlsProps {
   showShare?: boolean;
   /** The share URL to copy (defaults to current URL if not provided) */
   shareUrl?: string;
+  /** Search query for filtering books */
+  searchQuery?: string;
+  /** Callback when search query changes */
+  onSearchChange?: (query: string) => void;
 }
 
 const statusFilters: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -64,10 +69,13 @@ export function ShelfControls({
   compact = false,
   showShare = false,
   shareUrl,
+  searchQuery = '',
+  onSearchChange,
 }: ShelfControlsProps) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const handleShare = async () => {
     const urlToCopy = shareUrl || window.location.href;
@@ -131,6 +139,54 @@ export function ShelfControls({
 
   return (
     <div className="flex items-center gap-1.5 flex-nowrap">
+      {/* Search */}
+      {onSearchChange && (
+        searchOpen ? (
+          <div className="flex items-center gap-1">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search books..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="h-8 w-32 sm:w-44 pl-8 pr-8 text-sm"
+                autoFocus
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => onSearchChange('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchOpen(false);
+                onSearchChange('');
+              }}
+              className="h-8 px-2"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSearchOpen(true)}
+            className="gap-1.5"
+          >
+            <Search className="w-4 h-4" />
+            {!compact && <span className="hidden sm:inline">Search</span>}
+          </Button>
+        )
+      )}
+
       {/* Filter Popover */}
       <Popover open={filterOpen} onOpenChange={setFilterOpen}>
         <PopoverTrigger asChild>
