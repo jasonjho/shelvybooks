@@ -101,7 +101,7 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
                 />
                 {/* Currently Reading badge */}
                 {book.status === 'reading' && (
-                  <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full shadow-md flex items-center gap-1">
+                  <div className="absolute -top-2 -right-2 z-50 bg-amber-500 text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full shadow-md flex items-center gap-1">
                     <BookOpen className="w-3 h-3" />
                     <span className="hidden sm:inline">Reading</span>
                   </div>
