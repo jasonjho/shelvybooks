@@ -1371,6 +1371,21 @@
   }
 }
 
+/* Glow pulse for currently reading books */
+@keyframes reading-glow {
+  0%, 100% { 
+    box-shadow: 0 0 8px 2px hsl(45 80% 55% / 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 16px 4px hsl(45 80% 55% / 0.6);
+  }
+}
+
+.book-reading-glow .book-cover {
+  animation: reading-glow 2.5s ease-in-out infinite;
+  border-radius: 2px;
+}
+
 /* Hide scrollbar while maintaining scroll functionality */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* IE and Edge */

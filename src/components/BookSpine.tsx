@@ -55,6 +55,7 @@ type BookCoverProps = {
   isGrayed?: boolean;
   isWobbling?: boolean;
   isSparkle?: boolean;
+  isReading?: boolean;
   clubInfo?: ClubInfo[];
   note?: BookNote;
   onAddNote?: () => void;
@@ -67,7 +68,7 @@ type BookCoverProps = {
 };
 
 const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
-  ({ book, onSelect, isGrayed, isWobbling, isSparkle, clubInfo, note, onAddNote, isInteractive = true, newLikesCount = 0, onMove, onRemove, onAddToShelf, isOnShelf }, ref) => {
+  ({ book, onSelect, isGrayed, isWobbling, isSparkle, isReading, clubInfo, note, onAddNote, isInteractive = true, newLikesCount = 0, onMove, onRemove, onAddToShelf, isOnShelf }, ref) => {
   const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -155,7 +156,8 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
         'book-spine group/book relative hover:z-50 focus-within:z-50',
         isGrayed && 'book-grayed',
         isWobbling && 'book-wobble',
-        isSparkle && 'book-sparkle'
+        isSparkle && 'book-sparkle',
+        isReading && 'book-reading-glow'
       )}
       onMouseEnter={updateTooltipPosition}
     >
@@ -339,6 +341,7 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
   
   const isWobbling = recentlyAddedBooks.has(book.id);
   const isSparkle = recentlyCompletedBooks.has(book.id);
+  const isReading = book.status === 'reading';
 
   // If not interactive (no move/remove), just render the book without context menu
   // But still pass onAddToShelf if available (for viewing friend's shelf)
@@ -349,7 +352,8 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
         onSelect={onSelect} 
         isGrayed={isGrayed} 
         isWobbling={isWobbling} 
-        isSparkle={isSparkle} 
+        isSparkle={isSparkle}
+        isReading={isReading}
         clubInfo={clubInfo} 
         note={note} 
         isInteractive={false} 
@@ -368,7 +372,8 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
           onSelect={onSelect} 
           isGrayed={isGrayed} 
           isWobbling={isWobbling} 
-          isSparkle={isSparkle} 
+          isSparkle={isSparkle}
+          isReading={isReading}
           clubInfo={clubInfo} 
           note={note} 
           onAddNote={onAddNote} 

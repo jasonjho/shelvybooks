@@ -10,7 +10,7 @@ import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { NotificationBell } from '@/components/NotificationBell';
 import { RecommendBookDialog } from '@/components/RecommendBookDialog';
-import { CurrentlyReading } from '@/components/CurrentlyReading';
+
 
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { ShelfSwitcher } from '@/components/ShelfSwitcher';
@@ -223,15 +223,8 @@ export default function Index() {
     return sortBooks(searchFilteredBooks, sortOption, shuffleSeed);
   }, [searchFilteredBooks, sortOption, shuffleSeed]);
 
-  // Books for main shelf (exclude 'reading' when CurrentlyReading is shown)
-  const shelfBooks = useMemo(() => {
-    // Only exclude reading books if we're on our own shelf, not searching, and no active filters
-    const showCurrentlyReadingSection = user && !isViewingFriend && !searchQuery.trim() && activeFilters.length === 0;
-    if (showCurrentlyReadingSection) {
-      return sortedBooks.filter(b => b.status !== 'reading');
-    }
-    return sortedBooks;
-  }, [sortedBooks, user, isViewingFriend, searchQuery, activeFilters]);
+  // All books go to the main shelf (no separate "Currently Reading" section)
+  const shelfBooks = sortedBooks;
 
   // Calculate book counts by status (from category-filtered books for display)
   const bookCounts = useMemo(() => {
@@ -395,20 +388,6 @@ export default function Index() {
                   )}
                 </div>
 
-                 {/* Currently Reading Section - only on own shelf, not when filtering/searching */}
-                 {user && !isViewingFriend && !searchQuery.trim() && activeFilters.length === 0 && (
-                   <CurrentlyReading
-                     books={sortedBooks}
-                     skin={shelfSkin}
-                     settings={settings}
-                     onMoveBook={moveBook}
-                     onRemoveBook={removeBook}
-                     onSelectBook={() => {}} // Let BookSpine handle its own dialog
-                     getBookClubInfo={getBookClubInfo}
-                     likesPerBook={totalLikesPerBook}
-                     onAddNote={() => {}} // Notes handled by BookSpine
-                   />
-                 )}
 
                  {isMobile ? (
                    <MobileBookshelf
