@@ -144,6 +144,9 @@ What magical books would you recommend for me?`;
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("OpenRouter error:", response.status, errorText);
+      
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
@@ -152,14 +155,14 @@ What magical books would you recommend for me?`;
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "AI credits depleted. Please add credits to continue." }),
+          JSON.stringify({ error: `OpenRouter payment required: ${errorText}` }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error("Failed to get AI recommendations");
+      throw new Error(`OpenRouter error ${response.status}: ${errorText}`);
     }
+    
+    console.log("OpenRouter request successful");
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
