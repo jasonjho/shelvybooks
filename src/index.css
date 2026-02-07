@@ -1374,15 +1374,19 @@
 /* Glow pulse for currently reading books */
 @keyframes reading-glow {
   0%, 100% { 
-    box-shadow: 0 0 8px 2px hsl(45 80% 55% / 0.4);
+    box-shadow: 
+      0 0 12px 4px hsl(45 85% 55% / 0.5),
+      0 0 24px 8px hsl(45 85% 55% / 0.2);
   }
   50% { 
-    box-shadow: 0 0 16px 4px hsl(45 80% 55% / 0.6);
+    box-shadow: 
+      0 0 20px 8px hsl(45 85% 55% / 0.7),
+      0 0 40px 16px hsl(45 85% 55% / 0.3);
   }
 }
 
 .book-reading-glow .book-cover {
-  animation: reading-glow 2.5s ease-in-out infinite;
+  animation: reading-glow 2s ease-in-out infinite;
   border-radius: 2px;
 }
 
