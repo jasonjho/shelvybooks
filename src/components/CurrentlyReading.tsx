@@ -49,10 +49,10 @@ export function CurrentlyReading({
         <div className="p-1.5 rounded-md bg-primary/10">
           <BookOpen className="w-4 h-4 text-primary" />
         </div>
-        <h2 className="text-sm font-medium text-foreground/80">
+        <h2 className="font-sans text-sm font-medium text-foreground/80">
           Currently Reading
         </h2>
-        <span className="text-xs text-muted-foreground">
+        <span className="font-sans text-xs text-muted-foreground">
           ({readingBooks.length})
         </span>
       </div>
