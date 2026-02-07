@@ -83,7 +83,7 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
         </DialogHeader>
 
         {/* Scrollable body: required for iPhone landscape where viewport height is short */}
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y scroll-touch">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y scroll-touch pt-2">
           <div className="space-y-4 pr-2">
             <div className="flex gap-4">
               {/* Book cover */}
