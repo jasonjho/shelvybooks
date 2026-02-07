@@ -222,9 +222,11 @@ export function useFollowedUsersBooks() {
           author,
           cover_url,
           created_at,
-          user_id
+          user_id,
+          status
         `)
         .in('user_id', followingIds)
+        .in('status', ['reading', 'read']) // Only notify for reading/read, not want-to-read
         .gte('created_at', thirtyDaysAgo.toISOString())
         .order('created_at', { ascending: false })
         .limit(50);
