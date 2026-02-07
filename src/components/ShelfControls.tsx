@@ -13,6 +13,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -75,7 +81,7 @@ export function ShelfControls({
   const [filterOpen, setFilterOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchDialogOpen, setSearchDialogOpen] = useState(false);
 
   const handleShare = async () => {
     const urlToCopy = shareUrl || window.location.href;
@@ -139,52 +145,63 @@ export function ShelfControls({
 
   return (
     <div className="flex items-center gap-1.5 flex-nowrap">
-      {/* Search */}
+      {/* Search Dialog */}
       {onSearchChange && (
-        searchOpen ? (
-          <div className="flex items-center gap-1">
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search books..."
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="h-8 w-32 sm:w-44 pl-8 pr-8 text-sm"
-                autoFocus
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => onSearchChange('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setSearchOpen(false);
-                onSearchChange('');
-              }}
-              className="h-8 px-2"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-        ) : (
+        <>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setSearchOpen(true)}
-            className="gap-1.5"
+            onClick={() => setSearchDialogOpen(true)}
+            className={cn(
+              "gap-1.5",
+              searchQuery && "border-primary/50 bg-primary/5"
+            )}
           >
             <Search className="w-4 h-4" />
-            {!compact && <span className="hidden sm:inline">Search</span>}
+            {!compact && <span className="hidden sm:inline">{searchQuery || 'Search'}</span>}
+            {searchQuery && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSearchChange('');
+                }}
+                className="ml-1 hover:text-destructive"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </Button>
-        )
+          
+          <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Search your shelf</DialogTitle>
+              </DialogHeader>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search by title or author..."
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="pl-10 pr-10"
+                  autoFocus
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => onSearchChange('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {searchQuery ? `Filtering books matching "${searchQuery}"` : 'Type to filter your books'}
+              </p>
+            </DialogContent>
+          </Dialog>
+        </>
       )}
 
       {/* Filter Popover */}
