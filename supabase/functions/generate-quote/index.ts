@@ -12,9 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-    if (!lovableApiKey) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    const geminiApiKey = Deno.env.get('GOOGLE_GEMINI_API_KEY');
+    if (!geminiApiKey) {
+      throw new Error('GOOGLE_GEMINI_API_KEY not configured');
     }
 
     // === INPUT VALIDATION ===
@@ -47,27 +47,27 @@ serve(async (req) => {
       ? `\n\nIMPORTANT: Do NOT choose quotes from any of these books (the user already has them): ${excludeTitles.slice(0, 50).join(', ')}.`
       : '';
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const systemPrompt = `You are a literary expert. Generate a single inspiring, memorable quote from a well-known book. Return ONLY valid JSON in this exact format, no markdown or code blocks:
+{"quote": "the quote text", "book": {"title": "Book Title", "author": "Author Name"}}`;
+
+    const userPrompt = `Give me a memorable quote from a ${randomGenre} book. Pick something unexpected and lesser-known - avoid the most famous quotes. Make sure the quote is real and actually from the book you cite. Random seed: ${randomSeed}${exclusionNote}`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a literary expert. Generate a single inspiring, memorable quote from a well-known book. Return ONLY valid JSON in this exact format, no markdown or code blocks:
-{"quote": "the quote text", "book": {"title": "Book Title", "author": "Author Name"}}`
-          },
+        contents: [
           {
             role: 'user',
-            content: `Give me a memorable quote from a ${randomGenre} book. Pick something unexpected and lesser-known - avoid the most famous quotes. Make sure the quote is real and actually from the book you cite. Random seed: ${randomSeed}${exclusionNote}`
+            parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
           }
         ],
-        temperature: 1.2,
-        max_tokens: 200,
+        generationConfig: {
+          temperature: 1.2,
+          maxOutputTokens: 200,
+        },
       }),
     });
 
@@ -79,12 +79,12 @@ serve(async (req) => {
 
     const data = await response.json();
     
-    if (!data.choices?.[0]?.message?.content) {
-      console.error('No content in AI response:', JSON.stringify(data));
+    if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+      console.error('No content in Gemini response:', JSON.stringify(data));
       throw new Error('No response from AI');
     }
 
-    const content = data.choices[0].message.content.trim();
+    const content = data.candidates[0].content.parts[0].text.trim();
     console.log('AI response content:', content);
     
     // Parse the JSON response
