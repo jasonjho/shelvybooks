@@ -12,9 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-    if (!lovableApiKey) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    const openRouterKey = Deno.env.get('OPENROUTER_API_KEY');
+    if (!openRouterKey) {
+      throw new Error('OPENROUTER_API_KEY not configured');
     }
 
     // === INPUT VALIDATION ===
@@ -47,11 +47,13 @@ serve(async (req) => {
       ? `\n\nIMPORTANT: Do NOT choose quotes from any of these books (the user already has them): ${excludeTitles.slice(0, 50).join(', ')}.`
       : '';
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${openRouterKey}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://shelvy-books.lovable.app',
+        'X-Title': 'Shelvy Books',
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
