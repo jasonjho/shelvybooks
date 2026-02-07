@@ -31,7 +31,18 @@ export function BookHoverPreview({ book, amazonUrl, onSelect, clubInfo, onMove, 
   const isInteractive = !!onMove;
 
   return (
-    <div className="bg-popover text-popover-foreground px-4 py-3 rounded-lg text-sm min-w-[240px] max-w-[320px] shadow-xl border border-border">
+    <div className={cn(
+      "bg-popover text-popover-foreground px-4 py-3 rounded-lg text-sm min-w-[240px] max-w-[320px] shadow-xl border border-border",
+      book.status === 'reading' && "ring-2 ring-amber-400/50 shadow-[0_0_20px_6px_hsl(45_85%_55%/0.3)]"
+    )}>
+      {/* Currently Reading badge */}
+      {book.status === 'reading' && (
+        <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-xs font-medium mb-2">
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>Currently Reading</span>
+        </div>
+      )}
+      
       {/* Title & Author */}
       <button 
         onClick={(e) => {

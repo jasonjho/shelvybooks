@@ -87,15 +87,25 @@ export function BookDetailDialog({ book, open, onOpenChange, onUpdateCompletedAt
           <div className="space-y-4 pr-2">
             <div className="flex gap-4">
               {/* Book cover */}
-              <div className="shrink-0">
+              <div className="shrink-0 relative">
                 <div
-                  className="w-24 h-36 rounded-md shadow-lg bg-muted"
+                  className={cn(
+                    "w-24 h-36 rounded-md shadow-lg bg-muted",
+                    book.status === 'reading' && "ring-2 ring-amber-400/60 shadow-[0_0_16px_4px_hsl(45_85%_55%/0.4)]"
+                  )}
                   style={{
                     backgroundImage: `url(${coverSrc})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   }}
                 />
+                {/* Currently Reading badge */}
+                {book.status === 'reading' && (
+                  <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full shadow-md flex items-center gap-1">
+                    <BookOpen className="w-3 h-3" />
+                    <span className="hidden sm:inline">Reading</span>
+                  </div>
+                )}
               </div>
 
               {/* Book info */}
