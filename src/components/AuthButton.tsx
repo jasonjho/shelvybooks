@@ -27,6 +27,7 @@ import { AccountSettingsDialog } from '@/components/AccountSettingsDialog';
 import { SettingsPanelDialog } from '@/components/SettingsPanelDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Link, useLocation } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 export function AuthButton() {
   const { user, loading, signIn, signUp, signOut, authDialogOpen, setAuthDialogOpen } = useAuth();
@@ -103,23 +104,16 @@ export function AuthButton() {
     setSubmitting(true);
 
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-      const res = await fetch(`${supabaseUrl}/functions/v1/set-migration-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseKey}`,
-          'apikey': supabaseKey,
-        },
-        body: JSON.stringify({ email, password: newPassword }),
+      const { data, error: fnError } = await supabase.functions.invoke('set-migration-password', {
+        body: { email, password: newPassword },
       });
 
-      const data = await res.json();
+      if (fnError) {
+        throw new Error(fnError.message || 'Failed to set password');
+      }
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to set password');
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       // Auto-login with the new password
