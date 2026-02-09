@@ -55,6 +55,8 @@ serve(async (req) => {
       );
     }
 
+    console.log(`Found pending migration: user_id=${pending.user_id}, email=${email}`);
+
     // Set the user's password via admin API
     const { error: updateError } = await supabase.auth.admin.updateUserById(
       pending.user_id,
