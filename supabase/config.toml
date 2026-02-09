@@ -1,15 +1,37 @@
 project_id = "vnqbmveykkrugwrtpjdp"
 
-[functions.nyt-bestsellers]
+# Gateway JWT verification disabled for all functions because this project
+# uses ES256 JWT signing keys, which the Edge Function gateway doesn't support.
+# Functions that need auth gating verify tokens in-function via auth.getUser().
+
+[functions.admin-users]
+verify_jwt = false
+
+[functions.backfill-all-metadata]
+verify_jwt = false
+
+[functions.backfill-metadata]
+verify_jwt = false
+
+[functions.book-cache]
 verify_jwt = false
 
 [functions.book-recommender]
 verify_jwt = false
 
-[functions.refresh-covers]
+[functions.book-search]
 verify_jwt = false
 
-[functions.backfill-all-metadata]
+[functions.delete-account]
+verify_jwt = false
+
+[functions.enrich-book]
+verify_jwt = false
+
+[functions.find-user]
+verify_jwt = false
+
+[functions.generate-quote]
 verify_jwt = false
 
 [functions.isbndb-backfill]
@@ -18,5 +40,23 @@ verify_jwt = false
 [functions.isbndb-search]
 verify_jwt = false
 
+[functions.notify-book-recommendation]
+verify_jwt = false
+
 [functions.notify-new-follower]
+verify_jwt = false
+
+[functions.nyt-bestsellers]
+verify_jwt = false
+
+[functions.refresh-covers]
+verify_jwt = false
+
+[functions.send-announcement]
+verify_jwt = false
+
+[functions.send-invite]
+verify_jwt = false
+
+[functions.set-migration-password]
 verify_jwt = false
