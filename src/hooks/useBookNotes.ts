@@ -32,7 +32,7 @@ export function useBookNotes(bookIds: string[]) {
 
   // Fetch notes for the given book IDs
   const fetchNotes = useCallback(async () => {
-    if (bookIds.length === 0) {
+    if (!user || bookIds.length === 0) {
       setNotes(new Map());
       setLoading(false);
       return;
