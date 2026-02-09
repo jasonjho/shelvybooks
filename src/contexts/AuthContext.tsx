@@ -31,11 +31,16 @@ function clearPersistedAuthTokens() {
   }
 }
 
+interface SignInResult {
+  error: Error | null;
+  migrationRequired?: boolean;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<SignInResult>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   authDialogOpen: boolean;
@@ -70,11 +75,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<SignInResult> => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
+    if (error) {
+      // Check if this is a migrated user who needs to set a new password
+      const { data: pending } = await supabase
+        .from('migration_pending')
+        .select('user_id')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (pending) {
+        return { error: null, migrationRequired: true };
+      }
+    }
+
     return { error: error as Error | null };
   };
 

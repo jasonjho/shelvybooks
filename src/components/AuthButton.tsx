@@ -40,6 +40,9 @@ export function AuthButton() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [migrationRequired, setMigrationRequired] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [accountSettingsOpen, setAccountSettingsOpen] = useState(false);
   const [shelfSettingsOpen, setShelfSettingsOpen] = useState(false);
@@ -54,27 +57,89 @@ export function AuthButton() {
     if (!email || !password) return;
 
     setSubmitting(true);
-    
-    const { error } = isSignUp 
-      ? await signUp(email, password)
-      : await signIn(email, password);
 
-    setSubmitting(false);
-
-    if (error) {
-      toast({
-        title: isSignUp ? 'Sign up failed' : 'Sign in failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+    if (isSignUp) {
+      const { error } = await signUp(email, password);
+      setSubmitting(false);
+      if (error) {
+        toast({ title: 'Sign up failed', description: error.message, variant: 'destructive' });
+      } else {
+        setOpen(false);
+        setEmail('');
+        setPassword('');
+        toast({ title: 'Account created!', description: 'You are now signed in.' });
+      }
     } else {
+      const result = await signIn(email, password);
+      setSubmitting(false);
+      if (result.migrationRequired) {
+        setMigrationRequired(true);
+        setPassword('');
+      } else if (result.error) {
+        toast({ title: 'Sign in failed', description: result.error.message, variant: 'destructive' });
+      } else {
+        setOpen(false);
+        setEmail('');
+        setPassword('');
+        toast({ title: 'Welcome back!', description: 'You have signed in successfully.' });
+      }
+    }
+  };
+
+  const handleMigrationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword || !confirmPassword) return;
+
+    if (newPassword.length < 6) {
+      toast({ title: 'Password too short', description: 'Password must be at least 6 characters.', variant: 'destructive' });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({ title: 'Passwords don\'t match', description: 'Please make sure both passwords match.', variant: 'destructive' });
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const res = await fetch(`${supabaseUrl}/functions/v1/set-migration-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseKey}`,
+          'apikey': supabaseKey,
+        },
+        body: JSON.stringify({ email, password: newPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to set password');
+      }
+
+      // Auto-login with the new password
+      const { error } = await signIn(email, newPassword);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
       setOpen(false);
       setEmail('');
-      setPassword('');
-      toast({
-        title: isSignUp ? 'Account created!' : 'Welcome back!',
-        description: isSignUp ? 'You are now signed in.' : 'You have signed in successfully.',
-      });
+      setNewPassword('');
+      setConfirmPassword('');
+      setMigrationRequired(false);
+      toast({ title: 'Welcome back!', description: 'Your password has been set. You\'re all signed in.' });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      toast({ title: 'Error', description: message, variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -88,7 +153,14 @@ export function AuthButton() {
 
   if (!user) {
     return (
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) {
+          setMigrationRequired(false);
+          setNewPassword('');
+          setConfirmPassword('');
+        }
+      }}>
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" className="gap-1.5">
             <LogIn className="w-4 h-4" />
@@ -96,75 +168,137 @@ export function AuthButton() {
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{isSignUp ? 'Create an account' : 'Welcome back'}</DialogTitle>
-            <DialogDescription>
-              {isSignUp 
-                ? 'Sign up to save your books and build your shelf.' 
-                : 'Sign in to access your bookshelf.'}
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                autoComplete={isSignUp ? 'new-password' : 'current-password'}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? (
-                <span className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              ) : isSignUp ? (
-                'Create account'
-              ) : (
-                'Sign in'
-              )}
-            </Button>
-          </form>
-          <div className="text-center text-sm text-muted-foreground mt-4">
-            {isSignUp ? (
-              <>
-                Already have an account?{' '}
+          {migrationRequired ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Welcome back!</DialogTitle>
+                <DialogDescription>
+                  We've upgraded our system. Please set a new password to continue.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleMigrationSubmit} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                    autoFocus
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={submitting}>
+                  {submitting ? (
+                    <span className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  ) : (
+                    'Continue'
+                  )}
+                </Button>
+              </form>
+              <div className="text-center text-sm text-muted-foreground mt-4">
                 <button
                   type="button"
-                  onClick={() => setIsSignUp(false)}
+                  onClick={() => {
+                    setMigrationRequired(false);
+                    setNewPassword('');
+                    setConfirmPassword('');
+                  }}
                   className="text-primary hover:underline font-medium"
                 >
-                  Sign in
+                  Back to sign in
                 </button>
-              </>
-            ) : (
-              <>
-                Don't have an account?{' '}
-                <button
-                  type="button"
-                  onClick={() => setIsSignUp(true)}
-                  className="text-primary hover:underline font-medium"
-                >
-                  Sign up
-                </button>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>{isSignUp ? 'Create an account' : 'Welcome back'}</DialogTitle>
+                <DialogDescription>
+                  {isSignUp
+                    ? 'Sign up to save your books and build your shelf.'
+                    : 'Sign in to access your bookshelf.'}
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={submitting}>
+                  {submitting ? (
+                    <span className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  ) : isSignUp ? (
+                    'Create account'
+                  ) : (
+                    'Sign in'
+                  )}
+                </Button>
+              </form>
+              <div className="text-center text-sm text-muted-foreground mt-4">
+                {isSignUp ? (
+                  <>
+                    Already have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => setIsSignUp(false)}
+                      className="text-primary hover:underline font-medium"
+                    >
+                      Sign in
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    Don't have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => setIsSignUp(true)}
+                      className="text-primary hover:underline font-medium"
+                    >
+                      Sign up
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     );
