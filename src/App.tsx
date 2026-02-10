@@ -16,6 +16,7 @@ import ClubPage from "./pages/ClubPage";
 import JoinClubPage from "./pages/JoinClubPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient(); // HMR cache clear v4
@@ -40,6 +41,7 @@ const App = () => (
                       <Route path="/clubs/join/:inviteCode" element={<JoinClubPage />} />
                       <Route path="/u/:username" element={<ProfilePage />} />
                       <Route path="/admin" element={<AdminPage />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
