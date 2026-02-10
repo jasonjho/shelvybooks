@@ -74,9 +74,13 @@ export default function ResetPassword() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 font-sans">
       <div className="w-full max-w-sm space-y-6">
-        <div className="flex flex-col items-center gap-2">
-          <Library className="w-8 h-8 text-primary" />
-          <h1 className="text-xl font-semibold text-foreground">Shelvy</h1>
+        <div className="flex flex-col items-center gap-3">
+          <div className="p-2.5 rounded-lg bg-gradient-to-br from-amber-700 to-amber-900 shadow-md">
+            <Library className="w-7 h-7 text-amber-100" />
+          </div>
+          <h1 className="text-4xl font-normal tracking-wide leading-[1.2] bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
+            Shelvy
+          </h1>
         </div>
 
         {loading && (
@@ -98,7 +102,7 @@ export default function ResetPassword() {
         {isRecovery && !success && (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="text-center">
-              <h2 className="text-lg font-semibold text-foreground">Set a new password</h2>
+              <h2 className="text-lg font-semibold text-foreground font-display">Set a new password</h2>
               <p className="text-sm text-muted-foreground mt-1">Enter your new password below.</p>
             </div>
             <div className="space-y-2">
