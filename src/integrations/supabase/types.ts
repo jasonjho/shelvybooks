@@ -103,6 +103,7 @@ export type Database = {
           club_id: string
           cover_url: string | null
           created_at: string
+          finished_at: string | null
           id: string
           status: string
           suggested_by: string
@@ -113,6 +114,7 @@ export type Database = {
           club_id: string
           cover_url?: string | null
           created_at?: string
+          finished_at?: string | null
           id?: string
           status?: string
           suggested_by: string
@@ -123,6 +125,7 @@ export type Database = {
           club_id?: string
           cover_url?: string | null
           created_at?: string
+          finished_at?: string | null
           id?: string
           status?: string
           suggested_by?: string

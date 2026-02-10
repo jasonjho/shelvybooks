@@ -51,6 +51,7 @@ interface PastReadCardProps {
     title: string;
     author: string;
     coverUrl: string | null;
+    finishedAt: string | null;
   };
   reflections: ClubReflection[];
   averageRating: number | null;
@@ -123,7 +124,16 @@ export function PastReadCard({
         <div className="flex-1 min-w-0">
           <p className="font-medium truncate font-sans">{suggestion.title}</p>
           <p className="text-sm text-muted-foreground truncate font-sans">{suggestion.author}</p>
-          
+          {suggestion.finishedAt && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Finished {new Date(suggestion.finishedAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </p>
+          )}
+
           {/* Stats row */}
           <div className="flex items-center gap-3 mt-1">
             {averageRating && (

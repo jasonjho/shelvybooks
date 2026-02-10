@@ -204,7 +204,13 @@ export default function ClubPage() {
   const suggestedBooks = suggestions
     .filter((s) => s.status === 'suggested')
     .sort((a, b) => (b.voteCount || 0) - (a.voteCount || 0));
-  const pastReads = suggestions.filter((s) => s.status === 'read');
+  const pastReads = suggestions
+    .filter((s) => s.status === 'read')
+    .sort((a, b) => {
+      const aDate = a.finishedAt || a.createdAt;
+      const bDate = b.finishedAt || b.createdAt;
+      return new Date(bDate).getTime() - new Date(aDate).getTime();
+    });
 
   return (
     <div className="min-h-screen bg-background">
@@ -356,14 +362,28 @@ export default function ClubPage() {
                     </Button>
                     {isOwner && (
                       <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateSuggestionStatus(currentlyReading.id, 'read')}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-1.5" />
-                          Mark as Read
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <CheckCircle className="w-4 h-4 mr-1.5" />
+                              Mark as Read
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="font-sans">Finish "{currentlyReading.title}"?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will move the book to past reads and reset all votes on remaining suggestions so the club can start picking a new book.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => updateSuggestionStatus(currentlyReading.id, 'read')}>
+                                Finish Book
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -458,6 +478,7 @@ export default function ClubPage() {
                       title: book.title,
                       author: book.author,
                       coverUrl: book.coverUrl,
+                      finishedAt: book.finishedAt,
                     }}
                     reflections={bookReflections}
                     averageRating={getAverageRating(book.id)}

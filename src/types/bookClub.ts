@@ -24,6 +24,7 @@ export interface BookClubSuggestion {
   suggestedBy: string;
   status: 'suggested' | 'reading' | 'read';
   createdAt: string;
+  finishedAt: string | null;
   voteCount?: number;
   hasVoted?: boolean;
 }

@@ -515,6 +515,7 @@ export function useClubDetails(clubId: string | undefined) {
             suggestedBy: s.suggested_by,
             status: s.status as 'suggested' | 'reading' | 'read',
             createdAt: s.created_at,
+            finishedAt: s.finished_at,
             voteCount: count || 0,
             hasVoted: !!userVote,
           };
@@ -645,6 +646,7 @@ export function useClubDetails(clubId: string | undefined) {
           suggestedBy: data.suggested_by,
           status: data.status as 'suggested' | 'reading' | 'read',
           createdAt: data.created_at,
+          finishedAt: data.finished_at,
           voteCount: 0,
           hasVoted: false,
         },
@@ -716,6 +718,8 @@ export function useClubDetails(clubId: string | undefined) {
     async (suggestionId: string, status: 'suggested' | 'reading' | 'read') => {
       if (!user || !isOwner) return;
 
+      const suggestion = suggestions.find((s) => s.id === suggestionId);
+
       const { error } = await supabase
         .from('book_club_suggestions')
         .update({ status })
@@ -731,19 +735,29 @@ export function useClubDetails(clubId: string | undefined) {
         return;
       }
 
-      setSuggestions((prev) =>
-        prev.map((s) => (s.id === suggestionId ? { ...s, status } : s))
-      );
-
-      const suggestion = suggestions.find((s) => s.id === suggestionId);
-      if (suggestion && status === 'reading') {
+      if (status === 'read') {
+        // Trigger cleared votes server-side, refetch to sync
         toast({
-          title: 'Now reading!',
-          description: `"${suggestion.title}" is now the club's current read.`,
+          title: 'Book finished!',
+          description: suggestion
+            ? `"${suggestion.title}" moved to past reads. Votes have been reset for the next pick.`
+            : 'Book moved to past reads.',
         });
+        await fetchClubData();
+      } else {
+        // Optimistic update for non-'read' transitions
+        setSuggestions((prev) =>
+          prev.map((s) => (s.id === suggestionId ? { ...s, status } : s))
+        );
+        if (suggestion && status === 'reading') {
+          toast({
+            title: 'Now reading!',
+            description: `"${suggestion.title}" is now the club's current read.`,
+          });
+        }
       }
     },
-    [user, isOwner, suggestions, toast]
+    [user, isOwner, suggestions, toast, fetchClubData]
   );
 
   const removeSuggestion = useCallback(
