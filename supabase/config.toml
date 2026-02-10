@@ -58,5 +58,8 @@ verify_jwt = false
 [functions.send-invite]
 verify_jwt = false
 
+[functions.reset-password]
+verify_jwt = false
+
 [functions.set-migration-password]
 verify_jwt = false

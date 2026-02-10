@@ -42,6 +42,9 @@ export function AuthButton() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [migrationRequired, setMigrationRequired] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [profileEditOpen, setProfileEditOpen] = useState(false);
@@ -84,6 +87,28 @@ export function AuthButton() {
         setPassword('');
         toast({ title: 'Welcome back!', description: 'You have signed in successfully.' });
       }
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotPasswordEmail) return;
+    setSubmitting(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('reset-password', {
+        body: {
+          email: forgotPasswordEmail,
+          redirectTo: `${window.location.origin}/reset-password`,
+        },
+      });
+      if (fnError) throw new Error(fnError.message);
+      if (data?.error) throw new Error(data.error);
+    } catch (err) {
+      // Always show success to prevent email enumeration
+      console.error('Reset password error:', err);
+    } finally {
+      setResetEmailSent(true);
+      setSubmitting(false);
     }
   };
 
@@ -151,6 +176,9 @@ export function AuthButton() {
         setOpen(v);
         if (!v) {
           setMigrationRequired(false);
+          setIsForgotPassword(false);
+          setForgotPasswordEmail('');
+          setResetEmailSent(false);
           setNewPassword('');
           setConfirmPassword('');
         }
@@ -220,6 +248,54 @@ export function AuthButton() {
                 </button>
               </div>
             </>
+          ) : isForgotPassword ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>{resetEmailSent ? 'Check your email' : 'Forgot your password?'}</DialogTitle>
+                <DialogDescription>
+                  {resetEmailSent
+                    ? `If an account exists for ${forgotPasswordEmail}, we've sent a password reset link. Check your inbox and spam folder.`
+                    : "Enter your email and we'll send you a link to reset it."}
+                </DialogDescription>
+              </DialogHeader>
+              {!resetEmailSent && (
+                <form onSubmit={handleForgotPassword} className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="forgot-email">Email</Label>
+                    <Input
+                      id="forgot-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={forgotPasswordEmail}
+                      onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                      required
+                      autoComplete="email"
+                      autoFocus
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={submitting}>
+                    {submitting ? (
+                      <span className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : (
+                      'Send reset link'
+                    )}
+                  </Button>
+                </form>
+              )}
+              <div className="text-center text-sm text-muted-foreground mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsForgotPassword(false);
+                    setForgotPasswordEmail('');
+                    setResetEmailSent(false);
+                  }}
+                  className="text-primary hover:underline font-medium"
+                >
+                  Back to sign in
+                </button>
+              </div>
+            </>
           ) : (
             <>
               <DialogHeader>
@@ -256,6 +332,20 @@ export function AuthButton() {
                     autoComplete={isSignUp ? 'new-password' : 'current-password'}
                   />
                 </div>
+                {!isSignUp && (
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsForgotPassword(true);
+                        setForgotPasswordEmail(email);
+                      }}
+                      className="text-sm text-muted-foreground hover:text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
                 <Button type="submit" className="w-full" disabled={submitting}>
                   {submitting ? (
                     <span className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
