@@ -77,10 +77,10 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
   const amazonUrl = getAmazonBookUrl(book.title, book.author, book.isbn);
   const hasClubInfo = clubInfo && clubInfo.length > 0;
   const isCurrentlyReading = clubInfo?.some(c => c.status === 'reading');
-  // Check for placeholder URLs before even loading
-  const isPlaceholderUrl = !book.coverUrl || 
-    book.coverUrl === '/placeholder.svg' || 
-    (book.coverUrl.includes('isbndb.com') && book.coverUrl.includes('nocover'));
+  // Only treat truly empty/missing URLs as placeholders
+  const isPlaceholderUrl = !book.coverUrl ||
+    book.coverUrl === '/placeholder.svg' ||
+    book.coverUrl.trim() === '';
   const showPlaceholder = isPlaceholderUrl || imageError;
   const coverSrc = normalizeCoverUrl(book.coverUrl);
 
@@ -111,35 +111,12 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
     setImageError(false);
   }, [book.id, book.coverUrl]);
 
-  // Handle image load - check if it's a valid cover or a placeholder image
+  // Handle image load — trust normalizeCoverUrl to fix URL issues.
+  // Only reject truly degenerate images (1x1 pixel placeholders).
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    const { naturalWidth, naturalHeight } = img;
-    
-    // Detect placeholder images:
-    // 1. 1x1 placeholders (common when a cover is missing)
-    // 2. Google's "image not available" placeholders (various sizes: 120x192, 128x188, etc.)
-    // 3. Open Library "no image available" placeholders (180x270, 130x195, 260x390)
-    // 4. Google Books URLs without edge=curl often return "no cover" images
-    const isOneByOne = naturalWidth <= 1 && naturalHeight <= 1;
-    const isGooglePlaceholder = 
-      (naturalWidth === 120 && naturalHeight === 192) ||
-      (naturalWidth === 128 && naturalHeight === 188) ||
-      (naturalWidth === 128 && naturalHeight === 196) ||
-      (naturalWidth === 128 && naturalHeight === 197);
-    const isOpenLibraryPlaceholder =
-      (naturalWidth === 180 && naturalHeight === 270) ||
-      (naturalWidth === 130 && naturalHeight === 195) ||
-      (naturalWidth === 260 && naturalHeight === 390);
-    // IMPORTANT: `normalizeCoverUrl()` may add `edge=curl` to `img.src`, so if we
-    // want to detect the problematic "no cover" variants we must check the raw
-    // stored URL (book.coverUrl), not the normalized one.
-    const rawCoverUrl = book.coverUrl || '';
-    const isGoogleNoCover =
-      rawCoverUrl.includes('books.google.com/books/content') &&
-      !rawCoverUrl.includes('edge=curl');
+    const { naturalWidth, naturalHeight } = e.currentTarget;
 
-    if (isOneByOne || isGooglePlaceholder || isOpenLibraryPlaceholder || isGoogleNoCover) {
+    if (naturalWidth <= 1 && naturalHeight <= 1) {
       setImageError(true);
       setImageLoaded(true);
       return;

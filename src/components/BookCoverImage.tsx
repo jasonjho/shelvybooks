@@ -12,55 +12,12 @@ interface BookCoverImageProps {
 }
 
 /**
- * Detects if a cover URL is likely a placeholder based on URL patterns.
- * This catches issues before the image even loads.
+ * Checks if a cover URL is truly empty/missing.
+ * We no longer try to detect placeholder URLs by pattern — normalizeCoverUrl
+ * handles Google Books edge=curl, and dimension-based detection was too fragile.
  */
 function isPlaceholderUrl(url: string | null | undefined): boolean {
-  if (!url || url === '/placeholder.svg' || url.trim() === '') return true;
-  
-  // Google Books URLs without edge=curl often return "no cover" placeholder images
-  if (url.includes('books.google.com/books/content') && !url.includes('edge=curl')) {
-    return true;
-  }
-  
-  // ISBNdb placeholder images contain "nocover" in the URL
-  if (url.includes('isbndb.com') && url.includes('nocover')) {
-    return true;
-  }
-  
-  return false;
-}
-
-/**
- * Known placeholder image dimensions from various sources.
- * When an image loads with these exact dimensions, it's likely a "no cover" placeholder.
- */
-function isPlaceholderDimensions(width: number, height: number): boolean {
-  // 1x1 placeholders (common fallback)
-  if (width <= 1 && height <= 1) return true;
-  
-  // Google's "image not available" placeholders
-  if (
-    (width === 120 && height === 192) ||
-    (width === 128 && height === 188) ||
-    (width === 128 && height === 196) ||
-    (width === 128 && height === 197)
-  ) return true;
-  
-  // Open Library "no image available" placeholders (legacy data)
-  if (
-    (width === 180 && height === 270) ||
-    (width === 130 && height === 195) ||
-    (width === 260 && height === 390)
-  ) return true;
-  
-  // ISBNdb "BOOK COVER NOT AVAILABLE" placeholders
-  if (
-    (width === 200 && height === 300) ||
-    (width === 100 && height === 150)
-  ) return true;
-  
-  return false;
+  return !url || url === '/placeholder.svg' || url.trim() === '';
 }
 
 /**
@@ -92,13 +49,13 @@ export function BookCoverImage({
   const normalizedUrl = coverUrl ? normalizeCoverUrl(coverUrl) : '';
 
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    const { naturalWidth, naturalHeight } = img;
-    
-    if (isPlaceholderDimensions(naturalWidth, naturalHeight)) {
+    const { naturalWidth, naturalHeight } = e.currentTarget;
+
+    // Only reject truly degenerate images (1x1 pixel placeholders)
+    if (naturalWidth <= 1 && naturalHeight <= 1) {
       setShowFallback(true);
     }
-    
+
     setImageLoaded(true);
   };
 

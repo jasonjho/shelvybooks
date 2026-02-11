@@ -15,8 +15,6 @@ interface BooksContextType {
   updateBookCover: (id: string, coverUrl: string) => Promise<void>;
   updateBookCompletedAt: (id: string, completedAt: string | null) => Promise<void>;
   getBooksByStatus: (status: BookStatus) => Book[];
-  missingCoverCount: number;
-  triggerBatchRefresh: () => void;
   refetchBooks: () => Promise<void>;
 }
 
