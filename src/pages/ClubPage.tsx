@@ -65,6 +65,7 @@ import {
   Crown,
   ExternalLink
 } from 'lucide-react';
+import { AppHeader } from '@/components/AppHeader';
 import { cn } from '@/lib/utils';
 import { GoogleBook } from '@/types/book';
 import { useToast } from '@/hooks/use-toast';
@@ -214,74 +215,7 @@ export default function ClubPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="container py-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="shrink-0">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div className="min-w-0">
-              <h1 className="text-xl font-semibold font-sans truncate">{club.name}</h1>
-              {club.description && (
-                <p className="text-sm text-muted-foreground font-sans truncate">{club.description}</p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Badge variant="secondary" className="gap-1">
-              <Users className="w-3 h-3" />
-              <span className="hidden sm:inline">{members.length} {members.length === 1 ? 'member' : 'members'}</span>
-              <span className="sm:hidden">{members.length}</span>
-            </Badge>
-            <Button variant="outline" size="sm" onClick={handleCopyInvite} className="gap-1.5">
-              {copied ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
-              <span className="hidden sm:inline">{copied ? 'Copied!' : 'Invite'}</span>
-            </Button>
-            {isOwner && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-popover font-sans">
-                  <DropdownMenuItem onClick={handleOpenEditDialog}>
-                    <Pencil className="w-4 h-4 mr-2" />
-                    Edit Club
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete Club
-                      </DropdownMenuItem>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete "{club.name}"?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete the club, all suggestions, and votes. This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteClub} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        </div>
-      </header>
+      <AppHeader />
 
       {/* Edit Club Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -320,7 +254,78 @@ export default function ClubPage() {
         </DialogContent>
       </Dialog>
 
-      <main className="container py-8 space-y-8">
+      <main className="container py-6 sm:py-8 space-y-8">
+        {/* Back link + Club banner */}
+        <div className="space-y-2">
+          <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Back to shelf
+          </button>
+          <div className="rounded-xl border border-amber-200/30 dark:border-amber-900/30 bg-gradient-to-r from-amber-50 to-orange-50/50 dark:from-amber-950/40 dark:to-orange-950/20 p-4 sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center min-w-0">
+                <div className="min-w-0">
+                  <h2 className="text-xl font-semibold font-sans truncate">{club.name}</h2>
+                  {club.description && (
+                    <p className="text-sm text-muted-foreground font-sans truncate">{club.description}</p>
+                  )}
+                </div>
+              </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Badge variant="secondary" className="gap-1 bg-amber-100/60 dark:bg-amber-900/40 border-amber-200/50 dark:border-amber-800/50">
+                <Users className="w-3 h-3" />
+                <span className="hidden sm:inline">{members.length} {members.length === 1 ? 'member' : 'members'}</span>
+                <span className="sm:hidden">{members.length}</span>
+              </Badge>
+              <Button variant="outline" size="sm" onClick={handleCopyInvite} className="gap-1.5 border-amber-200/50 dark:border-amber-800/50 hover:bg-amber-100/50 dark:hover:bg-amber-900/30">
+                {copied ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
+                <span className="hidden sm:inline">{copied ? 'Copied!' : 'Invite'}</span>
+              </Button>
+              {isOwner && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="hover:bg-amber-100/50 dark:hover:bg-amber-900/30">
+                      <Settings className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-popover font-sans">
+                    <DropdownMenuItem onClick={handleOpenEditDialog}>
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Edit Club
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Club
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete "{club.name}"?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete the club, all suggestions, and votes. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteClub} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+          </div>
+        </div>
+        </div>
         {/* Currently Reading Section */}
         {currentlyReading && (
           <section className="space-y-4">
