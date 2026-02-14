@@ -297,7 +297,7 @@ export default function Index() {
                 onSelectOwnShelf={clearViewedShelf}
               />
             )}
-            {user && <ClubsDropdown />}
+            {user && !isMobile && <ClubsDropdown />}
             {user && <NotificationBell />}
             <AuthButton />
           </div>

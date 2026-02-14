@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useShelfSettingsContext } from '@/contexts/ShelfSettingsContext';
-import { LogIn, LogOut, User, Settings, Shield, Palette } from 'lucide-react';
+import { LogIn, LogOut, User, Settings, Shield, Palette, Users, Plus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Link2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,13 +29,18 @@ import { ProfileEditDialog } from '@/components/ProfileEditDialog';
 import { AccountSettingsDialog } from '@/components/AccountSettingsDialog';
 import { SettingsPanelDialog } from '@/components/SettingsPanelDialog';
 import { useToast } from '@/hooks/use-toast';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useBookClubs } from '@/hooks/useBookClubs';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function AuthButton() {
   const { user, loading, signIn, signUp, signOut, authDialogOpen, setAuthDialogOpen } = useAuth();
   const { profile } = useProfile();
   const { settings: shelfSettings } = useShelfSettingsContext();
+  const isMobile = useIsMobile();
+  const { clubs, createClub, joinClub } = useBookClubs();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const location = useLocation();
   const open = authDialogOpen;
@@ -50,6 +58,42 @@ export function AuthButton() {
   const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [accountSettingsOpen, setAccountSettingsOpen] = useState(false);
   const [shelfSettingsOpen, setShelfSettingsOpen] = useState(false);
+  const [clubDialogOpen, setClubDialogOpen] = useState(false);
+  const [clubTab, setClubTab] = useState<'create' | 'join'>('create');
+  const [clubName, setClubName] = useState('');
+  const [clubDescription, setClubDescription] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
+
+  const resetClubForm = () => {
+    setClubName('');
+    setClubDescription('');
+    setInviteCode('');
+    setClubTab('create');
+  };
+
+  const handleCreateClub = async () => {
+    if (!clubName.trim()) return;
+    setSubmitting(true);
+    const club = await createClub(clubName.trim(), clubDescription.trim() || undefined);
+    setSubmitting(false);
+    if (club) {
+      setClubDialogOpen(false);
+      resetClubForm();
+      navigate(`/clubs/${club.id}`);
+    }
+  };
+
+  const handleJoinClub = async () => {
+    if (!inviteCode.trim()) return;
+    setSubmitting(true);
+    const club = await joinClub(inviteCode.trim());
+    setSubmitting(false);
+    if (club) {
+      setClubDialogOpen(false);
+      resetClubForm();
+      navigate(`/clubs/${club.id}`);
+    }
+  };
 
   // Hide shelf settings when viewing someone else's public shelf
   const isOnPublicShelf = location.pathname.startsWith('/shelf/');
@@ -431,6 +475,23 @@ export function AuthButton() {
             <Shield className="w-4 h-4" />
             Account settings
           </DropdownMenuItem>
+          {isMobile && (
+            <>
+              <DropdownMenuSeparator />
+              {clubs.map((club) => (
+                <DropdownMenuItem key={club.id} asChild className="gap-2 cursor-pointer">
+                  <Link to={`/clubs/${club.id}`}>
+                    <Users className="w-4 h-4" />
+                    <span className="truncate">{club.name}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuItem onClick={() => setClubDialogOpen(true)} className="gap-2 cursor-pointer">
+                <Plus className="w-4 h-4" />
+                Create or Join Club
+              </DropdownMenuItem>
+            </>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={signOut} className="gap-2 cursor-pointer">
             <LogOut className="w-4 h-4" />
@@ -442,6 +503,80 @@ export function AuthButton() {
       <ProfileEditDialog open={profileEditOpen} onOpenChange={setProfileEditOpen} />
       <AccountSettingsDialog open={accountSettingsOpen} onOpenChange={setAccountSettingsOpen} />
       <SettingsPanelDialog open={shelfSettingsOpen} onOpenChange={setShelfSettingsOpen} />
+
+      {isMobile && (
+        <Dialog open={clubDialogOpen} onOpenChange={(isOpen) => {
+          setClubDialogOpen(isOpen);
+          if (!isOpen) resetClubForm();
+        }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-sans text-lg font-semibold flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Book Clubs
+              </DialogTitle>
+              <DialogDescription>
+                Create a new club or join one with an invite code
+              </DialogDescription>
+            </DialogHeader>
+            <Tabs value={clubTab} onValueChange={(v) => setClubTab(v as 'create' | 'join')}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="create" className="gap-1.5">
+                  <Plus className="w-4 h-4" />
+                  Create
+                </TabsTrigger>
+                <TabsTrigger value="join" className="gap-1.5">
+                  <Link2 className="w-4 h-4" />
+                  Join
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="create" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="mobile-club-name">Club Name *</Label>
+                  <Input
+                    id="mobile-club-name"
+                    placeholder="e.g., Monthly Mystery Readers"
+                    value={clubName}
+                    onChange={(e) => setClubName(e.target.value)}
+                    maxLength={50}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="mobile-club-description">Description (optional)</Label>
+                  <Textarea
+                    id="mobile-club-description"
+                    placeholder="What's your club about?"
+                    value={clubDescription}
+                    onChange={(e) => setClubDescription(e.target.value)}
+                    maxLength={200}
+                    rows={3}
+                  />
+                </div>
+                <Button onClick={handleCreateClub} disabled={!clubName.trim() || submitting} className="w-full">
+                  {submitting ? 'Creating...' : 'Create Club'}
+                </Button>
+              </TabsContent>
+              <TabsContent value="join" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="mobile-invite-code">Invite Code</Label>
+                  <Input
+                    id="mobile-invite-code"
+                    placeholder="Paste the invite code here"
+                    value={inviteCode}
+                    onChange={(e) => setInviteCode(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Ask a club member for their invite link or code
+                  </p>
+                </div>
+                <Button onClick={handleJoinClub} disabled={!inviteCode.trim() || submitting} className="w-full">
+                  {submitting ? 'Joining...' : 'Join Club'}
+                </Button>
+              </TabsContent>
+            </Tabs>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }
