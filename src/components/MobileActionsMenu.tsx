@@ -70,9 +70,7 @@ export function MobileActionsMenu({
             className="gap-2 cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-violet-500" />
-            <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-              Find me a book
-            </span>
+            Find me a book
           </DropdownMenuItem>
           <DropdownMenuItem 
             onClick={() => setDiscoverOpen(true)}

@@ -127,7 +127,7 @@ export function CollectionCard({
           variant="ghost"
           size="sm"
           onClick={handleExpand}
-          className="w-full justify-center text-muted-foreground hover:text-foreground font-sans"
+          className="w-full justify-center text-muted-foreground hover:bg-muted hover:text-foreground font-sans"
         >
           {isExpanded ? (
             <>
