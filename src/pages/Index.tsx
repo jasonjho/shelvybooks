@@ -4,7 +4,7 @@ import { MobileBookshelf } from '@/components/MobileBookshelf';
 import { ShelfControls } from '@/components/ShelfControls';
 import { MobileActionsMenu } from '@/components/MobileActionsMenu';
 import { AuthButton } from '@/components/AuthButton';
-import { ClubsDropdown } from '@/components/ClubsDropdown';
+
 import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
@@ -289,15 +289,6 @@ export default function Index() {
             </div>
           </div>
           <div className="flex items-center gap-2 min-w-0 flex-shrink touch-manipulation">
-            {/* ShelfSwitcher in header row on desktop only */}
-            {user && !isMobile && (
-              <ShelfSwitcher
-                viewedUser={viewedUser}
-                onSelectUser={viewShelf}
-                onSelectOwnShelf={clearViewedShelf}
-              />
-            )}
-            {user && !isMobile && <ClubsDropdown />}
             {user && <NotificationBell />}
             <AuthButton />
           </div>
@@ -354,7 +345,7 @@ export default function Index() {
                  <div className="flex items-center justify-between gap-2 sm:mb-3">
                   {/* Left: ShelfSwitcher (mobile) + Filters */}
                   <div className={user ? "flex items-center gap-1.5 min-w-0 overflow-x-auto" : (isMobile ? "flex-1" : "flex items-center gap-1.5")}>
-                    {user && isMobile && (
+                    {user && (
                       <ShelfSwitcher
                         viewedUser={viewedUser}
                         onSelectUser={viewShelf}

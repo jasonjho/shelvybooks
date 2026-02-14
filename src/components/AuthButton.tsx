@@ -32,13 +32,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useBookClubs } from '@/hooks/useBookClubs';
-import { useIsMobile } from '@/hooks/use-mobile';
+
 
 export function AuthButton() {
   const { user, loading, signIn, signUp, signOut, authDialogOpen, setAuthDialogOpen } = useAuth();
   const { profile } = useProfile();
   const { settings: shelfSettings } = useShelfSettingsContext();
-  const isMobile = useIsMobile();
   const { clubs, createClub, joinClub } = useBookClubs();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -475,23 +474,19 @@ export function AuthButton() {
             <Shield className="w-4 h-4" />
             Account settings
           </DropdownMenuItem>
-          {isMobile && (
-            <>
-              <DropdownMenuSeparator />
-              {clubs.map((club) => (
-                <DropdownMenuItem key={club.id} asChild className="gap-2 cursor-pointer">
-                  <Link to={`/clubs/${club.id}`}>
-                    <Users className="w-4 h-4" />
-                    <span className="truncate">{club.name}</span>
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuItem onClick={() => setClubDialogOpen(true)} className="gap-2 cursor-pointer">
-                <Plus className="w-4 h-4" />
-                Create or Join Club
-              </DropdownMenuItem>
-            </>
-          )}
+          <DropdownMenuSeparator />
+          {clubs.map((club) => (
+            <DropdownMenuItem key={club.id} asChild className="gap-2 cursor-pointer">
+              <Link to={`/clubs/${club.id}`}>
+                <Users className="w-4 h-4" />
+                <span className="truncate">{club.name}</span>
+              </Link>
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuItem onClick={() => setClubDialogOpen(true)} className="gap-2 cursor-pointer">
+            <Plus className="w-4 h-4" />
+            Create or Join Club
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={signOut} className="gap-2 cursor-pointer">
             <LogOut className="w-4 h-4" />
@@ -504,8 +499,7 @@ export function AuthButton() {
       <AccountSettingsDialog open={accountSettingsOpen} onOpenChange={setAccountSettingsOpen} />
       <SettingsPanelDialog open={shelfSettingsOpen} onOpenChange={setShelfSettingsOpen} />
 
-      {isMobile && (
-        <Dialog open={clubDialogOpen} onOpenChange={(isOpen) => {
+      <Dialog open={clubDialogOpen} onOpenChange={(isOpen) => {
           setClubDialogOpen(isOpen);
           if (!isOpen) resetClubForm();
         }}>
@@ -576,7 +570,6 @@ export function AuthButton() {
             </Tabs>
           </DialogContent>
         </Dialog>
-      )}
     </>
   );
 }
