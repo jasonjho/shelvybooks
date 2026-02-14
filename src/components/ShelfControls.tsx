@@ -1,5 +1,5 @@
 import { BookStatus, SortOption } from '@/types/book';
-import { BookOpen, BookMarked, CheckCircle, Shuffle, ArrowDownAZ, Clock, Layers, Filter, ChevronDown, Tag, Share2, Check, Search, X } from 'lucide-react';
+import { BookOpen, BookMarked, CheckCircle, Shuffle, ArrowDownAZ, Clock, Layers, Filter, ChevronDown, Tag, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -22,7 +22,6 @@ import {
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { toast } from 'sonner';
 
 interface ShelfControlsProps {
   activeFilters: BookStatus[];
@@ -39,10 +38,8 @@ interface ShelfControlsProps {
   onCategoryFilterChange?: (categories: string[]) => void;
   /** Compact mode - hides labels, shows only icons */
   compact?: boolean;
-  /** Show share button (only on own shelf) */
-  showShare?: boolean;
-  /** The share URL to copy (defaults to current URL if not provided) */
-  shareUrl?: string;
+  /** Spread buttons to fill available width */
+  spread?: boolean;
   /** Search query for filtering books */
   searchQuery?: string;
   /** Callback when search query changes */
@@ -73,27 +70,13 @@ export function ShelfControls({
   activeCategoryFilters = [],
   onCategoryFilterChange,
   compact = false,
-  showShare = false,
-  shareUrl,
+  spread = false,
   searchQuery = '',
   onSearchChange,
 }: ShelfControlsProps) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
-
-  const handleShare = async () => {
-    const urlToCopy = shareUrl || window.location.href;
-    try {
-      await navigator.clipboard.writeText(urlToCopy);
-      setCopied(true);
-      toast.success('Link copied!');
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error('Failed to copy link');
-    }
-  };
 
   const toggleFilter = (status: BookStatus) => {
     if (activeFilters.includes(status)) {
@@ -144,7 +127,7 @@ export function ShelfControls({
   const showCategoryFilter = availableCategories.length > 0 && onCategoryFilterChange;
 
   return (
-    <div className="flex items-center gap-1.5 flex-nowrap">
+    <div className={cn("flex items-center gap-1.5 flex-nowrap", spread && "w-full")}>
       {/* Search Dialog */}
       {onSearchChange && (
         <>
@@ -154,7 +137,8 @@ export function ShelfControls({
             onClick={() => setSearchDialogOpen(true)}
             className={cn(
               "gap-1.5",
-              searchQuery && "border-primary/50 bg-primary/5"
+              searchQuery && "border-primary/50 bg-primary/5",
+              spread && "flex-1"
             )}
           >
             <Search className="w-4 h-4" />
@@ -207,12 +191,13 @@ export function ShelfControls({
       {/* Filter Popover */}
       <Popover open={filterOpen} onOpenChange={setFilterOpen}>
         <PopoverTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className={cn(
               "gap-1.5 sm:gap-2",
-              !isAllSelected && "border-primary/50 bg-primary/5"
+              !isAllSelected && "border-primary/50 bg-primary/5",
+              spread && "flex-1"
             )}
           >
             <Filter className="w-4 h-4" />
@@ -260,12 +245,13 @@ export function ShelfControls({
       {showCategoryFilter && (
         <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
           <PopoverTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className={cn(
                 "gap-1.5 sm:gap-2",
-                activeCategoryFilters.length > 0 && "border-primary/50 bg-primary/5"
+                activeCategoryFilters.length > 0 && "border-primary/50 bg-primary/5",
+                spread && "flex-1"
               )}
             >
               <Tag className="w-4 h-4" />
@@ -318,7 +304,7 @@ export function ShelfControls({
       {/* Sort Dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className={cn("gap-2", spread && "flex-1")}>
             {sortOptions.find((o) => o.value === sortOption)?.icon}
             {!compact && (
               <span className="hidden sm:inline">
@@ -341,23 +327,6 @@ export function ShelfControls({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Share Button */}
-      {showShare && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleShare}
-          className="gap-1.5"
-          title="Copy shelf link"
-        >
-          {copied ? (
-            <Check className="w-4 h-4 text-green-600" />
-          ) : (
-            <Share2 className="w-4 h-4" />
-          )}
-          {!compact && <span className="hidden sm:inline">Share</span>}
-        </Button>
-      )}
     </div>
   );
 }

@@ -125,17 +125,6 @@ export default function Index() {
   // Get current user's shelf settings for share URL
   const { settings: shelfSettings } = useShelfSettingsContext();
 
-  // Compute the correct share URL based on what shelf is being viewed
-  const currentShareUrl = useMemo(() => {
-    if (isViewingFriend && viewedUser?.shareId) {
-      return `${window.location.origin}/shelf/${viewedUser.shareId}`;
-    }
-    if (shelfSettings?.share_id) {
-      return `${window.location.origin}/shelf/${shelfSettings.share_id}`;
-    }
-    return undefined;
-  }, [isViewingFriend, viewedUser?.shareId, shelfSettings?.share_id]);
-
   // Get club books for highlighting
   const { getBookClubs } = useClubBooks();
 
@@ -359,8 +348,8 @@ export default function Index() {
 
                  {/* Controls - filters on left, + button on right */}
                  <div className="flex items-center justify-between gap-2 mb-3">
-                  {/* Left: Filters + privacy */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
+                  {/* Left: Filters */}
+                  <div className={user ? "flex items-center gap-1.5 min-w-0 overflow-x-auto" : "flex-1"}>
                     <ShelfControls
                       activeFilters={activeFilters}
                       onFilterChange={setActiveFilters}
@@ -372,19 +361,20 @@ export default function Index() {
                       activeCategoryFilters={activeCategoryFilters}
                       onCategoryFilterChange={setActiveCategoryFilters}
                       compact={isMobile}
-                      showShare={!!user}
-                      shareUrl={currentShareUrl}
                       searchQuery={searchQuery}
                       onSearchChange={setSearchQuery}
+                      spread={!user}
                     />
                   </div>
-                  
+
                   {/* Right: + button */}
                   {user && (
-                    <MobileActionsMenu 
-                      onAddBook={addBook} 
-                      existingBooks={ownBooks}
-                    />
+                    <div className="shrink-0">
+                      <MobileActionsMenu
+                        onAddBook={addBook}
+                        existingBooks={ownBooks}
+                      />
+                    </div>
                   )}
                 </div>
 
