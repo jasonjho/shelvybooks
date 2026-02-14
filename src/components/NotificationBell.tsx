@@ -68,7 +68,7 @@ export function NotificationBell() {
         <Button
           variant="outline"
           size="icon"
-          className="relative overflow-visible bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground"
+          className="relative overflow-visible bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
           aria-label={`Notifications${totalCount > 0 ? ` (${totalCount} new)` : ''}`}
         >
           <Bell className="h-5 w-5" />

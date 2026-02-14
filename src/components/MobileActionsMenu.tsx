@@ -47,7 +47,7 @@ export function MobileActionsMenu({
           <Button 
             variant="default" 
             size="icon" 
-            className="h-9 w-9 rounded-full bg-primary hover:bg-primary/90 shadow-md"
+            className="h-9 w-9 rounded-full bg-primary hover:bg-primary/90 shadow-md focus-visible:ring-0 focus-visible:ring-offset-0"
           >
             <Plus className="w-5 h-5" />
           </Button>

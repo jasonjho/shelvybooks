@@ -37,7 +37,7 @@ export function CopyShelfLink({ compact = false }: CopyShelfLinkProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1.5 font-sans">
+        <Button variant="outline" size="sm" className="gap-1.5 font-sans focus-visible:ring-0 focus-visible:ring-offset-0">
           <Share2 className="w-4 h-4" />
           {!compact && "Share"}
         </Button>

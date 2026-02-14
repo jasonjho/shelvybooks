@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type TipId = 'context-menu' | 'staff-pick' | 'share-shelf' | 'book-clubs';
+export type TipId = 'tap-book' | 'post-it-notes' | 'magic-recommender' | 'book-clubs';
 
 interface Tip {
   id: TipId;
@@ -11,19 +11,19 @@ interface Tip {
 
 export const ONBOARDING_TIPS: Tip[] = [
   {
-    id: 'context-menu',
-    title: 'Right-click for options',
-    description: 'Right-click any book to move it between shelves, add notes, or remove it.',
+    id: 'tap-book',
+    title: 'Tap any book for details',
+    description: 'Tap a book on your shelf to see its details, add notes, move it between shelves, or remove it.',
   },
   {
-    id: 'staff-pick',
-    title: 'Add staff pick notes',
-    description: 'Right-click a book and select "Add Note" to add a personal recommendation that shows as a post-it.',
+    id: 'post-it-notes',
+    title: 'Add post-it notes to books',
+    description: 'Tap a book and add a note — it\'ll show up as a post-it on your shelf, perfect for mini reviews or reminders.',
   },
   {
-    id: 'share-shelf',
-    title: 'Share your shelf',
-    description: 'Click "Share" to get a public link to your bookshelf that friends can browse.',
+    id: 'magic-recommender',
+    title: 'Find me a book',
+    description: 'Not sure what to read next? Tap "Add Books" and try "Find me a book" — it\'ll suggest picks based on your shelf.',
   },
   {
     id: 'book-clubs',

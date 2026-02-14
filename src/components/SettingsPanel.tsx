@@ -85,7 +85,7 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
         <Button 
           variant="outline" 
           size="icon"
-          className="bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground"
+          className="bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
         >
           <Settings className="w-4 h-4" />
         </Button>

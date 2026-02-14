@@ -195,7 +195,7 @@ export function ShelfControls({
             variant="outline"
             size="sm"
             className={cn(
-              "gap-1.5 sm:gap-2",
+              "gap-1.5 sm:gap-2 focus-visible:ring-0 focus-visible:ring-offset-0",
               !isAllSelected && "border-primary/50 bg-primary/5",
               spread && "flex-1"
             )}
@@ -249,7 +249,7 @@ export function ShelfControls({
               variant="outline"
               size="sm"
               className={cn(
-                "gap-1.5 sm:gap-2",
+                "gap-1.5 sm:gap-2 focus-visible:ring-0 focus-visible:ring-offset-0",
                 activeCategoryFilters.length > 0 && "border-primary/50 bg-primary/5",
                 spread && "flex-1"
               )}
@@ -304,7 +304,7 @@ export function ShelfControls({
       {/* Sort Dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className={cn("gap-2", spread && "flex-1")}>
+          <Button variant="outline" size="sm" className={cn("gap-2 focus-visible:ring-0 focus-visible:ring-offset-0", spread && "flex-1")}>
             {sortOptions.find((o) => o.value === sortOption)?.icon}
             {!compact && (
               <span className="hidden sm:inline">

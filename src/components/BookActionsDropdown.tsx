@@ -29,7 +29,7 @@ export function BookActionsDropdown({ onAddBook, existingBooks }: BookActionsDro
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2 bg-background/80">
+          <Button variant="outline" size="sm" className="gap-2 bg-background/80 focus-visible:ring-0 focus-visible:ring-offset-0">
             <BookPlus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Books</span>
             <ChevronDown className="w-3 h-3 opacity-60" />

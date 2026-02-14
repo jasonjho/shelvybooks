@@ -228,7 +228,7 @@ export function AuthButton() {
         }
       }}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1.5">
+          <Button variant="outline" size="sm" className="gap-1.5 focus-visible:ring-0 focus-visible:ring-offset-0">
             <LogIn className="w-4 h-4" />
             <span className="hidden sm:inline">Sign in</span>
           </Button>
@@ -442,7 +442,7 @@ export function AuthButton() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2 px-2 h-10 bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground">
+          <Button variant="outline" size="sm" className="gap-2 px-2 h-10 bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground focus-visible:ring-0 focus-visible:ring-offset-0">
           <Avatar className="w-6 h-6">
               <AvatarImage src={avatarUrl} alt={displayName || 'User'} />
               <AvatarFallback className="text-xs bg-primary/15 text-primary">{initials}</AvatarFallback>

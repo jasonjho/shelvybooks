@@ -77,7 +77,7 @@ export function ClubsDropdown() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1.5 h-10 px-2.5 sm:px-3 bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground shrink-0">
+          <Button variant="outline" size="sm" className="gap-1.5 h-10 px-2.5 sm:px-3 bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0">
             <Users className="w-4 h-4" />
             {!isMobile && "Clubs"}
             {clubs.length > 0 && (

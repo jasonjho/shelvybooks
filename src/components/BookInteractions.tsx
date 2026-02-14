@@ -51,7 +51,7 @@ export function BookInteractions({ bookId, bookTitle }: BookInteractionsProps) {
           {likeCount > 0 && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-1 px-2 h-8">
+                <Button variant="ghost" size="sm" className="gap-1 px-2 h-8 focus-visible:ring-0 focus-visible:ring-offset-0">
                   <Users className="w-3.5 h-3.5" />
                 </Button>
               </PopoverTrigger>

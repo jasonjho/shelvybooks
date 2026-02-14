@@ -288,7 +288,7 @@ export default function Index() {
               {!user && <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block leading-tight">Your personal bookshelf, beautifully organized</p>}
             </div>
           </div>
-          <div className="flex items-center gap-2 min-w-0 flex-shrink overflow-x-clip overflow-y-visible touch-manipulation">
+          <div className="flex items-center gap-2 min-w-0 flex-shrink touch-manipulation">
             {/* ShelfSwitcher in header row on desktop only */}
             {user && !isMobile && (
               <ShelfSwitcher
