@@ -856,7 +856,7 @@
 
   /* Mobile bookshelf styles */
   .mobile-bookcase {
-    @apply px-0 py-4;
+    @apply px-0 pt-2 pb-4;
     overflow: visible;
   }
 
@@ -867,7 +867,7 @@
   }
 
   .mobile-shelf-list > .mini-shelf:first-child {
-    margin-top: 0.5rem;
+    margin-top: 0;
   }
 
   .mini-shelf {

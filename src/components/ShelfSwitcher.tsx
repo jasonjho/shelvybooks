@@ -123,13 +123,11 @@ export function ShelfSwitcher({ viewedUser, onSelectUser, onSelectOwnShelf }: Sh
   return (
     <>
       <Select value={currentValue} onValueChange={handleValueChange}>
-        <SelectTrigger className="max-w-[120px] sm:max-w-none w-auto gap-1.5 bg-background/80 border-input h-10 px-2.5 sm:px-3 text-sm font-medium focus:ring-0 focus:ring-offset-0 shrink-0 touch-manipulation">
+        <SelectTrigger className="w-auto gap-1.5 bg-background border h-9 sm:h-10 px-2.5 sm:px-3 text-sm font-medium focus:ring-0 focus:ring-offset-0 shrink-0 touch-manipulation">
           <BookOpen className="w-4 h-4 shrink-0" />
           <SelectValue>
-            <span className="truncate">
-              {isMobile 
-                ? (viewedUser ? viewedUser.username.slice(0, 6) : 'You')
-                : (viewedUser ? `@${viewedUser.username}` : 'Your shelf')}
+            <span className="truncate hidden sm:inline">
+              {viewedUser ? `@${viewedUser.username}` : 'Your shelf'}
             </span>
           </SelectValue>
         </SelectTrigger>

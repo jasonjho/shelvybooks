@@ -65,9 +65,9 @@ export function NotificationBell() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="icon" 
+        <Button
+          variant="outline"
+          size="icon"
           className="relative overflow-visible bg-background/80 border-border text-foreground hover:bg-muted hover:text-foreground"
           aria-label={`Notifications${totalCount > 0 ? ` (${totalCount} new)` : ''}`}
         >

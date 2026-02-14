@@ -273,21 +273,25 @@ export default function Index() {
       
       {/* Header */}
       <header className="relative border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="container py-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="container py-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-gradient-to-br from-amber-700 to-amber-900 shadow-md">
-              <Library className="w-7 h-7 text-amber-100" />
+            <div className="p-3 rounded-lg bg-gradient-to-br from-amber-700 to-amber-900 shadow-md">
+              <Library className="w-8 h-8 text-amber-100" />
             </div>
             <div>
-              <h1 className="text-4xl font-normal tracking-wide leading-[1.2] bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
+              <h1 className={cn(
+                "font-normal tracking-wide bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display",
+                user ? "text-4xl leading-[1.2] -mt-1 sm:mt-0" : "text-[2.25rem] sm:text-4xl leading-normal -mt-1 pb-0.5 overflow-visible relative z-10"
+              )}>
                 Shelvy
               </h1>
-              <p className="text-sm text-muted-foreground hidden sm:block">Your personal bookshelf, beautifully organized</p>
+              {!user && <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block leading-tight">Your personal bookshelf, beautifully organized</p>}
             </div>
           </div>
           <div className="flex items-center gap-2 min-w-0 flex-shrink overflow-x-clip overflow-y-visible touch-manipulation">
-            {user && (
-              <ShelfSwitcher 
+            {/* ShelfSwitcher in header row on desktop only */}
+            {user && !isMobile && (
+              <ShelfSwitcher
                 viewedUser={viewedUser}
                 onSelectUser={viewShelf}
                 onSelectOwnShelf={clearViewedShelf}
@@ -301,7 +305,7 @@ export default function Index() {
       </header>
 
       {/* Main Content */}
-      <main className="container py-8 relative z-10">
+      <main className="container py-4 sm:py-8 relative z-10">
         {/* Loading state - show skeleton placeholders for controls */}
         {(authLoading || booksLoading || (!user && demoLoading)) && (
           <div className="space-y-6">
@@ -347,9 +351,16 @@ export default function Index() {
 
 
                  {/* Controls - filters on left, + button on right */}
-                 <div className="flex items-center justify-between gap-2 mb-3">
-                  {/* Left: Filters */}
-                  <div className={user ? "flex items-center gap-1.5 min-w-0 overflow-x-auto" : "flex-1"}>
+                 <div className="flex items-center justify-between gap-2 sm:mb-3">
+                  {/* Left: ShelfSwitcher (mobile) + Filters */}
+                  <div className={user ? "flex items-center gap-1.5 min-w-0 overflow-x-auto" : (isMobile ? "flex-1" : "flex items-center gap-1.5")}>
+                    {user && isMobile && (
+                      <ShelfSwitcher
+                        viewedUser={viewedUser}
+                        onSelectUser={viewShelf}
+                        onSelectOwnShelf={clearViewedShelf}
+                      />
+                    )}
                     <ShelfControls
                       activeFilters={activeFilters}
                       onFilterChange={setActiveFilters}
@@ -363,7 +374,7 @@ export default function Index() {
                       compact={isMobile}
                       searchQuery={searchQuery}
                       onSearchChange={setSearchQuery}
-                      spread={!user}
+                      spread={!user && isMobile}
                     />
                   </div>
 
