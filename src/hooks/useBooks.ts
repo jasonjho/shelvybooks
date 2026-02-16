@@ -305,6 +305,12 @@ export function useBooks() {
       // Trigger wobble animation
       markAsAdded(data.id);
 
+      window.posthog?.capture('book_added', {
+        book_title: enrichedBook.title,
+        book_author: enrichedBook.author,
+        status: enrichedBook.status,
+      });
+
       toast({
         title: 'Book added',
         description: `"${enrichedBook.title}" has been added to your shelf.`,
@@ -333,6 +339,10 @@ export function useBooks() {
       setBooks((prev) => prev.filter((book) => book.id !== id));
 
       if (bookToRemove) {
+        window.posthog?.capture('book_removed', {
+          book_title: bookToRemove.title,
+          book_author: bookToRemove.author,
+        });
         toast({
           title: 'Book removed',
           description: `"${bookToRemove.title}" has been removed from your shelf.`,
@@ -370,9 +380,16 @@ export function useBooks() {
         return;
       }
 
+      const movedBook = books.find(b => b.id === id);
       setBooks((prev) =>
         prev.map((book) => (book.id === id ? { ...book, status, completedAt: isNewlyCompleted ? completedAt : book.completedAt } : book))
       );
+
+      window.posthog?.capture('book_status_changed', {
+        book_title: movedBook?.title,
+        from_status: previousStatus,
+        to_status: status,
+      });
 
       // Trigger sparkle animation when marked as read
       if (isNewlyCompleted) {

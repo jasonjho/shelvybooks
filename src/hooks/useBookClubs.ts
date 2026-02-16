@@ -136,6 +136,8 @@ export function useBookClubs() {
 
       setClubs((prev) => [newClub, ...prev]);
 
+      window.posthog?.capture('club_created', { club_name: name });
+
       toast({
         title: 'Club created!',
         description: `"${name}" is ready. Share the invite link with friends!`,
@@ -233,6 +235,8 @@ export function useBookClubs() {
 
       setClubs((prev) => [newClub, ...prev]);
 
+      window.posthog?.capture('club_joined', { club_name: foundClub.name });
+
       toast({
         title: 'Joined club!',
         description: `Welcome to "${foundClub.name}"!`,
@@ -275,6 +279,8 @@ export function useBookClubs() {
       }
 
       setClubs((prev) => prev.filter((c) => c.id !== clubId));
+
+      window.posthog?.capture('club_left', { club_name: club?.name });
 
       toast({
         title: 'Left club',
@@ -344,6 +350,8 @@ export function useBookClubs() {
       }
 
       setClubs((prev) => prev.filter((c) => c.id !== clubId));
+
+      window.posthog?.capture('club_deleted', { club_name: club?.name });
 
       toast({
         title: 'Club deleted',
@@ -653,6 +661,8 @@ export function useClubDetails(clubId: string | undefined) {
         ...prev,
       ]);
 
+      window.posthog?.capture('club_book_suggested', { club_id: clubId, book_title: title, book_author: author });
+
       toast({
         title: 'Book suggested!',
         description: `"${title}" has been added to the suggestions.`,
@@ -688,6 +698,7 @@ export function useClubDetails(clubId: string | undefined) {
               : s
           )
         );
+        window.posthog?.capture('club_vote_removed', { club_id: clubId, suggestion_title: suggestion.title });
       } else {
         // Add vote
         const { error } = await supabase
@@ -709,9 +720,10 @@ export function useClubDetails(clubId: string | undefined) {
               : s
           )
         );
+        window.posthog?.capture('club_vote_added', { club_id: clubId, suggestion_title: suggestion.title });
       }
     },
-    [user, suggestions]
+    [user, clubId, suggestions]
   );
 
   const updateSuggestionStatus = useCallback(

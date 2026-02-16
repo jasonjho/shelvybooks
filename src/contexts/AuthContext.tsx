@@ -94,6 +94,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    if (!error) {
+      window.posthog?.identify(email);
+      window.posthog?.capture('user_signed_in');
+    }
     return { error: error as Error | null };
   };
 
@@ -105,6 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         emailRedirectTo: window.location.origin,
       },
     });
+    if (!error) {
+      window.posthog?.capture('user_signed_up');
+    }
     return { error: error as Error | null };
   };
 
@@ -115,6 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Ignore: we still want to clear local state + storage even if the SDK errors.
     } finally {
+      window.posthog?.capture('user_signed_out');
+      window.posthog?.reset();
       clearPersistedAuthTokens();
       // Force clear state as safety net
       setSession(null);

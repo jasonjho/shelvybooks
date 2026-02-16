@@ -145,6 +145,7 @@ export function useBookSearch() {
       // Merge fallback results with cache (cache first)
       const merged = mergeSearchResults(cacheItems, fallbackData?.items || [], query);
       setResults(merged);
+      window.posthog?.capture('book_searched', { query });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An error occurred';
       setError(getUserFriendlyError(message));
