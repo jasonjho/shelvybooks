@@ -306,7 +306,7 @@ export default function ClubPage() {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Delete "{club.name}"?</AlertDialogTitle>
+                          <AlertDialogTitle className="font-sans">Delete "{club.name}"?</AlertDialogTitle>
                           <AlertDialogDescription>
                             This will permanently delete the club, all suggestions, and votes. This action cannot be undone.
                           </AlertDialogDescription>
