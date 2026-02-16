@@ -1,4 +1,4 @@
-import { Book, BookStatus } from '@/types/book';
+import { Book, BookStatus, ReadingAnimation } from '@/types/book';
 import { forwardRef, useEffect, useState, useRef, useCallback } from 'react';
 import {
   ContextMenu,
@@ -41,6 +41,7 @@ interface BookSpineProps {
   onAddToShelf?: (book: Book) => void;
   /** Whether this book is already on the user's shelf */
   isOnShelf?: boolean;
+  readingAnimation?: ReadingAnimation;
 }
 
 const statusOptions: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -55,7 +56,7 @@ type BookCoverProps = {
   isGrayed?: boolean;
   isWobbling?: boolean;
   isSparkle?: boolean;
-  isReading?: boolean;
+  readingAnimation?: ReadingAnimation;
   clubInfo?: ClubInfo[];
   note?: BookNote;
   onAddNote?: () => void;
@@ -68,7 +69,7 @@ type BookCoverProps = {
 };
 
 const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
-  ({ book, onSelect, isGrayed, isWobbling, isSparkle, isReading, clubInfo, note, onAddNote, isInteractive = true, newLikesCount = 0, onMove, onRemove, onAddToShelf, isOnShelf }, ref) => {
+  ({ book, onSelect, isGrayed, isWobbling, isSparkle, readingAnimation, clubInfo, note, onAddNote, isInteractive = true, newLikesCount = 0, onMove, onRemove, onAddToShelf, isOnShelf }, ref) => {
   const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -134,10 +135,25 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
         isGrayed && 'book-grayed',
         isWobbling && 'book-wobble',
         isSparkle && 'book-sparkle',
-        isReading && 'book-reading-glow'
+        readingAnimation === 'glow' && 'book-reading-glow',
+        readingAnimation === 'border' && 'book-reading-border'
       )}
       onMouseEnter={updateTooltipPosition}
     >
+      {/* Pixie dust — glitter falling over currently-reading books */}
+      {readingAnimation === 'pixie-dust' && (
+        <>
+          <div className="pixie-dust" style={{ top: '-10px', left: '10%', '--delay': '0s', '--duration': '2.8s', '--drift': '3px', '--size': '3px' } as React.CSSProperties} />
+          <div className="pixie-dust pixie-dust-gold" style={{ top: '-8px', left: '55%', '--delay': '0.6s', '--duration': '3.2s', '--drift': '-4px', '--size': '2.5px' } as React.CSSProperties} />
+          <div className="pixie-dust" style={{ top: '-12px', left: '80%', '--delay': '1.2s', '--duration': '2.6s', '--drift': '2px', '--size': '3.5px' } as React.CSSProperties} />
+          <div className="pixie-dust pixie-dust-gold" style={{ top: '-7px', left: '30%', '--delay': '1.8s', '--duration': '3.5s', '--drift': '-3px', '--size': '2px' } as React.CSSProperties} />
+          <div className="pixie-dust" style={{ top: '-11px', left: '68%', '--delay': '2.4s', '--duration': '2.9s', '--drift': '4px', '--size': '3px' } as React.CSSProperties} />
+          <div className="pixie-dust pixie-dust-gold" style={{ top: '-9px', left: '-5%', '--delay': '0.3s', '--duration': '3.1s', '--drift': '5px', '--size': '2.5px' } as React.CSSProperties} />
+          <div className="pixie-dust" style={{ top: '-6px', left: '95%', '--delay': '1.5s', '--duration': '3.4s', '--drift': '-2px', '--size': '2px' } as React.CSSProperties} />
+          <div className="pixie-dust pixie-dust-gold" style={{ top: '-10px', left: '42%', '--delay': '2.1s', '--duration': '2.7s', '--drift': '-5px', '--size': '3px' } as React.CSSProperties} />
+        </>
+      )}
+
       {/* Post-it note decoration - positioned at bottom-right like a shelf talker */}
       {note && (
         <Popover>
@@ -266,6 +282,7 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
                 <div className="sparkle-particle" style={{ top: '-3px', left: '75%', animationDelay: '0.3s' }} />
               </>
             )}
+
           </div>
         </HoverCardTrigger>
 
@@ -313,27 +330,25 @@ const BookCover = forwardRef<HTMLDivElement, BookCoverProps>(
 
 BookCover.displayName = 'BookCover';
 
-export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true, isGrayed = false, clubInfo, note, onAddNote, newLikesCount, onAddToShelf, isOnShelf }: BookSpineProps) {
+export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = true, isGrayed = false, clubInfo, note, onAddNote, newLikesCount, onAddToShelf, isOnShelf, readingAnimation = 'pixie-dust' }: BookSpineProps) {
   const { recentlyAddedBooks, recentlyCompletedBooks } = useBookAnimations();
-  
+
   const isWobbling = recentlyAddedBooks.has(book.id);
   const isSparkle = recentlyCompletedBooks.has(book.id);
-  const isReading = book.status === 'reading';
+  const activeAnimation = book.status === 'reading' ? readingAnimation : undefined;
 
-  // If not interactive (no move/remove), just render the book without context menu
-  // But still pass onAddToShelf if available (for viewing friend's shelf)
   if (!isInteractive || !onMove || !onRemove) {
     return (
-      <BookCover 
-        book={book} 
-        onSelect={onSelect} 
-        isGrayed={isGrayed} 
-        isWobbling={isWobbling} 
+      <BookCover
+        book={book}
+        onSelect={onSelect}
+        isGrayed={isGrayed}
+        isWobbling={isWobbling}
         isSparkle={isSparkle}
-        isReading={isReading}
-        clubInfo={clubInfo} 
-        note={note} 
-        isInteractive={false} 
+        readingAnimation={activeAnimation}
+        clubInfo={clubInfo}
+        note={note}
+        isInteractive={false}
         newLikesCount={newLikesCount}
         onAddToShelf={onAddToShelf}
         isOnShelf={isOnShelf}
@@ -344,17 +359,17 @@ export function BookSpine({ book, onMove, onRemove, onSelect, isInteractive = tr
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
-        <BookCover 
-          book={book} 
-          onSelect={onSelect} 
-          isGrayed={isGrayed} 
-          isWobbling={isWobbling} 
+        <BookCover
+          book={book}
+          onSelect={onSelect}
+          isGrayed={isGrayed}
+          isWobbling={isWobbling}
           isSparkle={isSparkle}
-          isReading={isReading}
-          clubInfo={clubInfo} 
-          note={note} 
-          onAddNote={onAddNote} 
-          isInteractive={true} 
+          readingAnimation={activeAnimation}
+          clubInfo={clubInfo}
+          note={note}
+          onAddNote={onAddNote}
+          isInteractive={true}
           newLikesCount={newLikesCount}
           onMove={onMove}
           onRemove={onRemove}

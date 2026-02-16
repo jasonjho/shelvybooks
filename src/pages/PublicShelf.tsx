@@ -41,6 +41,7 @@ const DEFAULT_APPEARANCE: ShelfAppearance = {
     showPlant: true,
     decorDensity: 'balanced',
     backgroundTheme: 'office',
+    readingAnimation: 'pixie-dust',
   },
 };
 
@@ -180,6 +181,7 @@ export default function PublicShelf() {
               showPlant: appearanceData.show_plant ?? true,
               decorDensity: (appearanceData.decor_density as 'minimal' | 'balanced' | 'cozy') || 'balanced',
               backgroundTheme: (appearanceData.background_theme || 'office') as BackgroundTheme,
+              readingAnimation: (['glow', 'border', 'pixie-dust', 'none'].includes(appearanceData.reading_animation) ? appearanceData.reading_animation : 'pixie-dust') as import('@/types/book').ReadingAnimation,
             },
           });
         }

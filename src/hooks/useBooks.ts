@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Book, BookStatus, ShelfSkin, ShelfSettings } from '@/types/book';
+import { Book, BookStatus, ShelfSkin, ShelfSettings, ReadingAnimation } from '@/types/book';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -14,7 +14,13 @@ const defaultSettings: ShelfSettings = {
   showWoodGrain: true,
   decorDensity: 'balanced',
   backgroundTheme: 'office',
+  readingAnimation: 'pixie-dust',
 };
+
+const VALID_READING_ANIMATIONS = new Set<ReadingAnimation>(['glow', 'border', 'pixie-dust', 'none']);
+function normalizeReadingAnimation(val: unknown): ReadingAnimation {
+  return VALID_READING_ANIMATIONS.has(val as ReadingAnimation) ? (val as ReadingAnimation) : defaultSettings.readingAnimation;
+}
 
 function normalizeShelfSkin(value: unknown): ShelfSkin {
   if (value === 'oak' || value === 'walnut' || value === 'white' || value === 'dark') return value;
@@ -70,7 +76,7 @@ export function useBooks() {
       try {
         const { data, error } = await supabase
           .from('shelf_settings')
-          .select('shelf_skin, background_theme, decor_density, show_ambient_light, show_bookends, show_plant, show_wood_grain')
+          .select('shelf_skin, background_theme, decor_density, show_ambient_light, show_bookends, show_plant, show_wood_grain, reading_animation')
           .eq('user_id', user.id)
           .maybeSingle();
 
@@ -82,7 +88,7 @@ export function useBooks() {
           const { data: created, error: insertError } = await supabase
             .from('shelf_settings')
             .insert({ user_id: user.id, is_public: true })
-            .select('shelf_skin, background_theme, decor_density, show_ambient_light, show_bookends, show_plant, show_wood_grain')
+            .select('shelf_skin, background_theme, decor_density, show_ambient_light, show_bookends, show_plant, show_wood_grain, reading_animation')
             .single();
           if (insertError) throw insertError;
           row = created;
@@ -96,6 +102,7 @@ export function useBooks() {
           showWoodGrain: row.show_wood_grain ?? defaultSettings.showWoodGrain,
           decorDensity: normalizeDecorDensity(row.decor_density),
           backgroundTheme: normalizeBackgroundTheme(row.background_theme),
+          readingAnimation: normalizeReadingAnimation(row.reading_animation),
         });
       } catch (err) {
         console.error('Error fetching shelf appearance:', err);
@@ -163,6 +170,7 @@ export function useBooks() {
       show_bookends?: boolean | null;
       show_plant?: boolean | null;
       show_wood_grain?: boolean | null;
+      reading_animation?: ReadingAnimation | null;
     }) => {
       if (!user) return;
       // fire-and-forget; UI should stay snappy even if network is slow
@@ -444,6 +452,7 @@ export function useBooks() {
           show_bookends: next.showBookends,
           show_plant: next.showPlant,
           show_wood_grain: next.showWoodGrain,
+          reading_animation: next.readingAnimation,
         });
         return next;
       });

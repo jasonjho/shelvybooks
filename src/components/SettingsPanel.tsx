@@ -1,4 +1,4 @@
-import { ShelfSettings, DecorDensity, ShelfSkin, BackgroundTheme } from '@/types/book';
+import { ShelfSettings, DecorDensity, ShelfSkin, BackgroundTheme, ReadingAnimation } from '@/types/book';
 import {
   Popover,
   PopoverContent,
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Settings, Lamp, Trees, BookmarkMinus, Sparkles, Check, Image, Sun, Moon, Monitor } from 'lucide-react';
+import { Settings, Lamp, Trees, BookmarkMinus, Sparkles, Check, Image, Sun, Moon, Monitor, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 
@@ -68,6 +68,13 @@ const backgroundOptions: { value: BackgroundTheme; label: string; emoji: string 
   { value: 'sunset', label: 'Sunset', emoji: '🌅' },
   { value: 'lavender', label: 'Lavender', emoji: '💜' },
   { value: 'space', label: 'Space', emoji: '🚀' },
+];
+
+const readingAnimationOptions: { value: ReadingAnimation; label: string; description: string }[] = [
+  { value: 'pixie-dust', label: 'Pixie Dust', description: 'Falling glitter' },
+  { value: 'glow', label: 'Glow', description: 'Soft radiance' },
+  { value: 'border', label: 'Border', description: 'Traveling light' },
+  { value: 'none', label: 'None', description: 'No animation' },
 ];
 
 const themeOptions: { value: string; label: string; icon: typeof Sun }[] = [
@@ -181,6 +188,32 @@ export function SettingsPanel({ settings, onSettingsChange, currentSkin, onSkinC
               </div>
             </div>
           )}
+
+          {/* Reading Animation */}
+          <div className="space-y-2 pt-2 border-t border-border">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Reading Effect</span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {readingAnimationOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => onSettingsChange({ readingAnimation: option.value })}
+                  className={cn(
+                    "flex flex-col items-center gap-0.5 p-2 rounded-md text-xs transition-colors",
+                    settings.readingAnimation === option.value
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary/50 hover:bg-secondary text-secondary-foreground"
+                  )}
+                  title={option.description}
+                >
+                  <span className="font-medium">{option.label}</span>
+                  <span className="text-[10px] opacity-70">{option.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Background Theme */}
           <div className="space-y-2 pt-2 border-t border-border">

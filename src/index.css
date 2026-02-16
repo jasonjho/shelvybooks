@@ -1371,7 +1371,31 @@
   }
 }
 
-/* Traveling border light for currently reading books */
+/* Reading animation: Radiant Glow */
+.book-reading-glow {
+  position: relative;
+}
+
+.book-reading-glow::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 4px;
+  z-index: -1;
+  pointer-events: none;
+  background: hsl(45 92% 65% / 0.5);
+  box-shadow:
+    0 0 10px 4px hsl(45 92% 68% / 0.5),
+    0 0 20px 8px hsl(45 88% 62% / 0.25);
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Reading animation: Traveling Border */
 @property --border-angle {
   syntax: '<angle>';
   initial-value: 0deg;
@@ -1382,11 +1406,12 @@
   to { --border-angle: 360deg; }
 }
 
-.book-reading-glow {
-  z-index: 0; /* stacking context so ::before stays behind content */
+.book-reading-border {
+  position: relative;
+  z-index: 0;
 }
 
-.book-reading-glow::before {
+.book-reading-border::before {
   content: '';
   position: absolute;
   inset: -2px;
@@ -1396,18 +1421,17 @@
 
   background: conic-gradient(
     from var(--border-angle),
-    hsl(45 85% 55% / 0.12) 0%,
-    hsl(45 85% 55% / 0.08) 40%,
+    hsl(45 85% 55% / 0.15) 0%,
+    hsl(45 85% 55% / 0.1) 40%,
     transparent 50%,
     transparent 75%,
-    hsl(45 85% 60% / 0.9) 88%,
+    hsl(45 85% 60% / 1) 88%,
     hsl(38 92% 70%) 94%,
-    hsl(45 85% 60% / 0.9) 100%
+    hsl(45 85% 60% / 1) 100%
   );
 
   animation: border-travel 3.5s linear infinite;
 
-  /* Mask to only show the 2px border ring */
   padding: 2px;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -1417,6 +1441,69 @@
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   mask-composite: exclude;
+}
+
+/* Reading animation: Pixie Dust — glitter falling down over the book */
+.pixie-dust {
+  position: absolute;
+  width: var(--size, 3px);
+  height: var(--size, 3px);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  background: white;
+  box-shadow:
+    0 0 3px 1px hsl(45 95% 75%),
+    0 0 6px 2px hsl(45 90% 65% / 0.4);
+  animation: pixie-fall var(--duration, 3s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+.pixie-dust-gold {
+  background: hsl(45 95% 78%);
+  box-shadow:
+    0 0 2px 1px hsl(40 90% 68% / 0.7),
+    0 0 5px 2px hsl(45 85% 60% / 0.3);
+}
+
+@keyframes pixie-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scale(0.3);
+  }
+  5% {
+    opacity: 0.9;
+    transform: translateY(5px) translateX(var(--drift, 2px)) scale(1);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(16px) translateX(calc(var(--drift, 2px) * 0.3)) scale(0.9);
+  }
+  30% {
+    opacity: 0.85;
+    transform: translateY(34px) translateX(calc(var(--drift, 2px) * -0.6)) scale(0.8);
+  }
+  45% {
+    opacity: 0.65;
+    transform: translateY(52px) translateX(calc(var(--drift, 2px) * 0.4)) scale(0.7);
+  }
+  60% {
+    opacity: 0.45;
+    transform: translateY(70px) translateX(calc(var(--drift, 2px) * -0.3)) scale(0.55);
+  }
+  75% {
+    opacity: 0.25;
+    transform: translateY(88px) translateX(calc(var(--drift, 2px) * 0.5)) scale(0.4);
+  }
+  90% {
+    opacity: 0.08;
+    transform: translateY(106px) translateX(calc(var(--drift, 2px) * -0.2)) scale(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(120px) translateX(var(--drift, 2px)) scale(0.2);
+  }
 }
 
 /* Hide scrollbar while maintaining scroll functionality */
