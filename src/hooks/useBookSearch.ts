@@ -97,6 +97,8 @@ export function useBookSearch() {
     setError(null);
 
     try {
+      window.posthog?.capture('book_searched', { query });
+
       // Step 1: Check our database cache first (fastest, no API quota used)
       const { data: cacheData } = await supabase.functions.invoke('book-cache', {
         body: { query, mode: 'search' }
@@ -145,7 +147,6 @@ export function useBookSearch() {
       // Merge fallback results with cache (cache first)
       const merged = mergeSearchResults(cacheItems, fallbackData?.items || [], query);
       setResults(merged);
-      window.posthog?.capture('book_searched', { query });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An error occurred';
       setError(getUserFriendlyError(message));
