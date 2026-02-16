@@ -247,6 +247,7 @@ function ShelfRow({
                 newLikesCount={newLikesCount}
                 onAddToShelf={onAddToShelf}
                 isOnShelf={isBookOnShelf?.(item.book.title, item.book.author)}
+                readingAnimation={settings.readingAnimation}
               />
             );
           }

@@ -8,6 +8,8 @@ export type SortOption = 'random' | 'recent' | 'status-author' | 'author-title';
 
 export type BackgroundTheme = 'office' | 'library' | 'cozy' | 'space' | 'forest' | 'ocean' | 'sunset' | 'lavender';
 
+export type ReadingAnimation = 'glow' | 'border' | 'pixie-dust' | 'none';
+
 export interface ShelfSettings {
   showPlant: boolean;
   showBookends: boolean;
@@ -15,6 +17,7 @@ export interface ShelfSettings {
   showWoodGrain: boolean;
   decorDensity: DecorDensity;
   backgroundTheme: BackgroundTheme;
+  readingAnimation: ReadingAnimation;
 }
 
 export interface Book {
