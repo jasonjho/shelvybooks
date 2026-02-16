@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import posthog from 'posthog-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -136,7 +137,7 @@ export function useBookClubs() {
 
       setClubs((prev) => [newClub, ...prev]);
 
-      window.posthog?.capture('club_created', { club_name: name });
+      posthog.capture('club_created', { club_name: name });
 
       toast({
         title: 'Club created!',
@@ -235,7 +236,7 @@ export function useBookClubs() {
 
       setClubs((prev) => [newClub, ...prev]);
 
-      window.posthog?.capture('club_joined', { club_name: foundClub.name });
+      posthog.capture('club_joined', { club_name: foundClub.name });
 
       toast({
         title: 'Joined club!',
@@ -280,7 +281,7 @@ export function useBookClubs() {
 
       setClubs((prev) => prev.filter((c) => c.id !== clubId));
 
-      window.posthog?.capture('club_left', { club_name: club?.name });
+      posthog.capture('club_left', { club_name: club?.name });
 
       toast({
         title: 'Left club',
@@ -351,7 +352,7 @@ export function useBookClubs() {
 
       setClubs((prev) => prev.filter((c) => c.id !== clubId));
 
-      window.posthog?.capture('club_deleted', { club_name: club?.name });
+      posthog.capture('club_deleted', { club_name: club?.name });
 
       toast({
         title: 'Club deleted',
@@ -661,7 +662,7 @@ export function useClubDetails(clubId: string | undefined) {
         ...prev,
       ]);
 
-      window.posthog?.capture('club_book_suggested', { club_id: clubId, book_title: title, book_author: author });
+      posthog.capture('club_book_suggested', { club_id: clubId, book_title: title, book_author: author });
 
       toast({
         title: 'Book suggested!',
@@ -698,7 +699,7 @@ export function useClubDetails(clubId: string | undefined) {
               : s
           )
         );
-        window.posthog?.capture('club_vote_removed', { club_id: clubId, suggestion_title: suggestion.title });
+        posthog.capture('club_vote_removed', { club_id: clubId, suggestion_title: suggestion.title });
       } else {
         // Add vote
         const { error } = await supabase
@@ -720,7 +721,7 @@ export function useClubDetails(clubId: string | undefined) {
               : s
           )
         );
-        window.posthog?.capture('club_vote_added', { club_id: clubId, suggestion_title: suggestion.title });
+        posthog.capture('club_vote_added', { club_id: clubId, suggestion_title: suggestion.title });
       }
     },
     [user, clubId, suggestions]

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import posthog from 'posthog-js';
 import {
   Dialog,
   DialogContent,
@@ -38,7 +39,7 @@ export function ShareShelfDialog({ open: controlledOpen, onOpenChange: controlle
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      window.posthog?.capture('shelf_link_copied');
+      posthog.capture('shelf_link_copied');
       toast.success('Link copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);
     } catch {

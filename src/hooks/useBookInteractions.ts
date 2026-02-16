@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import posthog from 'posthog-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -126,7 +127,7 @@ export function useBookInteractions(bookId: string) {
         return;
       }
       setLikes((prev) => prev.filter((l) => l.userId !== user.id));
-      window.posthog?.capture('book_unliked', { book_id: bookId });
+      posthog.capture('book_unliked', { book_id: bookId });
     } else {
       // Like
       const { data, error } = await supabase
@@ -156,7 +157,7 @@ export function useBookInteractions(bookId: string) {
           createdAt: data.created_at,
         },
       ]);
-      window.posthog?.capture('book_liked', { book_id: bookId });
+      posthog.capture('book_liked', { book_id: bookId });
     }
   }, [user, bookId, hasLiked, toast]);
 
@@ -204,7 +205,7 @@ export function useBookInteractions(bookId: string) {
           avatarUrl: profileData?.avatar_url,
         },
       ]);
-      window.posthog?.capture('comment_added', { book_id: bookId });
+      posthog.capture('comment_added', { book_id: bookId });
     },
     [user, bookId, toast]
   );

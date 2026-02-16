@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import posthog from 'posthog-js';
 import { GoogleBook } from '@/types/book';
 import { supabase } from '@/integrations/supabase/client';
 import { normalizeCoverUrl } from '@/lib/normalizeCoverUrl';
@@ -97,7 +98,7 @@ export function useBookSearch() {
     setError(null);
 
     try {
-      window.posthog?.capture('book_searched', { query });
+      posthog.capture('book_searched', { query });
 
       // Step 1: Check our database cache first (fastest, no API quota used)
       const { data: cacheData } = await supabase.functions.invoke('book-cache', {

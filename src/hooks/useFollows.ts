@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import posthog from 'posthog-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -92,7 +93,7 @@ export function useFollows() {
       queryClient.setQueryData<Follow[]>(['following', user?.id], (old = []) =>
         old.map(f => f.id === 'optimistic' && f.following_id === data.following_id ? data : f)
       );
-      window.posthog?.capture('user_followed', { target_user_id: data.following_id });
+      posthog.capture('user_followed', { target_user_id: data.following_id });
       toast.success('Now following this shelf');
     },
     onError: (error: Error, _targetUserId, context) => {
@@ -132,7 +133,7 @@ export function useFollows() {
       return { previousFollowing };
     },
     onSuccess: (_data, targetUserId) => {
-      window.posthog?.capture('user_unfollowed', { target_user_id: targetUserId });
+      posthog.capture('user_unfollowed', { target_user_id: targetUserId });
       toast.success('Unfollowed');
       // No invalidation needed - optimistic update already removed it
     },

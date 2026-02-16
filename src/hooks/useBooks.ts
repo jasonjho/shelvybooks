@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import posthog from 'posthog-js';
 import { Book, BookStatus, ShelfSkin, ShelfSettings, ReadingAnimation } from '@/types/book';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -305,7 +306,7 @@ export function useBooks() {
       // Trigger wobble animation
       markAsAdded(data.id);
 
-      window.posthog?.capture('book_added', {
+      posthog.capture('book_added', {
         book_title: enrichedBook.title,
         book_author: enrichedBook.author,
         status: enrichedBook.status,
@@ -339,7 +340,7 @@ export function useBooks() {
       setBooks((prev) => prev.filter((book) => book.id !== id));
 
       if (bookToRemove) {
-        window.posthog?.capture('book_removed', {
+        posthog.capture('book_removed', {
           book_title: bookToRemove.title,
           book_author: bookToRemove.author,
         });
@@ -385,7 +386,7 @@ export function useBooks() {
         prev.map((book) => (book.id === id ? { ...book, status, completedAt: isNewlyCompleted ? completedAt : book.completedAt } : book))
       );
 
-      window.posthog?.capture('book_status_changed', {
+      posthog.capture('book_status_changed', {
         book_title: movedBook?.title,
         from_status: previousStatus,
         to_status: status,

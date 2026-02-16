@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import posthog from 'posthog-js';
 import { supabase } from '@/integrations/supabase/client';
 
 function clearPersistedAuthTokens() {
@@ -95,8 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (!error) {
-      window.posthog?.identify(email);
-      window.posthog?.capture('user_signed_in');
+      posthog.identify(email);
+      posthog.capture('user_signed_in');
     }
     return { error: error as Error | null };
   };
@@ -110,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
     if (!error) {
-      window.posthog?.capture('user_signed_up');
+      posthog.capture('user_signed_up');
     }
     return { error: error as Error | null };
   };
@@ -122,8 +123,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Ignore: we still want to clear local state + storage even if the SDK errors.
     } finally {
-      window.posthog?.capture('user_signed_out');
-      window.posthog?.reset();
+      posthog.capture('user_signed_out');
+      posthog.reset();
       clearPersistedAuthTokens();
       // Force clear state as safety net
       setSession(null);
