@@ -136,9 +136,9 @@ export function ShelfControls({
   const showCategoryFilter = availableCategories.length > 0 && onCategoryFilterChange;
 
   return compact ? (
-    /* ── Mobile: stacked layout with inline search + scrollable chips ── */
+    /* ── Mobile: stacked layout ── */
     <div className={cn("flex flex-col gap-2 w-full", spread && "w-full")}>
-      {/* Row 1: Search input + Sort button */}
+      {/* Row 1: Search + Shelf dropdown + Sort */}
       <div className="flex items-center gap-1.5">
         {onSearchChange && (
           <div className="relative flex-1 min-w-0">
@@ -146,7 +146,7 @@ export function ShelfControls({
             <Input
               ref={mobileSearchRef}
               type="text"
-              placeholder="Search title or author…"
+              placeholder="Search…"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="h-9 pl-8 pr-8 text-sm bg-background"
@@ -161,6 +161,57 @@ export function ShelfControls({
             )}
           </div>
         )}
+
+        {/* Shelf filter dropdown */}
+        <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                "h-9 px-2.5 gap-1 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0 touch-manipulation",
+                !isAllSelected && "border-primary/50 bg-primary/5"
+              )}
+            >
+              <Filter className="w-4 h-4" />
+              <span className="text-xs">{getFilterLabel()}</span>
+              <ChevronDown className={cn(
+                "w-3 h-3 transition-transform",
+                filterOpen && "rotate-180"
+              )} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-48 p-2 bg-popover" align="end" side="bottom" collisionPadding={16}>
+            <div className="flex flex-col gap-1">
+              <Button
+                variant={isAllSelected ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => { onFilterChange([]); setFilterOpen(false); }}
+                className="justify-start gap-2"
+              >
+                All
+                <span className="text-xs opacity-70 ml-auto">({totalBooks})</span>
+              </Button>
+
+              {statusFilters.map((filter) => {
+                const isActive = activeFilters.includes(filter.status);
+                return (
+                  <Button
+                    key={filter.status}
+                    variant={isActive ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => toggleFilter(filter.status)}
+                    className={cn("justify-start gap-2", !isActive && "hover:bg-accent hover:text-accent-foreground")}
+                  >
+                    {filter.icon}
+                    {filter.label}
+                    <span className="text-xs opacity-70 ml-auto">({bookCounts[filter.status]})</span>
+                  </Button>
+                );
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
 
         {/* Sort dropdown */}
         <DropdownMenu>
@@ -184,51 +235,10 @@ export function ShelfControls({
         </DropdownMenu>
       </div>
 
-      {/* Row 2: Horizontal scrollable status chips + tag filter */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1 pb-0.5">
-        {/* "All" chip */}
-        <button
-          onClick={() => onFilterChange([])}
-          className={cn(
-            "shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors touch-manipulation",
-            isAllSelected
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted/60 text-muted-foreground hover:bg-muted"
-          )}
-        >
-          All
-          <span className="opacity-70">{totalBooks}</span>
-        </button>
-
-        {/* Status chips */}
-        {statusFilters.map((filter) => {
-          const isActive = activeFilters.includes(filter.status);
-          const count = bookCounts[filter.status];
-          return (
-            <button
-              key={filter.status}
-              onClick={() => toggleFilter(filter.status)}
-              className={cn(
-                "shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors touch-manipulation",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted/60 text-muted-foreground hover:bg-muted"
-              )}
-            >
-              {filter.icon}
-              {filter.shortLabel}
-              <span className="opacity-70">{count}</span>
-            </button>
-          );
-        })}
-
-        {/* Divider */}
-        {showCategoryFilter && (
-          <div className="shrink-0 w-px h-5 bg-border/60" />
-        )}
-
-        {/* Tags popover */}
-        {showCategoryFilter && (
+      {/* Row 2: Tags (only shown when tags are available) */}
+      {showCategoryFilter && (
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1 pb-0.5">
+          {/* Tags popover */}
           <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
             <PopoverTrigger asChild>
               <button
@@ -288,20 +298,20 @@ export function ShelfControls({
               </div>
             </PopoverContent>
           </Popover>
-        )}
 
-        {/* Active tag chips (dismissible) */}
-        {activeCategoryFilters.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => toggleCategoryFilter(cat)}
-            className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/15 text-primary hover:bg-primary/25 transition-colors touch-manipulation"
-          >
-            <span className="max-w-[80px] truncate">{cat}</span>
-            <X className="w-3 h-3" />
-          </button>
-        ))}
-      </div>
+          {/* Active tag chips (dismissible) */}
+          {activeCategoryFilters.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => toggleCategoryFilter(cat)}
+              className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/15 text-primary hover:bg-primary/25 transition-colors touch-manipulation"
+            >
+              <span className="max-w-[80px] truncate">{cat}</span>
+              <X className="w-3 h-3" />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   ) : (
     /* ── Desktop: original separate controls ── */
