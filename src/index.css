@@ -7,6 +7,15 @@
   .scroll-touch {
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Hide scrollbar but keep scrolling functional */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes shimmer {

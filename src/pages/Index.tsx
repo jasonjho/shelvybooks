@@ -318,43 +318,78 @@ export default function Index() {
 
 
                  {/* Controls - filters on left, + button on right */}
-                 <div className="flex items-center justify-between gap-2 sm:mb-3">
-                  {/* Left: ShelfSwitcher (mobile) + Filters */}
-                  <div className={user ? "flex items-center gap-1.5 min-w-0 overflow-x-auto" : (isMobile ? "flex-1" : "flex items-center gap-1.5")}>
-                    {user && (
-                      <ShelfSwitcher
-                        viewedUser={viewedUser}
-                        onSelectUser={viewShelf}
-                        onSelectOwnShelf={clearViewedShelf}
-                      />
-                    )}
-                    <ShelfControls
-                      activeFilters={activeFilters}
-                      onFilterChange={setActiveFilters}
-                      sortOption={sortOption}
-                      onSortChange={setSortOption}
-                      onShuffle={handleShuffle}
-                      bookCounts={bookCounts}
-                      availableCategories={availableCategories}
-                      activeCategoryFilters={activeCategoryFilters}
-                      onCategoryFilterChange={setActiveCategoryFilters}
-                      compact={isMobile}
-                      searchQuery={searchQuery}
-                      onSearchChange={setSearchQuery}
-                      spread={!user && isMobile}
-                    />
-                  </div>
-
-                  {/* Right: + button */}
-                  {user && (
-                    <div className="shrink-0">
-                      <MobileActionsMenu
-                        onAddBook={addBook}
-                        existingBooks={ownBooks}
-                      />
-                    </div>
-                  )}
-                </div>
+                 {isMobile ? (
+                   /* Mobile: stacked controls layout */
+                   <div className="flex flex-col gap-1.5 mb-2">
+                     {/* ShelfSwitcher + Add button row */}
+                     {user && (
+                       <div className="flex items-center justify-between gap-1.5">
+                         <ShelfSwitcher
+                           viewedUser={viewedUser}
+                           onSelectUser={viewShelf}
+                           onSelectOwnShelf={clearViewedShelf}
+                         />
+                         <div className="shrink-0">
+                           <MobileActionsMenu
+                             onAddBook={addBook}
+                             existingBooks={ownBooks}
+                           />
+                         </div>
+                       </div>
+                     )}
+                     {/* Search + filter chips (ShelfControls handles its own stacked layout in compact mode) */}
+                     <ShelfControls
+                       activeFilters={activeFilters}
+                       onFilterChange={setActiveFilters}
+                       sortOption={sortOption}
+                       onSortChange={setSortOption}
+                       onShuffle={handleShuffle}
+                       bookCounts={bookCounts}
+                       availableCategories={availableCategories}
+                       activeCategoryFilters={activeCategoryFilters}
+                       onCategoryFilterChange={setActiveCategoryFilters}
+                       compact
+                       searchQuery={searchQuery}
+                       onSearchChange={setSearchQuery}
+                       spread={!user}
+                     />
+                   </div>
+                 ) : (
+                   /* Desktop: horizontal controls */
+                   <div className="flex items-center justify-between gap-2 sm:mb-3">
+                     <div className={user ? "flex items-center gap-1.5 min-w-0" : "flex items-center gap-1.5"}>
+                       {user && (
+                         <ShelfSwitcher
+                           viewedUser={viewedUser}
+                           onSelectUser={viewShelf}
+                           onSelectOwnShelf={clearViewedShelf}
+                         />
+                       )}
+                       <ShelfControls
+                         activeFilters={activeFilters}
+                         onFilterChange={setActiveFilters}
+                         sortOption={sortOption}
+                         onSortChange={setSortOption}
+                         onShuffle={handleShuffle}
+                         bookCounts={bookCounts}
+                         availableCategories={availableCategories}
+                         activeCategoryFilters={activeCategoryFilters}
+                         onCategoryFilterChange={setActiveCategoryFilters}
+                         searchQuery={searchQuery}
+                         onSearchChange={setSearchQuery}
+                         spread={false}
+                       />
+                     </div>
+                     {user && (
+                       <div className="shrink-0">
+                         <MobileActionsMenu
+                           onAddBook={addBook}
+                           existingBooks={ownBooks}
+                         />
+                       </div>
+                     )}
+                   </div>
+                 )}
 
 
                  {isMobile ? (
