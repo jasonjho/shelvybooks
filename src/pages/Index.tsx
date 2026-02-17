@@ -87,7 +87,6 @@ export default function Index() {
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
   const [recommendDialogOpen, setRecommendDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   
   
   const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
@@ -195,20 +194,10 @@ export default function Index() {
     );
   }, [displayBooks, activeCategoryFilters]);
 
-  // Filter books by search query
-  const searchFilteredBooks = useMemo(() => {
-    if (!searchQuery.trim()) return categoryFilteredBooks;
-    const query = searchQuery.toLowerCase().trim();
-    return categoryFilteredBooks.filter(book =>
-      book.title.toLowerCase().includes(query) ||
-      book.author.toLowerCase().includes(query)
-    );
-  }, [categoryFilteredBooks, searchQuery]);
-
   // Sort books
   const sortedBooks = useMemo(() => {
-    return sortBooks(searchFilteredBooks, sortOption, shuffleSeed);
-  }, [searchFilteredBooks, sortOption, shuffleSeed]);
+    return sortBooks(categoryFilteredBooks, sortOption, shuffleSeed);
+  }, [categoryFilteredBooks, sortOption, shuffleSeed]);
 
   // All books go to the main shelf (no separate "Currently Reading" section)
   const shelfBooks = sortedBooks;
@@ -216,11 +205,11 @@ export default function Index() {
   // Calculate book counts by status (from category-filtered books for display)
   const bookCounts = useMemo(() => {
     return {
-      reading: searchFilteredBooks.filter(b => b.status === 'reading').length,
-      'want-to-read': searchFilteredBooks.filter(b => b.status === 'want-to-read').length,
-      read: searchFilteredBooks.filter(b => b.status === 'read').length,
+      reading: categoryFilteredBooks.filter(b => b.status === 'reading').length,
+      'want-to-read': categoryFilteredBooks.filter(b => b.status === 'want-to-read').length,
+      read: categoryFilteredBooks.filter(b => b.status === 'read').length,
     };
-  }, [searchFilteredBooks]);
+  }, [categoryFilteredBooks]);
 
   const handleShuffle = useCallback(() => {
     setShuffleSeed(Date.now());
@@ -337,7 +326,6 @@ export default function Index() {
                          </div>
                        </div>
                      )}
-                     {/* Search + filter chips (ShelfControls handles its own stacked layout in compact mode) */}
                      <ShelfControls
                        activeFilters={activeFilters}
                        onFilterChange={setActiveFilters}
@@ -349,8 +337,6 @@ export default function Index() {
                        activeCategoryFilters={activeCategoryFilters}
                        onCategoryFilterChange={setActiveCategoryFilters}
                        compact
-                       searchQuery={searchQuery}
-                       onSearchChange={setSearchQuery}
                        spread={!user}
                      />
                    </div>
@@ -375,8 +361,6 @@ export default function Index() {
                          availableCategories={availableCategories}
                          activeCategoryFilters={activeCategoryFilters}
                          onCategoryFilterChange={setActiveCategoryFilters}
-                         searchQuery={searchQuery}
-                         onSearchChange={setSearchQuery}
                          spread={false}
                        />
                      </div>
