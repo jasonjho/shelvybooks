@@ -77,6 +77,7 @@ export function ShelfControls({
   const [filterOpen, setFilterOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
+  const [combinedFilterOpen, setCombinedFilterOpen] = useState(false);
 
   const toggleFilter = (status: BookStatus) => {
     if (activeFilters.includes(status)) {
@@ -126,50 +127,47 @@ export function ShelfControls({
   // Show category filter only if there are categories available
   const showCategoryFilter = availableCategories.length > 0 && onCategoryFilterChange;
 
+  // Total active filter count for combined badge
+  const totalActiveFilters =
+    activeFilters.length +
+    activeCategoryFilters.length +
+    (searchQuery ? 1 : 0);
+
+  const hasCombinedFilters = totalActiveFilters > 0;
+
   return (
     <div className={cn("flex items-center gap-1.5 flex-nowrap", spread && "w-full")}>
-      {/* Search Dialog */}
-      {onSearchChange && (
-        <>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSearchDialogOpen(true)}
-            className={cn(
-              "gap-1.5",
-              searchQuery && "border-primary/50 bg-primary/5",
-              spread && "flex-1"
-            )}
-          >
-            <Search className="w-4 h-4" />
-            {!compact && <span className="hidden sm:inline">{searchQuery || 'Search'}</span>}
-            {searchQuery && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSearchChange('');
-                }}
-                className="ml-1 hover:text-destructive"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </Button>
-          
-          <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Search your shelf</DialogTitle>
-              </DialogHeader>
-              <div className="relative">
+
+      {/* ── Mobile: single combined Filters popover ── */}
+      {compact ? (
+        <Popover open={combinedFilterOpen} onOpenChange={setCombinedFilterOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                "gap-1.5 focus-visible:ring-0 focus-visible:ring-offset-0",
+                hasCombinedFilters && "border-primary/50 bg-primary/5",
+                spread && "flex-1"
+              )}
+            >
+              <Filter className="w-4 h-4" />
+              {hasCombinedFilters && (
+                <span className="text-xs opacity-70">({totalActiveFilters})</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-72 p-3 bg-popover" align="start">
+            {/* Search */}
+            {onSearchChange && (
+              <div className="relative mb-3">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Search by title or author..."
+                  placeholder="Search by title or author…"
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
                   className="pl-10 pr-10"
-                  autoFocus
                 />
                 {searchQuery && (
                   <button
@@ -180,128 +178,255 @@ export function ShelfControls({
                   </button>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">
-                {searchQuery ? `Filtering books matching "${searchQuery}"` : 'Type to filter your books'}
-              </p>
-            </DialogContent>
-          </Dialog>
+            )}
+
+            {/* Status */}
+            <p className="text-xs font-medium text-muted-foreground px-1 mb-1">Status</p>
+            <div className="flex flex-col gap-1">
+              <Button
+                variant={isAllSelected ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onFilterChange([])}
+                className="justify-start gap-2"
+              >
+                All
+                <span className="text-xs opacity-70 ml-auto">({totalBooks})</span>
+              </Button>
+              {statusFilters.map((filter) => {
+                const isActive = activeFilters.includes(filter.status);
+                return (
+                  <Button
+                    key={filter.status}
+                    variant={isActive ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => toggleFilter(filter.status)}
+                    className={cn("justify-start gap-2", !isActive && "hover:bg-accent hover:text-accent-foreground")}
+                  >
+                    {filter.icon}
+                    {filter.label}
+                    <span className="text-xs opacity-70 ml-auto">({bookCounts[filter.status]})</span>
+                  </Button>
+                );
+              })}
+            </div>
+
+            {/* Tags */}
+            {showCategoryFilter && (
+              <div className="mt-3 pt-3 border-t">
+                <p className="text-xs font-medium text-muted-foreground px-1 mb-1">Tags</p>
+                <div className="flex flex-col gap-1">
+                  <Button
+                    variant={activeCategoryFilters.length === 0 ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => onCategoryFilterChange?.([])}
+                    className="justify-start gap-2"
+                  >
+                    All Tags
+                  </Button>
+                  <ScrollArea className="max-h-[180px]">
+                    <div className="flex flex-col gap-1 pr-2">
+                      {availableCategories.map((category) => {
+                        const isActive = activeCategoryFilters.includes(category);
+                        return (
+                          <Button
+                            key={category}
+                            variant={isActive ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => toggleCategoryFilter(category)}
+                            className="justify-start gap-2 text-left"
+                          >
+                            <span className="truncate">
+                              {category.length > 25 ? category.slice(0, 25) + '…' : category}
+                            </span>
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      ) : (
+        /* ── Desktop: original separate controls ── */
+        <>
+          {/* Search Dialog */}
+          {onSearchChange && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSearchDialogOpen(true)}
+                className={cn(
+                  "gap-1.5",
+                  searchQuery && "border-primary/50 bg-primary/5",
+                  spread && "flex-1"
+                )}
+              >
+                <Search className="w-4 h-4" />
+                <span className="hidden sm:inline">{searchQuery || 'Search'}</span>
+                {searchQuery && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSearchChange('');
+                    }}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </Button>
+
+              <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Search your shelf</DialogTitle>
+                  </DialogHeader>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Search by title or author..."
+                      value={searchQuery}
+                      onChange={(e) => onSearchChange(e.target.value)}
+                      className="pl-10 pr-10"
+                      autoFocus
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => onSearchChange('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {searchQuery ? `Filtering books matching "${searchQuery}"` : 'Type to filter your books'}
+                  </p>
+                </DialogContent>
+              </Dialog>
+            </>
+          )}
+
+          {/* Filter Popover */}
+          <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "gap-1.5 sm:gap-2 focus-visible:ring-0 focus-visible:ring-offset-0",
+                  !isAllSelected && "border-primary/50 bg-primary/5",
+                  spread && "flex-1"
+                )}
+              >
+                <Filter className="w-4 h-4" />
+                <span className="hidden sm:inline">{getFilterLabel()}</span>
+                <span className="text-xs opacity-70">({getFilterCount()})</span>
+                <ChevronDown className={cn(
+                  "w-3 h-3 transition-transform",
+                  filterOpen && "rotate-180"
+                )} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-2 bg-popover" align="start">
+              <div className="flex flex-col gap-1">
+                <Button
+                  variant={isAllSelected ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => onFilterChange([])}
+                  className="justify-start gap-2"
+                >
+                  All
+                  <span className="text-xs opacity-70 ml-auto">({totalBooks})</span>
+                </Button>
+
+                {statusFilters.map((filter) => {
+                  const isActive = activeFilters.includes(filter.status);
+                  return (
+                    <Button
+                      key={filter.status}
+                      variant={isActive ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => toggleFilter(filter.status)}
+                      className={cn("justify-start gap-2", !isActive && "hover:bg-accent hover:text-accent-foreground")}
+                    >
+                      {filter.icon}
+                      {filter.label}
+                      <span className="text-xs opacity-70 ml-auto">({bookCounts[filter.status]})</span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Category/Genre Filter Popover */}
+          {showCategoryFilter && (
+            <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "gap-1.5 sm:gap-2 focus-visible:ring-0 focus-visible:ring-offset-0",
+                    activeCategoryFilters.length > 0 && "border-primary/50 bg-primary/5",
+                    spread && "flex-1"
+                  )}
+                >
+                  <Tag className="w-4 h-4" />
+                  <span className="hidden sm:inline">{getCategoryLabel()}</span>
+                  {activeCategoryFilters.length > 0 && (
+                    <span className="text-xs opacity-70">({activeCategoryFilters.length})</span>
+                  )}
+                  <ChevronDown className={cn(
+                    "w-3 h-3 transition-transform",
+                    categoryOpen && "rotate-180"
+                  )} />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-2 bg-popover" align="start">
+                <div className="flex flex-col gap-1">
+                  <Button
+                    variant={activeCategoryFilters.length === 0 ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => onCategoryFilterChange?.([])}
+                    className="justify-start gap-2"
+                  >
+                    All Tags
+                  </Button>
+
+                  <ScrollArea className="max-h-[240px]">
+                    <div className="flex flex-col gap-1 pr-2">
+                      {availableCategories.map((category) => {
+                        const isActive = activeCategoryFilters.includes(category);
+                        return (
+                          <Button
+                            key={category}
+                            variant={isActive ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => toggleCategoryFilter(category)}
+                            className="justify-start gap-2 text-left"
+                          >
+                            <span className="truncate">
+                              {category.length > 25 ? category.slice(0, 25) + '…' : category}
+                            </span>
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
         </>
       )}
 
-      {/* Filter Popover */}
-      <Popover open={filterOpen} onOpenChange={setFilterOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "gap-1.5 sm:gap-2 focus-visible:ring-0 focus-visible:ring-offset-0",
-              !isAllSelected && "border-primary/50 bg-primary/5",
-              spread && "flex-1"
-            )}
-          >
-            <Filter className="w-4 h-4" />
-            {!compact && <span className="hidden sm:inline">{getFilterLabel()}</span>}
-            <span className="text-xs opacity-70">({getFilterCount()})</span>
-            <ChevronDown className={cn(
-              "w-3 h-3 transition-transform",
-              filterOpen && "rotate-180"
-            )} />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-56 p-2 bg-popover" align="start">
-          <div className="flex flex-col gap-1">
-            <Button
-              variant={isAllSelected ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onFilterChange([])}
-              className="justify-start gap-2"
-            >
-              All
-              <span className="text-xs opacity-70 ml-auto">({totalBooks})</span>
-            </Button>
-            
-            {statusFilters.map((filter) => {
-              const isActive = activeFilters.includes(filter.status);
-              return (
-                <Button
-                  key={filter.status}
-                  variant={isActive ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => toggleFilter(filter.status)}
-                  className={cn("justify-start gap-2", !isActive && "hover:bg-accent hover:text-accent-foreground")}
-                >
-                  {filter.icon}
-                  {filter.label}
-                  <span className="text-xs opacity-70 ml-auto">({bookCounts[filter.status]})</span>
-                </Button>
-              );
-            })}
-          </div>
-        </PopoverContent>
-      </Popover>
-
-      {/* Category/Genre Filter Popover */}
-      {showCategoryFilter && (
-        <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                "gap-1.5 sm:gap-2 focus-visible:ring-0 focus-visible:ring-offset-0",
-                activeCategoryFilters.length > 0 && "border-primary/50 bg-primary/5",
-                spread && "flex-1"
-              )}
-            >
-              <Tag className="w-4 h-4" />
-              {!compact && <span className="hidden sm:inline">{getCategoryLabel()}</span>}
-              {activeCategoryFilters.length > 0 && (
-                <span className="text-xs opacity-70">({activeCategoryFilters.length})</span>
-              )}
-              <ChevronDown className={cn(
-                "w-3 h-3 transition-transform",
-                categoryOpen && "rotate-180"
-              )} />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-64 p-2 bg-popover" align="start">
-            <div className="flex flex-col gap-1">
-            <Button
-                variant={activeCategoryFilters.length === 0 ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => onCategoryFilterChange?.([])}
-                className="justify-start gap-2"
-              >
-                All Tags
-              </Button>
-              
-              <ScrollArea className="max-h-[240px]">
-                <div className="flex flex-col gap-1 pr-2">
-                  {availableCategories.map((category) => {
-                    const isActive = activeCategoryFilters.includes(category);
-                    return (
-                      <Button
-                        key={category}
-                        variant={isActive ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => toggleCategoryFilter(category)}
-                        className="justify-start gap-2 text-left"
-                      >
-                        <span className="truncate">
-                          {category.length > 25 ? category.slice(0, 25) + '…' : category}
-                        </span>
-                      </Button>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-            </div>
-          </PopoverContent>
-        </Popover>
-      )}
-
-      {/* Sort Dropdown */}
+      {/* Sort Dropdown — always visible */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm" className={cn("gap-2 focus-visible:ring-0 focus-visible:ring-offset-0", spread && "flex-1")}>
