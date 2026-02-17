@@ -87,6 +87,7 @@ export default function Index() {
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
   const [recommendDialogOpen, setRecommendDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   
   const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
@@ -194,10 +195,20 @@ export default function Index() {
     );
   }, [displayBooks, activeCategoryFilters]);
 
+  // Filter books by search query
+  const searchFilteredBooks = useMemo(() => {
+    if (!searchQuery.trim()) return categoryFilteredBooks;
+    const query = searchQuery.toLowerCase().trim();
+    return categoryFilteredBooks.filter(book =>
+      book.title.toLowerCase().includes(query) ||
+      book.author.toLowerCase().includes(query)
+    );
+  }, [categoryFilteredBooks, searchQuery]);
+
   // Sort books
   const sortedBooks = useMemo(() => {
-    return sortBooks(categoryFilteredBooks, sortOption, shuffleSeed);
-  }, [categoryFilteredBooks, sortOption, shuffleSeed]);
+    return sortBooks(searchFilteredBooks, sortOption, shuffleSeed);
+  }, [searchFilteredBooks, sortOption, shuffleSeed]);
 
   // All books go to the main shelf (no separate "Currently Reading" section)
   const shelfBooks = sortedBooks;
@@ -205,11 +216,11 @@ export default function Index() {
   // Calculate book counts by status (from category-filtered books for display)
   const bookCounts = useMemo(() => {
     return {
-      reading: categoryFilteredBooks.filter(b => b.status === 'reading').length,
-      'want-to-read': categoryFilteredBooks.filter(b => b.status === 'want-to-read').length,
-      read: categoryFilteredBooks.filter(b => b.status === 'read').length,
+      reading: searchFilteredBooks.filter(b => b.status === 'reading').length,
+      'want-to-read': searchFilteredBooks.filter(b => b.status === 'want-to-read').length,
+      read: searchFilteredBooks.filter(b => b.status === 'read').length,
     };
-  }, [categoryFilteredBooks]);
+  }, [searchFilteredBooks]);
 
   const handleShuffle = useCallback(() => {
     setShuffleSeed(Date.now());
@@ -307,73 +318,43 @@ export default function Index() {
 
 
                  {/* Controls - filters on left, + button on right */}
-                 {isMobile ? (
-                   /* Mobile: stacked controls layout */
-                   <div className="flex flex-col gap-1.5 mb-2">
-                     {/* ShelfSwitcher + Add button row */}
-                     {user && (
-                       <div className="flex items-center justify-between gap-1.5">
-                         <ShelfSwitcher
-                           viewedUser={viewedUser}
-                           onSelectUser={viewShelf}
-                           onSelectOwnShelf={clearViewedShelf}
-                         />
-                         <div className="shrink-0">
-                           <MobileActionsMenu
-                             onAddBook={addBook}
-                             existingBooks={ownBooks}
-                           />
-                         </div>
-                       </div>
-                     )}
-                     <ShelfControls
-                       activeFilters={activeFilters}
-                       onFilterChange={setActiveFilters}
-                       sortOption={sortOption}
-                       onSortChange={setSortOption}
-                       onShuffle={handleShuffle}
-                       bookCounts={bookCounts}
-                       availableCategories={availableCategories}
-                       activeCategoryFilters={activeCategoryFilters}
-                       onCategoryFilterChange={setActiveCategoryFilters}
-                       compact
-                       spread={!user}
-                     />
-                   </div>
-                 ) : (
-                   /* Desktop: horizontal controls */
-                   <div className="flex items-center justify-between gap-2 sm:mb-3">
-                     <div className={user ? "flex items-center gap-1.5 min-w-0" : "flex items-center gap-1.5"}>
-                       {user && (
-                         <ShelfSwitcher
-                           viewedUser={viewedUser}
-                           onSelectUser={viewShelf}
-                           onSelectOwnShelf={clearViewedShelf}
-                         />
-                       )}
-                       <ShelfControls
-                         activeFilters={activeFilters}
-                         onFilterChange={setActiveFilters}
-                         sortOption={sortOption}
-                         onSortChange={setSortOption}
-                         onShuffle={handleShuffle}
-                         bookCounts={bookCounts}
-                         availableCategories={availableCategories}
-                         activeCategoryFilters={activeCategoryFilters}
-                         onCategoryFilterChange={setActiveCategoryFilters}
-                         spread={false}
-                       />
-                     </div>
-                     {user && (
-                       <div className="shrink-0">
-                         <MobileActionsMenu
-                           onAddBook={addBook}
-                           existingBooks={ownBooks}
-                         />
-                       </div>
-                     )}
-                   </div>
-                 )}
+                 <div className="flex items-center justify-between gap-2 sm:mb-3">
+                  {/* Left: ShelfSwitcher (mobile) + Filters */}
+                  <div className={user ? "flex items-center gap-1.5 min-w-0 overflow-x-auto" : (isMobile ? "flex-1" : "flex items-center gap-1.5")}>
+                    {user && (
+                      <ShelfSwitcher
+                        viewedUser={viewedUser}
+                        onSelectUser={viewShelf}
+                        onSelectOwnShelf={clearViewedShelf}
+                      />
+                    )}
+                    <ShelfControls
+                      activeFilters={activeFilters}
+                      onFilterChange={setActiveFilters}
+                      sortOption={sortOption}
+                      onSortChange={setSortOption}
+                      onShuffle={handleShuffle}
+                      bookCounts={bookCounts}
+                      availableCategories={availableCategories}
+                      activeCategoryFilters={activeCategoryFilters}
+                      onCategoryFilterChange={setActiveCategoryFilters}
+                      compact={isMobile}
+                      searchQuery={searchQuery}
+                      onSearchChange={setSearchQuery}
+                      spread={!user && isMobile}
+                    />
+                  </div>
+
+                  {/* Right: + button */}
+                  {user && (
+                    <div className="shrink-0">
+                      <MobileActionsMenu
+                        onAddBook={addBook}
+                        existingBooks={ownBooks}
+                      />
+                    </div>
+                  )}
+                </div>
 
 
                  {isMobile ? (
