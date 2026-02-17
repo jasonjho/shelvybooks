@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ShelfControlsProps {
@@ -77,15 +77,7 @@ export function ShelfControls({
   const [filterOpen, setFilterOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
-  const [mobileSearchExpanded, setMobileSearchExpanded] = useState(false);
-  const mobileSearchRef = useRef<HTMLInputElement>(null);
-
-  // Auto-focus mobile search when expanded
-  useEffect(() => {
-    if (mobileSearchExpanded && mobileSearchRef.current) {
-      mobileSearchRef.current.focus();
-    }
-  }, [mobileSearchExpanded]);
+  const [combinedFilterOpen, setCombinedFilterOpen] = useState(false);
 
   const toggleFilter = (status: BookStatus) => {
     if (activeFilters.includes(status)) {
@@ -135,136 +127,65 @@ export function ShelfControls({
   // Show category filter only if there are categories available
   const showCategoryFilter = availableCategories.length > 0 && onCategoryFilterChange;
 
+  // Total active filter count for combined mobile badge
+  const totalActiveFilters = activeFilters.length + activeCategoryFilters.length;
+
   return compact ? (
-    /* ── Mobile: stacked layout ── */
-    <div className={cn("flex flex-col gap-2 w-full", spread && "w-full")}>
-      {/* Row 1: Search + Shelf dropdown + Sort */}
-      <div className="flex items-center gap-1.5">
-        {onSearchChange && (
-          <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            <Input
-              ref={mobileSearchRef}
-              type="text"
-              placeholder="Search…"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="h-9 pl-8 pr-8 text-sm bg-background"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => onSearchChange('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground touch-manipulation"
-              >
-                <X className="w-4 h-4" />
-              </button>
+    /* ── Mobile: Filters popover + Sort dropdown in a single row ── */
+    <div className={cn("flex items-center gap-1.5 flex-nowrap", spread && "w-full")}>
+      <Popover open={combinedFilterOpen} onOpenChange={setCombinedFilterOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+              "gap-1.5 focus-visible:ring-0 focus-visible:ring-offset-0",
+              totalActiveFilters > 0 && "border-primary/50 bg-primary/5",
+              spread && "flex-1"
             )}
-          </div>
-        )}
-
-        {/* Shelf filter dropdown */}
-        <Popover open={filterOpen} onOpenChange={setFilterOpen}>
-          <PopoverTrigger asChild>
+          >
+            <Filter className="w-4 h-4" />
+            Filters
+            {totalActiveFilters > 0 && (
+              <span className="text-xs opacity-70">({totalActiveFilters})</span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-72 p-3 bg-popover" align="start" side="bottom" collisionPadding={16}>
+          {/* Status */}
+          <p className="text-xs font-medium text-muted-foreground px-1 mb-1">Status</p>
+          <div className="flex flex-col gap-1">
             <Button
-              variant="outline"
+              variant={isAllSelected ? 'default' : 'ghost'}
               size="sm"
-              className={cn(
-                "h-9 px-2.5 gap-1 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0 touch-manipulation",
-                !isAllSelected && "border-primary/50 bg-primary/5"
-              )}
+              onClick={() => onFilterChange([])}
+              className="justify-start gap-2"
             >
-              <Filter className="w-4 h-4" />
-              <span className="text-xs">{getFilterLabel()}</span>
-              <ChevronDown className={cn(
-                "w-3 h-3 transition-transform",
-                filterOpen && "rotate-180"
-              )} />
+              All
+              <span className="text-xs opacity-70 ml-auto">({totalBooks})</span>
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-48 p-2 bg-popover" align="end" side="bottom" collisionPadding={16}>
-            <div className="flex flex-col gap-1">
-              <Button
-                variant={isAllSelected ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => { onFilterChange([]); setFilterOpen(false); }}
-                className="justify-start gap-2"
-              >
-                All
-                <span className="text-xs opacity-70 ml-auto">({totalBooks})</span>
-              </Button>
+            {statusFilters.map((filter) => {
+              const isActive = activeFilters.includes(filter.status);
+              return (
+                <Button
+                  key={filter.status}
+                  variant={isActive ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => toggleFilter(filter.status)}
+                  className={cn("justify-start gap-2", !isActive && "hover:bg-accent hover:text-accent-foreground")}
+                >
+                  {filter.icon}
+                  {filter.label}
+                  <span className="text-xs opacity-70 ml-auto">({bookCounts[filter.status]})</span>
+                </Button>
+              );
+            })}
+          </div>
 
-              {statusFilters.map((filter) => {
-                const isActive = activeFilters.includes(filter.status);
-                return (
-                  <Button
-                    key={filter.status}
-                    variant={isActive ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => toggleFilter(filter.status)}
-                    className={cn("justify-start gap-2", !isActive && "hover:bg-accent hover:text-accent-foreground")}
-                  >
-                    {filter.icon}
-                    {filter.label}
-                    <span className="text-xs opacity-70 ml-auto">({bookCounts[filter.status]})</span>
-                  </Button>
-                );
-              })}
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        {/* Sort dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9 px-2.5 gap-1 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0 touch-manipulation">
-              {sortOptions.find((o) => o.value === sortOption)?.icon}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" side="bottom" className="bg-popover">
-            {sortOptions.map((option) => (
-              <DropdownMenuItem
-                key={option.value}
-                onClick={() => option.value === 'random' ? onShuffle() : onSortChange(option.value)}
-                className="gap-2"
-              >
-                {option.icon}
-                {option.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      {/* Row 2: Tags (only shown when tags are available) */}
-      {showCategoryFilter && (
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1 pb-0.5">
-          {/* Tags popover */}
-          <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
-            <PopoverTrigger asChild>
-              <button
-                className={cn(
-                  "shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors touch-manipulation",
-                  activeCategoryFilters.length > 0
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/60 text-muted-foreground hover:bg-muted"
-                )}
-              >
-                <Tag className="w-3.5 h-3.5" />
-                {activeCategoryFilters.length > 0
-                  ? `${activeCategoryFilters.length} tag${activeCategoryFilters.length > 1 ? 's' : ''}`
-                  : 'Tags'}
-                <ChevronDown className={cn(
-                  "w-3 h-3 transition-transform",
-                  categoryOpen && "rotate-180"
-                )} />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-[calc(100vw-2rem)] max-w-[280px] p-2 bg-popover"
-              align="start"
-              side="bottom"
-              collisionPadding={16}
-            >
+          {/* Tags */}
+          {showCategoryFilter && (
+            <div className="mt-3 pt-3 border-t">
+              <p className="text-xs font-medium text-muted-foreground px-1 mb-1">Tags</p>
               <div className="flex flex-col gap-1">
                 <Button
                   variant={activeCategoryFilters.length === 0 ? 'default' : 'ghost'}
@@ -274,9 +195,8 @@ export function ShelfControls({
                 >
                   All Tags
                 </Button>
-
-                <ScrollArea className="max-h-[200px]">
-                  <div className="flex flex-col gap-0.5 pr-2">
+                <ScrollArea className="max-h-[180px]">
+                  <div className="flex flex-col gap-1 pr-2">
                     {availableCategories.map((category) => {
                       const isActive = activeCategoryFilters.includes(category);
                       return (
@@ -285,7 +205,7 @@ export function ShelfControls({
                           variant={isActive ? 'default' : 'ghost'}
                           size="sm"
                           onClick={() => toggleCategoryFilter(category)}
-                          className="justify-start gap-2 text-left h-8"
+                          className="justify-start gap-2 text-left"
                         >
                           <span className="truncate">
                             {category.length > 25 ? category.slice(0, 25) + '…' : category}
@@ -296,22 +216,31 @@ export function ShelfControls({
                   </div>
                 </ScrollArea>
               </div>
-            </PopoverContent>
-          </Popover>
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
 
-          {/* Active tag chips (dismissible) */}
-          {activeCategoryFilters.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => toggleCategoryFilter(cat)}
-              className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/15 text-primary hover:bg-primary/25 transition-colors touch-manipulation"
+      {/* Sort Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className={cn("gap-2 focus-visible:ring-0 focus-visible:ring-offset-0", spread && "flex-1")}>
+            {sortOptions.find((o) => o.value === sortOption)?.icon}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="bg-popover">
+          {sortOptions.map((option) => (
+            <DropdownMenuItem
+              key={option.value}
+              onClick={() => option.value === 'random' ? onShuffle() : onSortChange(option.value)}
+              className="gap-2"
             >
-              <span className="max-w-[80px] truncate">{cat}</span>
-              <X className="w-3 h-3" />
-            </button>
+              {option.icon}
+              {option.label}
+            </DropdownMenuItem>
           ))}
-        </div>
-      )}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   ) : (
     /* ── Desktop: original separate controls ── */
