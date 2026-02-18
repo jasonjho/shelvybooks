@@ -373,7 +373,7 @@ export default function PublicShelf() {
         {/* Prominent Sign Up CTA for guests */}
         {!user && (
           <div className="mb-6 py-3 px-4 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-200 dark:border-amber-800 text-center">
-            <p className="text-sm text-amber-800/80 dark:text-amber-200/80 mb-2">
+            <p className="text-base text-amber-800/80 dark:text-amber-200/80 mb-2">
               Love what you see?
             </p>
             <Link to="/">
