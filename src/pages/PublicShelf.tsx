@@ -463,16 +463,6 @@ export default function PublicShelf() {
             onCategoryFilterChange={setActiveCategoryFilters}
             compact
           />
-          
-          {/* CTA for logged-out users */}
-          {!user && (
-            <Link to="/">
-              <Button size="sm" className="gap-1.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md px-3">
-                <BookOpen className="w-4 h-4" />
-                <span className="sr-only">Start Your Shelf</span>
-              </Button>
-            </Link>
-          )}
         </div>
 
         {/* Bookshelf - Mobile vs Desktop */}
