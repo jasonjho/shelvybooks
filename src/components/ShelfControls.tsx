@@ -1,7 +1,6 @@
 import { BookStatus, SortOption } from '@/types/book';
-import { BookOpen, BookMarked, CheckCircle, Shuffle, ArrowDownAZ, Clock, Layers, Filter, ChevronDown, Tag, Search, X } from 'lucide-react';
+import { BookOpen, BookMarked, CheckCircle, Shuffle, ArrowDownAZ, Clock, Layers, Filter, ChevronDown, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,12 +12,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -40,10 +33,6 @@ interface ShelfControlsProps {
   compact?: boolean;
   /** Spread buttons to fill available width */
   spread?: boolean;
-  /** Search query for filtering books */
-  searchQuery?: string;
-  /** Callback when search query changes */
-  onSearchChange?: (query: string) => void;
 }
 
 const statusFilters: { status: BookStatus; label: string; icon: React.ReactNode }[] = [
@@ -71,12 +60,9 @@ export function ShelfControls({
   onCategoryFilterChange,
   compact = false,
   spread = false,
-  searchQuery = '',
-  onSearchChange,
 }: ShelfControlsProps) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
-  const [searchDialogOpen, setSearchDialogOpen] = useState(false);
 
   const toggleFilter = (status: BookStatus) => {
     if (activeFilters.includes(status)) {
@@ -128,66 +114,6 @@ export function ShelfControls({
 
   return (
     <div className={cn("flex items-center gap-1.5 flex-nowrap", spread && "w-full")}>
-      {/* Search Dialog */}
-      {onSearchChange && (
-        <>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSearchDialogOpen(true)}
-            className={cn(
-              "gap-1.5",
-              searchQuery && "border-primary/50 bg-primary/5",
-              spread && "flex-1"
-            )}
-          >
-            <Search className="w-4 h-4" />
-            {!compact && <span className="hidden sm:inline">{searchQuery || 'Search'}</span>}
-            {searchQuery && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSearchChange('');
-                }}
-                className="ml-1 hover:text-destructive"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </Button>
-          
-          <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Search your shelf</DialogTitle>
-              </DialogHeader>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Search by title or author..."
-                  value={searchQuery}
-                  onChange={(e) => onSearchChange(e.target.value)}
-                  className="pl-10 pr-10"
-                  autoFocus
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => onSearchChange('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {searchQuery ? `Filtering books matching "${searchQuery}"` : 'Type to filter your books'}
-              </p>
-            </DialogContent>
-          </Dialog>
-        </>
-      )}
-
       {/* Filter Popover */}
       <Popover open={filterOpen} onOpenChange={setFilterOpen}>
         <PopoverTrigger asChild>
