@@ -372,9 +372,9 @@ export default function PublicShelf() {
       <main className="container py-8 relative z-10">
         {/* Prominent Sign Up CTA for guests */}
         {!user && (
-          <div className="mb-6 py-2 px-4 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-center gap-3 flex-wrap">
-            <p className="text-sm text-amber-800/80 dark:text-amber-200/80">
-              Love what you see? Create your own beautiful bookshelf.
+          <div className="mb-6 py-3 px-4 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-200 dark:border-amber-800 text-center">
+            <p className="text-sm text-amber-800/80 dark:text-amber-200/80 mb-2">
+              Love what you see?
             </p>
             <Link to="/">
               <Button size="sm" className="gap-1.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-sm font-medium">
