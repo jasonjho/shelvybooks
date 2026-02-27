@@ -272,16 +272,21 @@ export default function Index() {
 
         {/* Not signed in message */}
         {!authLoading && !user && !demoLoading && (
-          <div className="py-4 mb-6 space-y-4">
-            <p className="text-foreground/80 text-base">
-              <span className="text-amber-700 dark:text-amber-500 font-medium">Track</span> your reading journey, <span className="text-amber-700 dark:text-amber-500 font-medium">organize</span> by status, <span className="text-amber-700 dark:text-amber-500 font-medium">discover</span> new favorites, and <span className="text-amber-700 dark:text-amber-500 font-medium">join Book Clubs</span> with friends.
+          <div className="py-8 mb-6 space-y-3">
+            <h2 className="text-2xl sm:text-3xl font-display font-normal tracking-wide text-foreground">
+              Every book tells your story.
+            </h2>
+            <p className="text-foreground/60 text-base">
+              Build your personal bookshelf and share it with friends.
             </p>
-            <Button 
-              onClick={() => setAuthDialogOpen(true)}
-              className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md"
-            >
-              Sign in to start your shelf
-            </Button>
+            <div className="pt-3">
+              <Button
+                onClick={() => setAuthDialogOpen(true)}
+                className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md"
+              >
+                Start your shelf
+              </Button>
+            </div>
           </div>
         )}
 
