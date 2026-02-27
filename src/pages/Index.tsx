@@ -272,7 +272,7 @@ export default function Index() {
 
         {/* Not signed in message */}
         {!authLoading && !user && !demoLoading && (
-          <div className="py-8 mb-6 space-y-3">
+          <div className="py-2 mb-6 space-y-3">
             <h2 className="text-2xl sm:text-3xl font-display font-normal tracking-wide text-foreground">
               Every book tells your story.
             </h2>
