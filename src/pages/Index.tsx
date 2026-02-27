@@ -8,13 +8,15 @@ import { DiscoverCollections } from '@/components/DiscoverCollections';
 import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { RecommendBookDialog } from '@/components/RecommendBookDialog';
-
+import { SendMysteryBookDialog } from '@/components/SendMysteryBookDialog';
 
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { ShelfSwitcher } from '@/components/ShelfSwitcher';
 import { BookActionsDropdown } from '@/components/BookActionsDropdown';
 
 import { Button } from '@/components/ui/button';
+import { Gift } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 import { useBooksContext } from '@/contexts/BooksContext';
 import { useClubBooks } from '@/hooks/useBookClubs';
@@ -87,8 +89,8 @@ export default function Index() {
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
   const [recommendDialogOpen, setRecommendDialogOpen] = useState(false);
-  
-  
+  const [mysteryBookDialogOpen, setMysteryBookDialogOpen] = useState(false);
+
   const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
 
   // Shelf viewing state (for browsing friends' shelves)
@@ -337,9 +339,24 @@ export default function Index() {
                     />
                   </div>
 
-                  {/* Right: + button */}
+                  {/* Right: + button + mystery book */}
                   {user && (
-                    <div className="shrink-0">
+                    <div className="shrink-0 flex items-center gap-1.5">
+                      {isViewingFriend && viewedUser && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-9 w-9 bg-background/80"
+                              onClick={() => setMysteryBookDialogOpen(true)}
+                            >
+                              <Gift className="h-4 w-4 text-amber-600" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Send a Mystery Book</TooltipContent>
+                        </Tooltip>
+                      )}
                       <MobileActionsMenu
                         onAddBook={addBook}
                         existingBooks={ownBooks}
@@ -410,7 +427,17 @@ export default function Index() {
           targetUsername={viewedUser.username}
         />
       )}
-      
+
+      {/* Mystery book dialog for friend shelves */}
+      {viewedUser && (
+        <SendMysteryBookDialog
+          open={mysteryBookDialogOpen}
+          onOpenChange={setMysteryBookDialogOpen}
+          targetUserId={viewedUser.userId}
+          targetUsername={viewedUser.username}
+        />
+      )}
+
     </div>
   );
 }

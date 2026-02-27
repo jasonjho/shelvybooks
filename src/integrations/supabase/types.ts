@@ -302,6 +302,75 @@ export type Database = {
           },
         ]
       }
+      mystery_books: {
+        Row: {
+          id: string
+          from_user_id: string
+          to_user_id: string
+          mood_tag: string
+          teaser: string
+          emoji_clue: string
+          title: string
+          author: string
+          cover_url: string | null
+          isbn: string | null
+          description: string | null
+          categories: string[] | null
+          page_count: number | null
+          status: string
+          unwrapped_at: string | null
+          responded_at: string | null
+          reaction_emoji: string | null
+          reaction_note: string | null
+          reacted_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          from_user_id: string
+          to_user_id: string
+          mood_tag: string
+          teaser: string
+          emoji_clue: string
+          title: string
+          author: string
+          cover_url?: string | null
+          isbn?: string | null
+          description?: string | null
+          categories?: string[] | null
+          page_count?: number | null
+          status?: string
+          unwrapped_at?: string | null
+          responded_at?: string | null
+          reaction_emoji?: string | null
+          reaction_note?: string | null
+          reacted_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          from_user_id?: string
+          to_user_id?: string
+          mood_tag?: string
+          teaser?: string
+          emoji_clue?: string
+          title?: string
+          author?: string
+          cover_url?: string | null
+          isbn?: string | null
+          description?: string | null
+          categories?: string[] | null
+          page_count?: number | null
+          status?: string
+          unwrapped_at?: string | null
+          responded_at?: string | null
+          reaction_emoji?: string | null
+          reaction_note?: string | null
+          reacted_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       book_recommendations: {
         Row: {
           author: string
@@ -435,6 +504,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          last_seen_mystery_books_at: string
           last_seen_followers_at: string
           last_seen_follows_at: string
           last_seen_likes_at: string
@@ -445,6 +515,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          last_seen_mystery_books_at?: string
           last_seen_followers_at?: string
           last_seen_follows_at?: string
           last_seen_likes_at?: string
@@ -455,6 +526,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          last_seen_mystery_books_at?: string
           last_seen_followers_at?: string
           last_seen_follows_at?: string
           last_seen_likes_at?: string

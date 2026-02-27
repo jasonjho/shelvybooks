@@ -354,12 +354,9 @@ export default function PublicShelf() {
               <div className="p-2.5 rounded-lg bg-gradient-to-br from-amber-700 to-amber-900 shadow-md">
                 <Library className="w-7 h-7 text-amber-100" />
               </div>
-              <div>
-                <h1 className="text-4xl font-normal tracking-wide bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
-                  Shelvy
-                </h1>
-                <p className="text-sm text-muted-foreground hidden sm:block">Your personal bookshelf, beautifully organized</p>
-              </div>
+              <h1 className="text-4xl font-normal tracking-wide bg-gradient-to-r from-amber-700 to-amber-900 dark:from-amber-500 dark:to-amber-700 bg-clip-text text-transparent font-display">
+                Shelvy
+              </h1>
             </Link>
           </div>
           <div className="flex items-center gap-2">

@@ -69,6 +69,7 @@ export default function ProfilePage() {
           displayName: shelfData.display_name,
           isPublic: shelfData.is_public,
         });
+
       }
 
       setLoading(false);

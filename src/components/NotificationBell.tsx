@@ -5,7 +5,10 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useFollowedUsersBooks } from '@/hooks/useFollows';
 import { useFollowerNotifications } from '@/hooks/useFollowerNotifications';
 import { useBookRecommendations, BookRecommendation } from '@/hooks/useBookRecommendations';
+import { useMysteryBooks, MysteryBook } from '@/hooks/useMysteryBooks';
 import { useBooksContext } from '@/contexts/BooksContext';
+import { MysteryBookNotificationCard } from '@/components/MysteryBookNotificationCard';
+import { MysteryBookUnwrapDialog } from '@/components/MysteryBookUnwrapDialog';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
@@ -21,35 +24,54 @@ import { FollowingListCompact } from '@/components/FollowingList';
 
 export function NotificationBell() {
   const [activeTab, setActiveTab] = useState<'activity' | 'following'>('activity');
+  const [unwrapDialogOpen, setUnwrapDialogOpen] = useState(false);
+  const [selectedMysteryBook, setSelectedMysteryBook] = useState<MysteryBook | null>(null);
   const { newLikesCount, newLikes, markAsSeen: markLikesAsSeen, isLoading } = useNotifications();
   const { data: followedBooks = [], newCount: followedBooksCount, isLoading: loadingFollowedBooks, markAsSeen: markFollowsAsSeen } = useFollowedUsersBooks();
   const { newFollowers, newCount: newFollowersCount, isLoading: loadingFollowers, markAsSeen: markFollowersAsSeen } = useFollowerNotifications();
-  const { 
-    pendingRecommendations, 
-    pendingCount: newRecommendationsCount, 
+  const {
+    pendingRecommendations,
+    pendingCount: newRecommendationsCount,
     isLoading: loadingRecommendations,
     acceptRecommendation,
     declineRecommendation,
-    markAsSeen: markRecommendationsAsSeen 
+    markAsSeen: markRecommendationsAsSeen
   } = useBookRecommendations();
+  const {
+    pendingMysteryBooks,
+    reactionNotifications,
+    pendingCount: newMysteryBooksCount,
+    isLoading: loadingMysteryBooks,
+    unwrapMysteryBook,
+    acceptMysteryBook,
+    declineMysteryBook,
+    reactToMysteryBook,
+    markAsSeen: markMysteryBooksAsSeen,
+  } = useMysteryBooks();
   const { refetchBooks } = useBooksContext();
 
-  // Activity = likes + new followers + recommendations
-  const activityCount = newLikesCount + newFollowersCount + newRecommendationsCount;
+  // Activity = likes + new followers + recommendations + mystery books
+  const activityCount = newLikesCount + newFollowersCount + newRecommendationsCount + newMysteryBooksCount;
   const totalCount = activityCount + followedBooksCount;
 
   // Determine which clear action to show based on active tab
-  const showClearButton = (activeTab === 'activity' && activityCount > 0) || 
+  const showClearButton = (activeTab === 'activity' && activityCount > 0) ||
                           (activeTab === 'following' && followedBooksCount > 0);
-  
+
   const handleClear = () => {
     if (activeTab === 'activity') {
       markLikesAsSeen();
       markFollowersAsSeen();
       markRecommendationsAsSeen();
+      markMysteryBooksAsSeen();
     } else {
       markFollowsAsSeen();
     }
+  };
+
+  const handleOpenUnwrap = (mysteryBook: MysteryBook) => {
+    setSelectedMysteryBook(mysteryBook);
+    setUnwrapDialogOpen(true);
   };
 
   const handleAccept = async (recommendation: BookRecommendation) => {
@@ -63,6 +85,7 @@ export function NotificationBell() {
   };
 
   return (
+    <>
     <Popover>
       <PopoverTrigger asChild>
         <Button
@@ -73,7 +96,7 @@ export function NotificationBell() {
         >
           <Bell className="h-5 w-5" />
           {totalCount > 0 && (
-            <span 
+            <span
               className={cn(
                 "absolute -top-1 -right-1 z-10 flex items-center justify-center",
                 "min-w-[18px] h-[18px] px-1 rounded-full",
@@ -109,15 +132,15 @@ export function NotificationBell() {
               </Button>
             )}
           </div>
-          
+
           {/* Activity Tab (Likes + Followers + Recommendations) */}
           <TabsContent value="activity" className="m-0">
             <ScrollArea className="max-h-[320px]">
-              {(isLoading || loadingFollowers || loadingRecommendations) ? (
+              {(isLoading || loadingFollowers || loadingRecommendations || loadingMysteryBooks) ? (
                 <div className="p-4 text-center text-sm text-muted-foreground font-sans">
                   Loading...
                 </div>
-              ) : (newLikes.length === 0 && newFollowers.length === 0 && pendingRecommendations.length === 0) ? (
+              ) : (newLikes.length === 0 && newFollowers.length === 0 && pendingRecommendations.length === 0 && pendingMysteryBooks.length === 0 && reactionNotifications.length === 0) ? (
                 <div className="p-6 text-center">
                   <Heart className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
                   <p className="text-sm text-muted-foreground font-sans">
@@ -131,23 +154,79 @@ export function NotificationBell() {
                 <div className="divide-y divide-border">
                   {/* Combine and sort by date */}
                   {[
+                    ...reactionNotifications.map(mb => ({ type: 'mysteryBookReaction' as const, data: mb, date: new Date(mb.reactedAt!) })),
+                    ...pendingMysteryBooks.map(mb => ({ type: 'mysteryBook' as const, data: mb, date: new Date(mb.createdAt) })),
                     ...pendingRecommendations.map(r => ({ type: 'recommendation' as const, data: r, date: new Date(r.createdAt) })),
                     ...newFollowers.map(f => ({ type: 'follower' as const, data: f, date: new Date(f.followedAt) })),
                     ...newLikes.map(l => ({ type: 'like' as const, data: l, date: new Date(l.likedAt) })),
                   ]
                     .sort((a, b) => b.date.getTime() - a.date.getTime())
                     .map((item) => (
-                      <div 
+                      <div
                         key={
-                          item.type === 'recommendation' 
-                            ? `rec-${item.data.id}` 
-                            : item.type === 'follower' 
-                              ? `follower-${item.data.id}` 
-                              : `like-${item.data.id}`
+                          item.type === 'mysteryBookReaction'
+                            ? `mbr-${item.data.id}`
+                            : item.type === 'mysteryBook'
+                              ? `mb-${item.data.id}`
+                              : item.type === 'recommendation'
+                                ? `rec-${item.data.id}`
+                                : item.type === 'follower'
+                                  ? `follower-${item.data.id}`
+                                  : `like-${item.data.id}`
                         }
                         className="px-3 py-2.5 hover:bg-muted/50 transition-colors"
                       >
-                        {item.type === 'recommendation' ? (
+                        {item.type === 'mysteryBookReaction' ? (
+                          /* Reaction on a mystery book the current user sent */
+                          <div className="flex items-start gap-2.5">
+                            {(item.data as MysteryBook).toUsername ? (
+                              <Link to={`/u/${(item.data as MysteryBook).toUsername}`} className="shrink-0">
+                                <Avatar className="w-8 h-8">
+                                  <AvatarImage src={(item.data as MysteryBook).toAvatarUrl || undefined} alt={(item.data as MysteryBook).toUsername!} />
+                                  <AvatarFallback className="text-xs font-sans">
+                                    {(item.data as MysteryBook).toUsername!.slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </Link>
+                            ) : (
+                              <div className="p-1.5 rounded-full bg-amber-100 dark:bg-amber-900/30 shrink-0">
+                                <Gift className="h-3.5 w-3.5 text-amber-600" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm leading-snug font-sans">
+                                {(item.data as MysteryBook).toUsername ? (
+                                  <Link
+                                    to={`/u/${(item.data as MysteryBook).toUsername}`}
+                                    className="font-medium hover:underline"
+                                  >
+                                    {(item.data as MysteryBook).toUsername}
+                                  </Link>
+                                ) : (
+                                  <span className="text-muted-foreground">Someone</span>
+                                )}
+                                {' reacted '}
+                                <span className="text-lg">{(item.data as MysteryBook).reactionEmoji}</span>
+                                {' to your mystery book '}
+                                <span className="font-medium">{(item.data as MysteryBook).title}</span>
+                              </p>
+                              {(item.data as MysteryBook).reactionNote && (
+                                <p className="text-xs text-muted-foreground mt-0.5 italic font-sans">
+                                  "{(item.data as MysteryBook).reactionNote}"
+                                </p>
+                              )}
+                              <p className="text-xs text-muted-foreground mt-0.5 font-sans">
+                                {formatDistanceToNow(item.date, { addSuffix: true })}
+                              </p>
+                            </div>
+                            <Gift className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                          </div>
+                        ) : item.type === 'mysteryBook' ? (
+                          <MysteryBookNotificationCard
+                            mysteryBook={item.data as MysteryBook}
+                            onUnwrap={handleOpenUnwrap}
+                          />
+                        ) : item.type === 'recommendation' ? (
                           <div className="space-y-2">
                             <div className="flex items-start gap-2.5">
                               {item.data.fromUsername ? (
@@ -167,8 +246,8 @@ export function NotificationBell() {
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm leading-snug font-sans">
                                   {item.data.fromUsername ? (
-                                    <Link 
-                                      to={`/u/${item.data.fromUsername}`} 
+                                    <Link
+                                      to={`/u/${item.data.fromUsername}`}
                                       className="font-medium hover:underline"
                                     >
                                       {item.data.fromUsername}
@@ -226,8 +305,8 @@ export function NotificationBell() {
                                 </Link>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm leading-snug font-sans">
-                                    <Link 
-                                      to={`/u/${item.data.username}`} 
+                                    <Link
+                                      to={`/u/${item.data.username}`}
                                       className="font-medium hover:underline"
                                     >
                                       {item.data.username}
@@ -259,8 +338,8 @@ export function NotificationBell() {
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm leading-snug font-sans">
                                     {item.data.username ? (
-                                      <Link 
-                                        to={`/u/${item.data.username}`} 
+                                      <Link
+                                        to={`/u/${item.data.username}`}
                                         className="font-medium hover:underline"
                                       >
                                         {item.data.username}
@@ -286,7 +365,7 @@ export function NotificationBell() {
               )}
             </ScrollArea>
           </TabsContent>
-          
+
           {/* Following Tab */}
           <TabsContent value="following" className="m-0">
             <ScrollArea className="max-h-[280px]">
@@ -307,8 +386,8 @@ export function NotificationBell() {
               ) : (
                 <div className="divide-y divide-border">
                   {followedBooks.map((book) => (
-                    <div 
-                      key={book.id} 
+                    <div
+                      key={book.id}
                       className="px-3 py-2.5 hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex items-start gap-2.5">
@@ -322,8 +401,8 @@ export function NotificationBell() {
                         </Link>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm leading-snug font-sans">
-                            <Link 
-                              to={`/u/${book.username}`} 
+                            <Link
+                              to={`/u/${book.username}`}
                               className="font-medium hover:underline"
                             >
                               {book.username}
@@ -346,5 +425,17 @@ export function NotificationBell() {
         </Tabs>
       </PopoverContent>
     </Popover>
+
+    <MysteryBookUnwrapDialog
+      open={unwrapDialogOpen}
+      onOpenChange={setUnwrapDialogOpen}
+      mysteryBook={selectedMysteryBook}
+      onUnwrap={unwrapMysteryBook}
+      onAccept={acceptMysteryBook}
+      onDecline={declineMysteryBook}
+      onReact={reactToMysteryBook}
+      onBooksRefetch={refetchBooks}
+    />
+    </>
   );
 }
