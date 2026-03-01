@@ -10,6 +10,7 @@ const corsHeaders = {
 };
 
 interface MysteryBookNotificationRequest {
+  mysteryBookId: string;
   recipientUserId: string;
   senderUsername: string;
   moodTag: string;
@@ -52,7 +53,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { recipientUserId, senderUsername, moodTag, teaser, emojiClue }: MysteryBookNotificationRequest = await req.json();
+    const { mysteryBookId, recipientUserId, senderUsername, moodTag, teaser, emojiClue }: MysteryBookNotificationRequest = await req.json();
 
     if (!senderUsername || !moodTag || !teaser || !emojiClue) {
       return new Response(
@@ -84,7 +85,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const appUrl = "https://shelvybooks.com";
+    const appUrl = mysteryBookId
+      ? `https://shelvybooks.com/?mystery=${mysteryBookId}`
+      : "https://shelvybooks.com";
 
     const emailHtml = `
 <!DOCTYPE html>

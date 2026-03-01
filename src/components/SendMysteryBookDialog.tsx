@@ -158,7 +158,7 @@ export function SendMysteryBookDialog({
       const author = selectedBook.volumeInfo.authors?.join(', ') || 'Unknown Author';
       const bookTitle = selectedBook.volumeInfo.title;
 
-      const { error } = await (supabase.from('mystery_books') as any).insert({
+      const { data: insertedRow, error } = await (supabase.from('mystery_books') as any).insert({
         from_user_id: user.id,
         to_user_id: targetUserId,
         mood_tag: selectedMood,
@@ -172,7 +172,7 @@ export function SendMysteryBookDialog({
         page_count: selectedBook.volumeInfo.pageCount || null,
         isbn: selectedBook.volumeInfo.industryIdentifiers?.[0]?.identifier || null,
         status: 'pending',
-      });
+      }).select('id').single();
 
       if (error) throw error;
 
@@ -180,6 +180,7 @@ export function SendMysteryBookDialog({
       const senderUsername = profile?.username || 'A friend';
       supabase.functions.invoke('notify-mystery-book', {
         body: {
+          mysteryBookId: insertedRow?.id,
           recipientUserId: targetUserId,
           senderUsername,
           moodTag: selectedMood,

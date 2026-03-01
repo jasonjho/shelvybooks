@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Bookshelf } from '@/components/Bookshelf';
 import { MobileBookshelf } from '@/components/MobileBookshelf';
 import { ShelfControls } from '@/components/ShelfControls';
@@ -9,6 +10,7 @@ import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { RecommendBookDialog } from '@/components/RecommendBookDialog';
 import { SendMysteryBookDialog } from '@/components/SendMysteryBookDialog';
+import { MysteryBookUnwrapDialog } from '@/components/MysteryBookUnwrapDialog';
 import { MysteryBookCta } from '@/components/MysteryBookCta';
 
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
@@ -26,6 +28,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useIsbndbDemoBooks } from '@/hooks/useIsbndbDemoBooks';
 import { useViewedShelf } from '@/hooks/useViewedShelf';
+import { useMysteryBooks, MysteryBook } from '@/hooks/useMysteryBooks';
 import { useShelfSettingsContext } from '@/contexts/ShelfSettingsContext';
 import { BookStatus, SortOption, Book, BackgroundTheme } from '@/types/book';
 
@@ -85,12 +88,18 @@ function sortBooks(books: Book[], sortOption: SortOption, shuffleSeed: number): 
 
 export default function Index() {
   const isMobile = useIsMobile();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeFilters, setActiveFilters] = useState<BookStatus[]>([]);
   const [activeCategoryFilters, setActiveCategoryFilters] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
   const [recommendDialogOpen, setRecommendDialogOpen] = useState(false);
   const [mysteryBookDialogOpen, setMysteryBookDialogOpen] = useState(false);
+
+  // Deep-link unwrap dialog state
+  const [unwrapDialogOpen, setUnwrapDialogOpen] = useState(false);
+  const [selectedMysteryBook, setSelectedMysteryBook] = useState<MysteryBook | null>(null);
+  const deepLinkHandled = useRef(false);
 
   const { user, loading: authLoading, setAuthDialogOpen } = useAuth();
 
@@ -104,6 +113,31 @@ export default function Index() {
     loadingViewedBooks,
   } = useViewedShelf();
 
+  // Mystery books hook (for deep-link unwrap)
+  const {
+    pendingMysteryBooks,
+    unwrapMysteryBook,
+    acceptMysteryBook,
+    declineMysteryBook,
+    reactToMysteryBook,
+  } = useMysteryBooks();
+
+  // Deep-link: auto-open unwrap dialog from ?mystery=<id>
+  useEffect(() => {
+    if (deepLinkHandled.current || !user || authLoading) return;
+    const mysteryId = searchParams.get('mystery');
+    if (!mysteryId) return;
+
+    const match = pendingMysteryBooks.find(mb => mb.id === mysteryId);
+    if (match) {
+      deepLinkHandled.current = true;
+      setSelectedMysteryBook(match);
+      setUnwrapDialogOpen(true);
+      // Clean up the URL
+      setSearchParams({}, { replace: true });
+    }
+  }, [user, authLoading, searchParams, pendingMysteryBooks, setSearchParams]);
+
   // Clear friend's shelf view when user logs out
   useEffect(() => {
     if (!user && isViewingFriend) {
@@ -116,10 +150,11 @@ export default function Index() {
     loading: booksLoading,
     shelfSkin, 
     settings,
-    addBook, 
-    removeBook, 
+    addBook,
+    removeBook,
     moveBook,
     updateBookCompletedAt,
+    refetchBooks,
   } = useBooksContext();
 
   // Get current user's shelf settings for share URL
@@ -453,6 +488,18 @@ export default function Index() {
           targetUsername={viewedUser.username}
         />
       )}
+
+      {/* Deep-link mystery book unwrap dialog */}
+      <MysteryBookUnwrapDialog
+        open={unwrapDialogOpen}
+        onOpenChange={setUnwrapDialogOpen}
+        mysteryBook={selectedMysteryBook}
+        onUnwrap={unwrapMysteryBook}
+        onAccept={acceptMysteryBook}
+        onDecline={declineMysteryBook}
+        onReact={reactToMysteryBook}
+        onBooksRefetch={refetchBooks}
+      />
 
     </div>
   );
