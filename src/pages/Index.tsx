@@ -9,6 +9,7 @@ import { OnboardingTips } from '@/components/OnboardingTips';
 import { DailyQuote } from '@/components/DailyQuote';
 import { RecommendBookDialog } from '@/components/RecommendBookDialog';
 import { SendMysteryBookDialog } from '@/components/SendMysteryBookDialog';
+import { MysteryBookCta } from '@/components/MysteryBookCta';
 
 import { ControlsSkeleton, QuoteSkeleton } from '@/components/ShelfSkeleton';
 import { ShelfSwitcher } from '@/components/ShelfSwitcher';
@@ -312,6 +313,8 @@ export default function Index() {
                  {/* Daily Quote - keep stable when switching shelves */}
                  {user && <DailyQuote />}
 
+                 {/* Mystery Book CTA - own shelf only, with books */}
+                 {user && !isViewingFriend && ownBooks.length > 0 && <MysteryBookCta />}
 
                  {/* Controls - filters on left, + button on right */}
                  <div className="flex items-center justify-between gap-2 sm:mb-3">
@@ -343,19 +346,32 @@ export default function Index() {
                   {user && (
                     <div className="shrink-0 flex items-center gap-1.5">
                       {isViewingFriend && viewedUser && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-9 w-9 bg-background/80"
-                              onClick={() => setMysteryBookDialogOpen(true)}
-                            >
-                              <Gift className="h-4 w-4 text-amber-600" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Send a Mystery Book</TooltipContent>
-                        </Tooltip>
+                        <>
+                          {/* Desktop: labeled button */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="hidden sm:flex gap-2 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                            onClick={() => setMysteryBookDialogOpen(true)}
+                          >
+                            <Gift className="h-4 w-4" />
+                            Mystery Book
+                          </Button>
+                          {/* Mobile: icon-only with tooltip */}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="sm:hidden h-9 w-9 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                                onClick={() => setMysteryBookDialogOpen(true)}
+                              >
+                                <Gift className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Send a Mystery Book</TooltipContent>
+                          </Tooltip>
+                        </>
                       )}
                       <MobileActionsMenu
                         onAddBook={addBook}

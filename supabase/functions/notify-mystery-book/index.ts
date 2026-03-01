@@ -84,38 +84,40 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const appUrl = "https://shelvy-books.lovable.app";
+    const appUrl = "https://shelvybooks.com";
 
     const emailHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
-        <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; padding: 32px; text-align: center;">
-          <div style="font-size: 48px; margin-bottom: 16px;">${emojiClue}</div>
-          <h2 style="color: #78350f; margin: 0 0 8px 0; font-weight: 700; font-size: 22px;">
-            ${senderUsername} wrapped a book just for you...
-          </h2>
-          <div style="background: #ffffff; border-radius: 8px; padding: 20px; margin: 16px 0; border: 1px solid #e5e7eb;">
-            <p style="margin: 0 0 8px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #92400e; font-weight: 600;">
-              ${moodTag}
-            </p>
-            <p style="margin: 0; font-size: 16px; color: #374151; font-style: italic;">
-              "${teaser}"
-            </p>
-          </div>
-          <p style="margin: 16px 0 24px 0; font-size: 15px; color: #78350f;">
-            A mystery book is waiting for you. Unwrap it to find out what it is!
-          </p>
-          <a href="${appUrl}" style="background: #78350f; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 500; font-size: 16px;">
-            Unwrap your book
-          </a>
-        </div>
-      </body>
-      </html>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 520px; margin: 0 auto; padding: 40px 20px; background-color: #ffffff;">
+  <p style="margin: 0 0 32px 0; font-size: 14px; color: #8b7355; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">Shelvy</p>
+
+  <h2 style="color: #1a1a1a; margin: 0 0 8px 0; font-weight: 600; font-size: 20px;">A mystery book awaits</h2>
+
+  <p style="margin: 0 0 28px 0; font-size: 15px; color: #555;">
+    <strong>${senderUsername}</strong> wrapped a book just for you.
+  </p>
+
+  <div style="border-left: 3px solid #d4a373; padding: 16px 20px; margin: 0 0 28px 0; background: #faf8f5; border-radius: 0 6px 6px 0;">
+    <p style="margin: 0 0 4px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: #8b7355; font-weight: 600;">${moodTag}</p>
+    <p style="margin: 0; font-size: 15px; color: #333; font-style: italic;">"${teaser}"</p>
+  </div>
+
+  <p style="margin: 0 0 28px 0; font-size: 15px; color: #555;">
+    Head to Shelvy to unwrap it and see what's inside.
+  </p>
+
+  <a href="${appUrl}" style="background: #1a1a1a; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500; font-size: 14px;">Unwrap your book</a>
+
+  <p style="margin: 40px 0 0 0; font-size: 13px; color: #999;">
+    — The Shelvy Team
+  </p>
+</body>
+</html>
     `;
 
     const emailResponse = await fetch("https://api.resend.com/emails", {

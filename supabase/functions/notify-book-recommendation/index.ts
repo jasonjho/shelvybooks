@@ -86,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    const appUrl = "https://shelvy-books.lovable.app";
+    const appUrl = "https://shelvybooks.com";
     
     // Build the email HTML using the familiar template style
     const personalNote = message 

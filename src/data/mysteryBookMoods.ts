@@ -19,6 +19,10 @@ export const MYSTERY_BOOK_MOODS: MysteryBookMood[] = [
   { tag: 'mind-bending', label: 'Mind-Bending', emoji: '🌀' },
   { tag: 'epic', label: 'Epic', emoji: '⚔️' },
   { tag: 'quiet', label: 'Quiet', emoji: '🍃' },
+  { tag: 'nostalgic', label: 'Nostalgic', emoji: '📷' },
+  { tag: 'whimsical', label: 'Whimsical', emoji: '🦋' },
+  { tag: 'suspenseful', label: 'Suspenseful', emoji: '🫣' },
+  { tag: 'dreamy', label: 'Dreamy', emoji: '🌙' },
 ];
 
 export const REACTION_EMOJIS = ['😍', '🤩', '😮', '🤔', '😅', '💀', '🔥', '❤️'];

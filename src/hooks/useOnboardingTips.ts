@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type TipId = 'tap-book' | 'post-it-notes' | 'magic-recommender' | 'book-clubs';
+export type TipId = 'tap-book' | 'post-it-notes' | 'magic-recommender' | 'book-clubs' | 'mystery-books';
 
 interface Tip {
   id: TipId;
@@ -29,6 +29,11 @@ export const ONBOARDING_TIPS: Tip[] = [
     id: 'book-clubs',
     title: 'Join book clubs',
     description: 'Create or join book clubs to read together with friends and vote on what to read next.',
+  },
+  {
+    id: 'mystery-books',
+    title: 'Send a mystery book',
+    description: 'Visit a friend\'s shelf and tap the Gift button to wrap a book with mood clues for them to unwrap!',
   },
 ];
 

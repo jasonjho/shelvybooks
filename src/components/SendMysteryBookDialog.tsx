@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useBookSearch, getCoverUrl } from '@/hooks/useBookSearch';
@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Search, Loader2, Gift, Check, BookOpen, ArrowLeft } from 'lucide-react';
+import { Search, Loader2, Gift, Check, BookOpen, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { MYSTERY_BOOK_MOODS } from '@/data/mysteryBookMoods';
@@ -45,6 +45,37 @@ export function SendMysteryBookDialog({
   const [teaser, setTeaser] = useState('');
   const [emojiClue, setEmojiClue] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+
+  // Cache the target user's shelf books (title+author pairs) for the lifetime of the dialog
+  const targetShelfBooks = useRef<{ title: string; author: string }[]>([]);
+  const shelfFetched = useRef(false);
+
+  // Fetch target's shelf books when dialog opens
+  useEffect(() => {
+    if (!open || shelfFetched.current) return;
+    shelfFetched.current = true;
+
+    (async () => {
+      try {
+        const { data: shelfInfos } = await supabase
+          .rpc('get_public_shelf_info_for_users', { _user_ids: [targetUserId] });
+        const shareId = shelfInfos?.[0]?.share_id;
+        if (!shareId) return;
+
+        const { data: books } = await supabase
+          .rpc('get_public_shelf_books', { _share_id: shareId });
+        if (books) {
+          targetShelfBooks.current = books.map((b: { title: string; author: string }) => ({
+            title: b.title.toLowerCase(),
+            author: b.author.toLowerCase(),
+          }));
+        }
+      } catch {
+        // Non-critical — silently skip the shelf check
+      }
+    })();
+  }, [open, targetUserId]);
 
   // Reset on close
   useEffect(() => {
@@ -55,7 +86,10 @@ export function SendMysteryBookDialog({
       setSelectedMood(null);
       setTeaser('');
       setEmojiClue('');
+      setDuplicateWarning(null);
       clearResults();
+      shelfFetched.current = false;
+      targetShelfBooks.current = [];
     }
   }, [open, clearResults]);
 
@@ -71,12 +105,40 @@ export function SendMysteryBookDialog({
     return () => clearTimeout(timer);
   }, [query]);
 
-  const handleSelectBook = (book: GoogleBook) => {
+  const handleSelectBook = async (book: GoogleBook) => {
     setSelectedBook(book);
     clearResults();
     setQuery('');
-    // Auto-suggest emoji from mood
+    setDuplicateWarning(null);
     setStep('clues');
+
+    const bookTitle = book.volumeInfo.title;
+    const bookAuthor = book.volumeInfo.authors?.join(', ') || 'Unknown Author';
+
+    // Check if the book is already on the recipient's shelf
+    const onShelf = targetShelfBooks.current.some(
+      b => b.title === bookTitle.toLowerCase() && b.author === bookAuthor.toLowerCase()
+    );
+    if (onShelf) {
+      setDuplicateWarning(`${targetUsername} already has this book on their shelf.`);
+      return;
+    }
+
+    // Check if you've already sent this as a mystery book
+    try {
+      const { data } = await (supabase.from('mystery_books') as any)
+        .select('id')
+        .eq('from_user_id', user!.id)
+        .eq('to_user_id', targetUserId)
+        .ilike('title', bookTitle)
+        .ilike('author', bookAuthor)
+        .limit(1);
+      if (data && data.length > 0) {
+        setDuplicateWarning(`You've already sent this book to ${targetUsername} as a mystery book.`);
+      }
+    } catch {
+      // Non-critical — silently skip
+    }
   };
 
   const handleSelectMood = (tag: string) => {
@@ -196,12 +258,20 @@ export function SendMysteryBookDialog({
                     variant="ghost"
                     size="sm"
                     className="text-xs h-6 px-2 mt-1 gap-1"
-                    onClick={() => { setStep('search'); setSelectedBook(null); }}
+                    onClick={() => { setStep('search'); setSelectedBook(null); setDuplicateWarning(null); }}
                   >
                     <ArrowLeft className="w-3 h-3" />
                     Change book
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {/* Duplicate warning */}
+            {duplicateWarning && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-sm text-amber-800 dark:text-amber-200">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <p>{duplicateWarning} You can still send it if you'd like!</p>
               </div>
             )}
 

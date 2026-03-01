@@ -59,7 +59,7 @@ const getEmailHtml = () => `
       </div>
     </div>
     
-    <a href="https://shelvy-books.lovable.app" style="background: #78350f; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 500; font-size: 16px;">Check It Out</a>
+    <a href="https://shelvybooks.com" style="background: #78350f; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 500; font-size: 16px;">Check It Out</a>
     
     <p style="margin: 24px 0 0 0; font-size: 14px; color: #6b7280;">
       Happy reading! 📖<br>

@@ -5,6 +5,7 @@ import { Bookshelf } from '@/components/Bookshelf';
 import { MobileBookshelf } from '@/components/MobileBookshelf';
 import { BookDetailDialog } from '@/components/BookDetailDialog';
 import { RecommendBookDialog } from '@/components/RecommendBookDialog';
+import { SendMysteryBookDialog } from '@/components/SendMysteryBookDialog';
 import { ShelfControls } from '@/components/ShelfControls';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
@@ -12,10 +13,12 @@ import { FollowButton } from '@/components/FollowButton';
 import { InlineShelfNameEditor } from '@/components/InlineShelfNameEditor';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBooks } from '@/hooks/useBooks';
+import { useFollows } from '@/hooks/useFollows';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Book, ShelfSettings as ShelfSettingsType, BookStatus, SortOption, ShelfSkin, BackgroundTheme } from '@/types/book';
-import { Library, Loader2, Lock, BookOpen, User, ArrowLeft } from 'lucide-react';
+import { Library, Loader2, Lock, BookOpen, User, ArrowLeft, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -99,6 +102,7 @@ export default function PublicShelf() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { addBook, books: userBooks } = useBooks();
+  const { isFollowing } = useFollows();
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,9 +115,13 @@ export default function PublicShelf() {
   const [sortOption, setSortOption] = useState<SortOption>('random');
   const [shuffleSeed, setShuffleSeed] = useState(() => Date.now());
   const [recommendDialogOpen, setRecommendDialogOpen] = useState(false);
+  const [mysteryBookDialogOpen, setMysteryBookDialogOpen] = useState(false);
 
   // Determine if this is the owner viewing their own shelf
   const isOwner = user?.id === shelfOwner?.user_id;
+
+  // Check if the current user follows the shelf owner
+  const followsOwner = !!shelfOwner?.user_id && isFollowing(shelfOwner.user_id);
   
   // Get a friendly name for the shelf owner
   const ownerDisplayName = shelfOwner?.display_name 
@@ -367,23 +375,23 @@ export default function PublicShelf() {
       </header>
 
       <main className="container py-8 relative z-10">
-        {/* Prominent Sign Up CTA for guests */}
+        {/* Slim sign-up nudge for guests */}
         {!user && (
-          <div className="mb-6 py-3 px-4 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-200 dark:border-amber-800 text-center">
-            <p className="text-base text-amber-800/80 dark:text-amber-200/80 mb-2">
-              Love what you see?
+          <div className="mb-4 py-2 px-4 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/50 flex items-center justify-between gap-3">
+            <p className="text-sm text-amber-800/70 dark:text-amber-200/60">
+              Love what you see? Create your own shelf.
             </p>
-            <Link to="/">
-              <Button size="sm" className="gap-1.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-sm font-medium">
-                <BookOpen className="w-4 h-4" />
-                Create Your Free Shelf
+            <Link to="/" className="shrink-0">
+              <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30">
+                <BookOpen className="w-3.5 h-3.5" />
+                Sign up free
               </Button>
             </Link>
           </div>
         )}
 
         {/* Owner info - simplified header */}
-        <div className="text-center mb-6">
+        <div className="mb-6">
           <InlineShelfNameEditor
             displayName={shelfOwner?.display_name || null}
             username={shelfOwner?.username || null}
@@ -409,7 +417,7 @@ export default function PublicShelf() {
         </div>
 
         {/* Controls row - Desktop */}
-        <div className="hidden sm:flex flex-wrap items-center justify-center gap-3 mb-6">
+        <div className="hidden sm:flex flex-wrap items-center gap-3 mb-6">
           {/* My Account - for logged-in users */}
           {user && (
             <Link to="/">
@@ -424,7 +432,20 @@ export default function PublicShelf() {
           {shelfOwner?.user_id && user?.id !== shelfOwner.user_id && (
             <FollowButton targetUserId={shelfOwner.user_id} />
           )}
-          
+
+          {/* Mystery Book button - only show if logged in and viewing someone else's shelf */}
+          {user && shelfOwner?.user_id && !isOwner && followsOwner && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+              onClick={() => setMysteryBookDialogOpen(true)}
+            >
+              <Gift className="w-4 h-4" />
+              Mystery Book
+            </Button>
+          )}
+
           <ShelfControls
             activeFilters={activeFilters}
             onFilterChange={setActiveFilters}
@@ -439,10 +460,27 @@ export default function PublicShelf() {
         </div>
 
         {/* Controls row - Mobile: more compact */}
-        <div className="sm:hidden flex items-center justify-center gap-2 mb-6">
+        <div className="sm:hidden flex items-center gap-2 mb-6">
           {/* Follow button - only show if viewing someone else's shelf */}
           {shelfOwner?.user_id && user?.id !== shelfOwner.user_id && (
             <FollowButton targetUserId={shelfOwner.user_id} iconOnly />
+          )}
+
+          {/* Mystery Book button - mobile icon only */}
+          {user && shelfOwner?.user_id && !isOwner && followsOwner && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                  onClick={() => setMysteryBookDialogOpen(true)}
+                >
+                  <Gift className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Send a Mystery Book</TooltipContent>
+            </Tooltip>
           )}
           
           <ShelfControls
@@ -499,6 +537,16 @@ export default function PublicShelf() {
         <RecommendBookDialog
           open={recommendDialogOpen}
           onOpenChange={setRecommendDialogOpen}
+          targetUserId={shelfOwner.user_id}
+          targetUsername={ownerDisplayName}
+        />
+      )}
+
+      {/* Mystery book dialog */}
+      {shelfOwner?.user_id && (
+        <SendMysteryBookDialog
+          open={mysteryBookDialogOpen}
+          onOpenChange={setMysteryBookDialogOpen}
           targetUserId={shelfOwner.user_id}
           targetUsername={ownerDisplayName}
         />

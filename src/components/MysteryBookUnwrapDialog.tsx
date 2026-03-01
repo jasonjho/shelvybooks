@@ -40,6 +40,7 @@ export function MysteryBookUnwrapDialog({
   const [reactionEmoji, setReactionEmoji] = useState<string | null>(null);
   const [reactionNote, setReactionNote] = useState('');
   const [responded, setResponded] = useState(false);
+  const [reacted, setReacted] = useState(false);
 
   // Reset state when dialog opens/closes
   useEffect(() => {
@@ -49,6 +50,7 @@ export function MysteryBookUnwrapDialog({
       setReactionEmoji(null);
       setReactionNote('');
       setResponded(false);
+      setReacted(false);
     } else if (mysteryBook?.status === 'unwrapped') {
       // Already unwrapped — go straight to revealed
       setAnimState('revealed');
@@ -92,6 +94,7 @@ export function MysteryBookUnwrapDialog({
   const handleSendReaction = async () => {
     if (!revealedBook || !reactionEmoji) return;
     await onReact(revealedBook.id, reactionEmoji, reactionNote || undefined);
+    setReacted(true);
   };
 
   if (!mysteryBook) return null;
@@ -195,64 +198,83 @@ export function MysteryBookUnwrapDialog({
               )}
             </div>
 
-            {!responded ? (
-              <>
-                {/* Accept / Decline */}
-                <div className="flex gap-2">
-                  <Button className="flex-1 gap-1.5" onClick={handleAccept}>
-                    <Check className="w-4 h-4" />
-                    Add to shelf
-                  </Button>
-                  <Button variant="ghost" className="gap-1.5 text-muted-foreground" onClick={handleDecline}>
-                    <X className="w-4 h-4" />
-                    Pass
-                  </Button>
-                </div>
-
-                {/* Reaction */}
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground text-center">Send a reaction</p>
-                  <div className="flex justify-center gap-1.5">
-                    {REACTION_EMOJIS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        onClick={() => handleSelectEmoji(emoji)}
-                        className={cn(
-                          'w-9 h-9 rounded-full text-lg transition-all hover:scale-110',
-                          reactionEmoji === emoji
-                            ? 'bg-amber-100 dark:bg-amber-900/40 scale-110 ring-2 ring-amber-300'
-                            : 'hover:bg-muted'
-                        )}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                  {reactionEmoji && (
-                    <>
-                      <Input
-                        placeholder="Add a note... (optional, 140 chars)"
-                        value={reactionNote}
-                        onChange={(e) => setReactionNote(e.target.value.slice(0, 140))}
-                        maxLength={140}
-                        className="text-sm"
-                      />
-                      <Button
-                        size="sm"
-                        className="w-full gap-1.5"
-                        onClick={handleSendReaction}
-                      >
-                        Send {reactionEmoji}
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </>
-            ) : (
+            {responded && reacted ? (
               <div className="py-4 text-center">
                 <Check className="w-8 h-8 mx-auto text-green-500 mb-2" />
                 <p className="text-sm text-muted-foreground">Done! You can close this now.</p>
               </div>
+            ) : (
+              <>
+                {/* Accept / Decline */}
+                {!responded ? (
+                  <div className="flex gap-2">
+                    <Button className="flex-1 gap-1.5" onClick={handleAccept}>
+                      <Check className="w-4 h-4" />
+                      Add to shelf
+                    </Button>
+                    <Button variant="ghost" className="gap-1.5 text-muted-foreground" onClick={handleDecline}>
+                      <X className="w-4 h-4" />
+                      Pass
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-1.5 py-1 text-sm text-green-600 dark:text-green-400">
+                    <Check className="w-4 h-4" />
+                    Added to your shelf!
+                  </div>
+                )}
+
+                {/* Reaction */}
+                {!reacted && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground text-center">
+                      {responded ? 'Send a thank-you reaction?' : 'Send a reaction'}
+                    </p>
+                    <div className="flex justify-center gap-1.5">
+                      {REACTION_EMOJIS.map((emoji) => (
+                        <button
+                          key={emoji}
+                          onClick={() => handleSelectEmoji(emoji)}
+                          className={cn(
+                            'w-9 h-9 rounded-full text-lg transition-all hover:scale-110',
+                            reactionEmoji === emoji
+                              ? 'bg-amber-100 dark:bg-amber-900/40 scale-110 ring-2 ring-amber-300'
+                              : 'hover:bg-muted'
+                          )}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                    {reactionEmoji && (
+                      <>
+                        <Input
+                          placeholder="Add a note... (optional, 140 chars)"
+                          value={reactionNote}
+                          onChange={(e) => setReactionNote(e.target.value.slice(0, 140))}
+                          maxLength={140}
+                          className="text-sm"
+                        />
+                        <Button
+                          size="sm"
+                          className="w-full gap-1.5"
+                          onClick={handleSendReaction}
+                        >
+                          Send {reactionEmoji}
+                        </Button>
+                      </>
+                    )}
+                    {responded && (
+                      <button
+                        onClick={() => setReacted(true)}
+                        className="block mx-auto text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Skip
+                      </button>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

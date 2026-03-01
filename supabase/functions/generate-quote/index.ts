@@ -74,7 +74,7 @@ serve(async (req) => {
       headers: {
         'Authorization': `Bearer ${openRouterKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://shelvy-books.lovable.app',
+        'HTTP-Referer': 'https://shelvybooks.com',
         'X-Title': 'Shelvy Books',
       },
       body: JSON.stringify({

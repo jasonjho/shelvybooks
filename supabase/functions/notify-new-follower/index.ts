@@ -36,7 +36,7 @@ const getEmailHtml = (followerUsername: string, followerShelfUrl: string | null)
     ${followerShelfUrl ? `
     <a href="${followerShelfUrl}" style="background: #78350f; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 500; font-size: 16px;">Check out ${followerUsername}'s shelf</a>
     ` : `
-    <a href="https://shelvy-books.lovable.app" style="background: #78350f; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 500; font-size: 16px;">View your shelf</a>
+    <a href="https://shelvybooks.com" style="background: #78350f; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 500; font-size: 16px;">View your shelf</a>
     `}
     
     <p style="margin: 24px 0 0 0; font-size: 14px; color: #6b7280;">
@@ -97,7 +97,7 @@ const handler = async (req: Request): Promise<Response> => {
       .maybeSingle();
 
     const followerShelfUrl = followerShelf?.share_id 
-      ? `https://shelvy-books.lovable.app/shelf/${followerShelf.share_id}`
+      ? `https://shelvybooks.com/shelf/${followerShelf.share_id}`
       : null;
 
     // Send the email

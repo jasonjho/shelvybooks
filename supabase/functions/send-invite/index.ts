@@ -77,7 +77,7 @@ const handler = async (req: Request): Promise<Response> => {
       (u) => u.email?.toLowerCase() === recipientEmail.toLowerCase()
     );
 
-    const appUrl = "https://shelvy-books.lovable.app";
+    const appUrl = "https://shelvybooks.com";
     let emailHtml: string;
     let emailSubject: string;
     

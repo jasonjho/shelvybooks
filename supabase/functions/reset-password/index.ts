@@ -42,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
       type: "recovery",
       email,
       options: {
-        redirectTo: redirectTo || "https://shelvybooks.vercel.app/reset-password",
+        redirectTo: redirectTo || "https://shelvybooks.com/reset-password",
       },
     });
 
